@@ -1,6 +1,6 @@
 # Axycord
 
-Axycord is a native Android Discord client maintained by **mmaarij**. It keeps the
+Axycord is a native Android Discord client maintained by **Maarij**. It keeps the
 classic Android interface and adds support for newer messaging features,
 custom themes and APK plugins.
 
@@ -9,7 +9,7 @@ custom themes and APK plugins.
 | Setting | Value |
 | --- | --- |
 | Client | Axycord |
-| Maintainer | mmaarij |
+| Maintainer | Maarij |
 | Version | 1.0 |
 | Application ID | `mmaarij.axycord` |
 | Android | 6.0 / API 23 or newer |
