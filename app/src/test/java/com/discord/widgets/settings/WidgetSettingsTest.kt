@@ -15,7 +15,7 @@ import org.junit.Test
 class WidgetSettingsTest {
     @Test fun `display name prefers global name and ignores human discriminator`() {
         assertEquals("Manti", WidgetSettings.displayName(user(42, "Manti")))
-        assertEquals("mantikafasi", WidgetSettings.displayName(user(0)))
+        assertEquals("mmaarij", WidgetSettings.displayName(user(0)))
     }
 
     /**
@@ -86,7 +86,7 @@ class WidgetSettingsTest {
     }
 
     private fun user(discriminator: Int, globalName: String? = null) = MeUser(
-        1, "mantikafasi", null, null, false, false, discriminator, PremiumTier.NONE,
+        1, "mmaarij", null, null, false, false, discriminator, PremiumTier.NONE,
         null, false, true, null, 0, 0, null, NsfwAllowance.UNKNOWN, null, null, globalName,
     )
 

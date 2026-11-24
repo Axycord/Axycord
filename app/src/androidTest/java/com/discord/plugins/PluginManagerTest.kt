@@ -3,13 +3,13 @@ package com.discord.plugins
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import dev.mantikafasi.manticord.plugins.api.ManticordPlugin
-import dev.mantikafasi.manticord.plugins.api.PluginComposerContribution
-import dev.mantikafasi.manticord.plugins.api.PluginComposerZone
-import dev.mantikafasi.manticord.plugins.api.PluginManifest
-import dev.mantikafasi.manticord.plugins.api.PluginScope
-import dev.mantikafasi.manticord.plugins.api.pluginComposerContribution
-import dev.mantikafasi.manticord.plugins.api.pluginManifest
+import mmaarij.axycord.plugins.api.AxycordPlugin
+import mmaarij.axycord.plugins.api.PluginComposerContribution
+import mmaarij.axycord.plugins.api.PluginComposerZone
+import mmaarij.axycord.plugins.api.PluginManifest
+import mmaarij.axycord.plugins.api.PluginScope
+import mmaarij.axycord.plugins.api.pluginComposerContribution
+import mmaarij.axycord.plugins.api.pluginManifest
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -32,7 +32,7 @@ class PluginManagerTest {
     fun asyncPluginStartsAndShutdownRemovesContributions() {
         val started = CountDownLatch(1)
         val manifest = pluginManifest(pluginId, "Runtime Test", "1", 1)
-        val plugin = object : ManticordPlugin {
+        val plugin = object : AxycordPlugin {
             override fun start(scope: PluginScope): Completable = Completable.fromAction {
                 scope.ui.registerComposer(
                     pluginComposerContribution(

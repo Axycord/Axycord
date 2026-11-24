@@ -73,6 +73,6 @@ abstract class ThemeEditorPage(@LayoutRes layout: Int, @StringRes private val ti
 
         /** The pages' shared row label for an override: the file or link it points at, or "Default". */
         fun describeFile(context: Context, reference: String?): String =
-            reference?.substringAfterLast('/')?.takeIf { it.isNotEmpty() } ?: context.getString(R.string.microcord_theme_file_default)
+            reference?.substringAfterLast('/')?.takeIf { it.isNotEmpty() } ?: context.getString(R.string.axycord_theme_file_default)
     }
 }

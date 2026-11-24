@@ -1,7 +1,7 @@
 package com.discord.plugins
 
-import dev.mantikafasi.manticord.plugins.api.PluginActivityType
-import dev.mantikafasi.manticord.plugins.api.pluginActivity
+import mmaarij.axycord.plugins.api.PluginActivityType
+import mmaarij.axycord.plugins.api.pluginActivity
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Test

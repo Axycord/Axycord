@@ -38,9 +38,9 @@ class ShareContractParserTest {
     }
 
     @Test
-    fun acceptsOnlyDiscordOrManticordSdkUris() {
+    fun acceptsOnlyDiscordOrAxycordSdkUris() {
         assertTrue(ShareContractParser.isSdkUri("discord://sdk/connect"))
-        assertTrue(ShareContractParser.isSdkUri("manticord://sdk/connect"))
+        assertTrue(ShareContractParser.isSdkUri("axycord://sdk/connect"))
         assertTrue(ShareContractParser.isSdkUri("DISCORD://SDK/connect"))
         assertFalse(ShareContractParser.isSdkUri("https://sdk/connect"))
         assertFalse(ShareContractParser.isSdkUri("discord://app/connect"))

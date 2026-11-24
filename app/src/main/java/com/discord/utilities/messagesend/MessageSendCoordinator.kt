@@ -15,7 +15,7 @@ import com.discord.api.utcdatetime.UtcDateTime
 import com.discord.api.sticker.Sticker
 import com.discord.models.message.Message
 import com.discord.plugins.PluginUiRegistry
-import dev.mantikafasi.manticord.plugins.api.PluginMessageInterceptionType
+import mmaarij.axycord.plugins.api.PluginMessageInterceptionType
 import com.discord.restapi.RestAPIInterface
 import com.discord.restapi.RestAPIParams
 import com.discord.stores.StorePendingReplies

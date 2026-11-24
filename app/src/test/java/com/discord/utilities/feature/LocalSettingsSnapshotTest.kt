@@ -1,6 +1,6 @@
 package com.discord.utilities.feature
 
-import com.discord.utilities.feature.ManticordSettingsBackupCodec.Payload
+import com.discord.utilities.feature.AxycordSettingsBackupCodec.Payload
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows

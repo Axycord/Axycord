@@ -38,7 +38,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Discord"
+rootProject.name = "Axycord"
 include(":app")
 include(":baselineprofile")
 include(":plugin-api")

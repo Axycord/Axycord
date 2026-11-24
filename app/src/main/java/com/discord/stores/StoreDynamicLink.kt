@@ -24,7 +24,7 @@ import rx.Observable
  *
  * Routing then prefers an invite code, then a guild-template code, then the raw URI.
  *
- * **The link provider needs Manticord-owned configuration.** The reference resolves these through
+ * **The link provider needs Axycord-owned configuration.** The reference resolves these through
  * Firebase Dynamic Links, whose configuration is a Google/Firebase credential recovered from the
  * reference APK and must not be reused (and the service itself is discontinued). [linkResolver]
  * therefore defaults to [NoDeferredLink], which resolves to [Uri.EMPTY] — the store is wired,

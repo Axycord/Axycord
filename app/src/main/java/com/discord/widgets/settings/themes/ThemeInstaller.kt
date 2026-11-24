@@ -26,10 +26,10 @@ internal object ThemeInstaller {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 { name ->
-                    AppToast.show(app, app.getString(R.string.microcord_themes_imported, name))
+                    AppToast.show(app, app.getString(R.string.axycord_themes_imported, name))
                     WidgetSettingsThemes.launch(context)
                 },
-                { error -> AppToast.show(app, app.getString(R.string.microcord_themes_import_failed, error.message ?: error.javaClass.simpleName)) },
+                { error -> AppToast.show(app, app.getString(R.string.axycord_themes_import_failed, error.message ?: error.javaClass.simpleName)) },
             )
     }
 }

@@ -35,7 +35,7 @@
             <TextView android:id="@+id/dialog_chat_actions_copy_id" android:visibility="gone" android:text="@string/copy_id" app:drawableStartCompat="@drawable/ic_menu_id" app:drawableTint="?attr/colorInteractiveNormal" style="@style/MessageMenu.Row"/>
             <TextView android:id="@+id/dialog_chat_actions_copy_raw" android:visibility="gone" android:text="@string/view_raw_copy_raw" app:drawableStartCompat="@drawable/ic_menu_copy" app:drawableTint="?attr/colorInteractiveNormal" style="@style/MessageMenu.Row"/>
             <TextView android:id="@+id/dialog_chat_actions_view_raw" android:visibility="gone" android:text="@string/developer_view_raw" app:drawableStartCompat="@drawable/ic_view_raw_24dp" app:drawableTint="?attr/colorInteractiveNormal" style="@style/MessageMenu.Row"/>
-            <TextView android:id="@+id/dialog_chat_actions_install_theme" android:visibility="gone" android:text="@string/microcord_themes_install" app:drawableStartCompat="@drawable/ic_theme_24dp" app:drawableTint="?attr/colorInteractiveNormal" style="@style/MessageMenu.Row"/>
+            <TextView android:id="@+id/dialog_chat_actions_install_theme" android:visibility="gone" android:text="@string/axycord_themes_install" app:drawableStartCompat="@drawable/ic_theme_24dp" app:drawableTint="?attr/colorInteractiveNormal" style="@style/MessageMenu.Row"/>
         </com.discord.widgets.chat.list.actions.MessageMenuGroup>
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

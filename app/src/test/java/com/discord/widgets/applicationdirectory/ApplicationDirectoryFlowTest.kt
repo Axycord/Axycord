@@ -250,7 +250,7 @@ class ApplicationDirectoryFlowTest {
     @Test
     fun discordOauthCallbackIsConsumedAsInternalNavigation() {
         val web = DeepLinkParser.parse("https://discord.com/oauth2/authorized?code=redacted")
-        val app = DeepLinkParser.parse("manticord://action/oauth2/callback?code=redacted")
+        val app = DeepLinkParser.parse("axycord://action/oauth2/callback?code=redacted")
 
         assertTrue((web as LinkParseResult.Internal).route is DeepLinkRoute.OAuthCallback)
         assertTrue((app as LinkParseResult.Internal).route is DeepLinkRoute.OAuthCallback)

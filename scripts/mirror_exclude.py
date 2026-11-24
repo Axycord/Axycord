@@ -32,7 +32,8 @@ FIXED = [
     ]),
     ("Discord's Firebase client config, and the APK signing key: with it anyone could sign an update", [
         "app/google-services.json",
-        "app/manticord-dev.keystore",
+        "app/axycord-dev.keystore",
+        "app/manticord-dev.keystore",  # Exclude the historical signing key when filtering history.
     ]),
     ("Compiled Discord drawables used as test fixtures", [
         "app/src/test/resources/fixtures/theme/",

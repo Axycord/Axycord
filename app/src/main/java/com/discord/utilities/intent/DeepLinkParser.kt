@@ -28,7 +28,7 @@ object DeepLinkParser {
             return if (ExternalUriPolicy.isAllowed(uri)) LinkParseResult.External(uri.toASCIIString())
             else LinkParseResult.Unsupported(LinkParseResult.Reason.UNSUPPORTED_HOST)
         }
-        val appScheme = scheme == "discord" || scheme == "manticord"
+        val appScheme = scheme == "discord" || scheme == "axycord"
         if (scheme != "https" && !appScheme) {
             return LinkParseResult.Unsupported(LinkParseResult.Reason.UNSAFE_SCHEME)
         }

@@ -29,9 +29,9 @@ import com.discord.views.user.UserAvatarPresenceView
 import com.discord.views.user.UserAvatarPresenceViewController
 import com.discord.widgets.tabs.NavigationTab
 import com.discord.widgets.user.profile.UserProfileHeaderViewModel
-import dev.mantikafasi.manticord.plugins.api.PluginRegistration
-import dev.mantikafasi.manticord.plugins.api.PluginMessagePlacement
-import dev.mantikafasi.manticord.plugins.api.pluginBottomTabContext
+import mmaarij.axycord.plugins.api.PluginRegistration
+import mmaarij.axycord.plugins.api.PluginMessagePlacement
+import mmaarij.axycord.plugins.api.pluginBottomTabContext
 
 class WidgetSettingsPluginSurfaceCustomization :
     AppFragment(R.layout.widget_settings_plugin_surface_customization) {

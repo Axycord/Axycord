@@ -130,7 +130,7 @@ class WidgetSettingsGifting : AppFragment(R.layout.widget_settings_gifting) {
         ).map { id -> view.findViewById<GiftSelectView>(id) }
         premiumGifts.zip(views).forEach { (sku, giftView: GiftSelectView) ->
             sku.skuDetails = details[sku.paymentGatewaySkuId]
-            giftView.configure(sku) { /* Billing manager intentionally absent until Manticord owns products. */ }
+            giftView.configure(sku) { /* Billing manager intentionally absent until Axycord owns products. */ }
         }
     }
 

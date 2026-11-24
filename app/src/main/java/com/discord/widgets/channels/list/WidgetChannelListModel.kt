@@ -1228,7 +1228,7 @@ data class WidgetChannelListModel(
                     add(
                         ChannelListItemHeader(
                             id = SUGGESTED_CHANNELS_HEADER_ID,
-                            textResId = R.string.manticord_channel_list_suggested,
+                            textResId = R.string.axycord_channel_list_suggested,
                             ableToManageChannel = false,
                             selectedGuildId = selectedGuildId,
                         ),

@@ -31,7 +31,7 @@ import kotlin.math.roundToInt
  * The image is a file picked here (copied into the app) or a link, downloaded when the theme is
  * applied. The preview approximates the darkening and the blur; the real ones are baked in once.
  */
-class WidgetSettingsThemeBackground : ThemeEditorPage(R.layout.widget_settings_theme_background, R.string.microcord_theme_background) {
+class WidgetSettingsThemeBackground : ThemeEditorPage(R.layout.widget_settings_theme_background, R.string.axycord_theme_background) {
 
     private var _binding: WidgetSettingsThemeBackgroundBinding? = null
     private val binding get() = requireNotNull(_binding)
@@ -59,15 +59,15 @@ class WidgetSettingsThemeBackground : ThemeEditorPage(R.layout.widget_settings_t
         binding.themeBackgroundLink.setOnEditorActionListener { field, action, _ ->
             if (action != EditorInfo.IME_ACTION_DONE) return@setOnEditorActionListener false
             val link = field.text?.toString()?.trim().orEmpty()
-            if (link.startsWith(HTTPS)) setImage(link) else binding.themeBackgroundLinkWrap.error = getString(R.string.microcord_theme_background_link)
+            if (link.startsWith(HTTPS)) setImage(link) else binding.themeBackgroundLinkWrap.error = getString(R.string.axycord_theme_background_link)
             true
         }
         binding.themeBackgroundDim.setOnSeekBarChangeListener(seekListener(
-            onChange = { binding.themeBackgroundDimLabel.text = getString(R.string.microcord_theme_background_dim, percent(it)); preview(dim = it) },
+            onChange = { binding.themeBackgroundDimLabel.text = getString(R.string.axycord_theme_background_dim, percent(it)); preview(dim = it) },
             onDone = { value -> theme.background?.let { save(theme.copy(background = it.copy(overlayAlpha = value))) } },
         ))
         binding.themeBackgroundBlur.setOnSeekBarChangeListener(seekListener(
-            onChange = { binding.themeBackgroundBlurLabel.text = getString(R.string.microcord_theme_background_blur, it); preview(blur = it) },
+            onChange = { binding.themeBackgroundBlurLabel.text = getString(R.string.axycord_theme_background_blur, it); preview(blur = it) },
             onDone = { value -> theme.background?.let { save(theme.copy(background = it.copy(blurRadius = value.toFloat()))) } },
         ))
         modes = mapOf(
@@ -103,8 +103,8 @@ class WidgetSettingsThemeBackground : ThemeEditorPage(R.layout.widget_settings_t
         val blur = background?.blurRadius?.roundToInt() ?: 0
         binding.themeBackgroundDim.progress = dim
         binding.themeBackgroundBlur.progress = blur
-        binding.themeBackgroundDimLabel.text = getString(R.string.microcord_theme_background_dim, percent(dim))
-        binding.themeBackgroundBlurLabel.text = getString(R.string.microcord_theme_background_blur, blur)
+        binding.themeBackgroundDimLabel.text = getString(R.string.axycord_theme_background_dim, percent(dim))
+        binding.themeBackgroundBlurLabel.text = getString(R.string.axycord_theme_background_blur, blur)
         modeRadios.setChecked(modes.getValue(theme.transparency))
         binding.themeBackgroundSeeThrough.isChecked = isSeeThrough()
         loadImage(background?.url)

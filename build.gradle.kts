@@ -9,7 +9,7 @@ plugins {
 
 val pluginSdkJar = tasks.register<Jar>("pluginSdkJar") {
     dependsOn(":app:bundleDebugClassesToCompileJar", ":app:processDebugResources", ":plugin-api:bundleLibCompileToJarDebug")
-    archiveBaseName.set("manticord-plugin-api")
+    archiveBaseName.set("axycord-plugin-api")
     archiveVersion.set("1.0.6")
     destinationDirectory.set(layout.buildDirectory.dir("plugin-sdk"))
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
@@ -21,7 +21,7 @@ val pluginSdkJar = tasks.register<Jar>("pluginSdkJar") {
 publishing {
     publications {
         create<MavenPublication>("pluginSdk") {
-            groupId = "dev.mantikafasi.manticord"
+            groupId = "mmaarij.axycord"
             artifactId = "plugin-api"
             version = "1.0.6"
             artifact(pluginSdkJar)
@@ -40,16 +40,6 @@ publishing {
         maven {
             name = "Public"
             url = uri(layout.buildDirectory.dir("public-maven"))
-        }
-        maven {
-            name = "GitHubEnterprise"
-            url = uri("https://maven.git.hoodnet.work/microcord/microcord")
-            credentials {
-                username = providers.environmentVariable("GITHUB_ACTOR").orNull
-                    ?: providers.gradleProperty("gpr.user").orNull
-                password = providers.environmentVariable("GITHUB_TOKEN").orNull
-                    ?: providers.gradleProperty("gpr.key").orNull
-            }
         }
     }
 }

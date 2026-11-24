@@ -10,7 +10,7 @@ import android.os.Looper
 import androidx.core.view.isVisible
 import com.discord.databinding.WidgetClientSettingsRecoveryBinding
 import com.discord.utilities.cache.SharedPreferencesProvider
-import com.discord.utilities.feature.ManticordSettingsBackup
+import com.discord.utilities.feature.AxycordSettingsBackup
 import com.discord.utilities.persister.Persister
 import com.discord.utilities.time.ClockFactory
 import rx.Observable
@@ -37,7 +37,7 @@ class ClientSettingsRestoreActivity : Activity() {
         val app = applicationContext
         Thread({
             val mayStart = runCatching {
-                ManticordSettingsBackup.withRestoreLock(app) {
+                AxycordSettingsBackup.withRestoreLock(app) {
                     val manager = app.getSystemService(ACTIVITY_SERVICE) as ActivityManager
                     manager.runningAppProcesses.orEmpty().filter {
                         it.uid == Process.myUid() && it.pid != Process.myPid() &&
@@ -46,9 +46,9 @@ class ClientSettingsRestoreActivity : Activity() {
                     SharedPreferencesProvider.init(app)
                     ClockFactory.init()
                     Persister.init(app, ClockFactory.get(), Observable.never())
-                    val restored = ManticordSettingsBackup.restorePending(app)
+                    val restored = AxycordSettingsBackup.restorePending(app)
                     SharedPreferencesProvider.getPrefsSessionDurable().edit()
-                        .putBoolean(ManticordSettingsBackup.RESTORE_RESULT, restored).commit()
+                        .putBoolean(AxycordSettingsBackup.RESTORE_RESULT, restored).commit()
                 }
             }.isSuccess
             Handler(Looper.getMainLooper()).post {

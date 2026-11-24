@@ -1,203 +1,54 @@
-# Manticord Release Downloads
+# Axycord release worker
 
-Cloudflare Worker exposing published, non-prerelease `build-N` releases' APKs (the universal
-`app-release.apk` and the per-architecture `app-<abi>-release.apk` splits) and validated build metadata from `git.hoodnet.work/firecord/microcord`. The repository
-and other assets remain private. Selected APKs, bounded published release notes and commit titles
-between the installed and published build SHAs are intentionally public. Keep credentials and
-private information out of release notes and commit titles. Draft/prerelease notes, author data,
-commit message bodies, patches, files and upstream error payloads are never exposed.
+Maintained with Axycord by mmaarij. The Android app reads GitHub Releases directly.
+This optional worker exposes the older `latest.json` feed and pinned download
+routes for installations that need that interface.
 
-Primary address: https://microcord.mantikafasi.dev
+## Source and deployment
 
-Fallback address: https://manticord-updates.mantikafasi.workers.dev
+Release metadata comes from `https://api.github.com/repos/Axycord/Axycord`.
+Binary redirects are restricted to `https://release-assets.githubusercontent.com`.
+The app package is `mmaarij.axycord`.
 
-## Credentials
+The worker's deployment name is `axycord-updates`. No Cloudflare account ID or
+custom domain is committed. Select your own account when deploying, then supply
+your own domain if a custom address is needed.
 
-Create a fine-grained token on `git.hoodnet.work`, scoped to `firecord/microcord` with
-repository Contents read-only permission. From the repository root:
+Set the `GITHUB_TOKEN` Worker secret to a token with read access to the release
+repository. Credentials are used only for GitHub API requests. They are excluded
+from public responses and redirected downloads.
 
-```sh
-wrangler login
-wrangler secret put GITHUB_TOKEN --config tools/update-worker/wrangler.toml
+## Release assets
+
+This legacy feed uses published stable tags in the form `build-N`.
+Attach `app-release.apk` and `update-manifest.json` from the same build.
+Optional split APKs use `app-<abi>-release.apk`, where ABI is `arm64-v8a`,
+`armeabi-v7a`, `x86_64` or `x86`.
+
+The manifest contains `commitSha`, `commitTimestamp`, `versionCode`,
+`versionName`, `packageName`, `sha256` and `size`.
+Its package must be `mmaarij.axycord`, and its size and digest must match the
+universal APK. Baseline profiles use `app-release-api28.dm` and
+`app-release-api31.dm`, with the ABI inserted before `-release` for splits.
+
+Axycord's direct GitHub updater also accepts ordinary tags such as `v1.0` and
+the generated universal filename `app-universal-release.apk`.
+See the root README for current app release instructions.
+
+## Routes
+
+- `GET /latest.json` returns the latest validated release metadata.
+- `GET /latest.apk` and `/latest-<abi>.apk` redirect to pinned release downloads.
+- `GET /releases/build-N.apk` and `/releases/build-N-<abi>.apk` serve APK downloads.
+- `GET /releases/build-N/changes.json?from=<installed-sha>` returns bounded notes and commit history.
+- The corresponding `-api28.dm` and `-api31.dm` routes serve optional profiles.
+
+Latest-release metadata is cached for 60 seconds. Immutable APKs and profiles use
+digest-keyed edge caches. Missing or invalid manifests, packages, digests and
+redirect destinations fail validation. Downloads carry public headers only.
+
+## Verification
+
+```bash
+node --test tools/update-worker/worker.test.mjs
 ```
-
-Enter the token at Wrangler's prompt. Do not put it in source, Wrangler `vars`, chat,
-or the Android app. Local `.env*` and `.dev.vars*` files are ignored. The Worker returns
-503 until the secret is present. No GitHub login is required for users downloading APKs.
-
-## Endpoints
-
-- `GET /latest.json`: `release`, `publishedAt`, `apkUrl`, `sha256`, `size`, plus `commitSha`,
-  `commitTimestamp`, `versionCode`, `versionName`, `packageName` when a valid manifest is attached.
-  When the release has per-architecture APKs, `apks` maps each ABI (`arm64-v8a`, `armeabi-v7a`,
-  `x86_64`, `x86`) to its own `apkUrl`, `sha256` and `size`. The app downloads the first one its
-  `Build.SUPPORTED_ABIS` lists, and the universal APK otherwise; older clients ignore `apks`.
-  The universal APK and each `apks` entry may carry `dexMetadata`: that APK's baseline profiles as
-  `{url, sha256, size, minSdk, maxSdk}` (`maxSdk` absent when unbounded), one per API range AGP builds
-  (28-30 as `api28`, 31+ as `api31`). On Android 9+ the app installs the matching one as `base.dm`
-  beside the APK so ART compiles the update with it; without one it installs the APK alone. Older
-  clients ignore the field, and a profile asset with a broken digest is left out rather than failing.
-- `GET /latest.apk`: redirects to the latest published release's version-pinned APK URL.
-  The redirect is not cached; release selection uses the same 60-second metadata cache as
-  `latest.json`. Share https://microcord.mantikafasi.dev/latest.apk as the stable download link.
-- `GET /latest-arm64-v8a.apk` (and the other ABIs): redirects to the latest release's APK for that
-  architecture, or to its universal APK when the release predates the split.
-- `GET /releases/build-163.apk`: that exact published release's universal APK, not whichever is latest.
-- `GET /releases/build-218-arm64-v8a.apk` (and the other ABIs): that release's APK for one architecture.
-- `GET /releases/build-218-api31.dm`, `GET /releases/build-218-arm64-v8a-api28.dm` (and the other
-  ABIs and ranges): a baseline profile for that APK, served through the same edge cache as APKs.
-- `GET /releases/build-166/changes.json?from=<installed SHA>`: notes and commit titles for that
-  exact published APK. Requires exactly one `from` parameter containing a full 40-hex installed
-  commit SHA (case-insensitive, returned lowercase). No repository, branch or other inputs.
-- All routes support HEAD. Unknown routes, extra query parameters and other methods are rejected.
-
-The feed caches only sanitized release metadata and bounded notes for 60 seconds (internal cache
-schema `v3`). Notes never enter `latest.json`, preserving the existing feed and its 16 KiB client
-limit. The cache never stores the raw release, raw manifest, credentials or media URLs. Downloads use fresh GitHub
-redirects restricted to the observed `https://media.git.hoodnet.work` origin, or stream a
-binary 200/206 response. Redirects are not cached; upstream credentials/cookies are never
-forwarded to the user or to the download host. Single byte ranges are forwarded for resuming.
-No APK buffering, storage bucket, database or custom URL-signing service is needed.
-
-APK bytes are kept in each Cloudflare data center's edge cache, keyed by tag, architecture and
-asset digest (internal schema `apk-cache/v1`, `immutable`). The first GET in a data center streams
-the whole asset from GHES (following the media redirect without credentials) straight into the
-cache, then answers from it; later downloads there, including resumed ranges, never reach GHES.
-A body whose status, type or length does not match the release asset is not cached. HEAD misses,
-failed fills and the `workers.dev` fallback (which has no edge cache) use the redirect/stream
-path above. The cache is per data center and may be evicted; each data center refills once.
-
-`release` is a GitHub tag, **not Android versionCode**. Historical `build-163` has no manifest:
-its feed retains the original five fields and its versioned APK remains downloadable. All five
-new build fields are absent, not fabricated from `target_commitish`, publication time or tag
-number. The client must report a legacy feed and not auto-prompt in that case. No historical
-release needs to be edited. An attached but invalid or unavailable manifest fails closed (503),
-rather than silently becoming a legacy feed.
-
-## Changelog Response
-
-| Field | Contract |
-| --- | --- |
-| `release` | Validated requested `build-N` release tag |
-| `fromSha` | Full installed SHA, lowercase |
-| `toSha` | Validated manifest `commitSha`, lowercase; `null` for legacy releases |
-| `notes` | Release `body`, at most 4,000 UTF-16 code units; empty when absent |
-| `notesTruncated` | Whether the release body exceeded that limit |
-| `commits` | At most 100 `{sha, title}` objects; full lowercase SHA and first-line-only title, at most 200 UTF-16 code units |
-| `comparison` | `compared`, `identical` or `unavailable` |
-| `totalCommits` | Validated comparison total, `0` for identical, `null` when unavailable |
-| `commitsTruncated` | Whether more commits exist than returned (pagination or response byte cap) |
-
-The Worker calls only the fixed repository's GitHub compare API using
-`from...manifest.commitSha?per_page=100&page=1`, never the mutable `target_commitish` or a
-previous release. Commit titles are exposed for `status: ahead` or `diverged`, with
-`base_commit.sha` equal to the installed SHA and a valid common-ancestor SHA. Ahead comparisons
-require that ancestor to equal the installed SHA; diverged comparisons require a distinct ancestor.
-This supports rebases: the list contains commits reachable from the target but not the installed
-build. Patch-equivalent rebased commits may appear again because their SHAs changed; this is not
-patch-level deduplication. Identical SHAs skip comparison entirely and return an empty list/zero
-total. Legacy releases still expose notes without fabricated SHAs.
-
-Unknown/404 bases, behind history, malformed comparisons, throttling, server errors,
-timeouts and redirects yield `unavailable`, an empty list, null total and `commitsTruncated: false`.
-They do not block notes, `latest.json` or APK downloads. Compare responses have a 10-second timeout
-and a streamed 4 MiB limit before parsing; diff/file data is discarded. No compare redirect is
-followed. Responses remain within the app's 128 KiB limit, trimming the commit list and setting
-`commitsTruncated` if JSON escaping expands the bounded strings past that limit.
-
-Only sanitized comparison results are cached for 10 minutes, keyed by the full installed and
-immutable target SHAs on the request's own origin (internal cache schema `v2`); unavailable
-results use 60 seconds. Release notes remain in the separate 60-second metadata cache so owner
-edits refresh independently. No KV, database or new dependency is used.
-
-## Build Identity
-
-Both local and CI builds generate these constants in `com.discord.BuildConfig`:
-
-| Constant | Type | Source |
-| --- | --- | --- |
-| `UPDATE_COMMIT_SHA` | String | Full 40-hex git HEAD SHA, lowercase; `MANTICORD_COMMIT_SHA` must be full and match HEAD if set |
-| `UPDATE_COMMIT_TIMESTAMP` | long (Kotlin Long) | That commit's committer time, `git show --format=%ct`, in epoch seconds |
-| `UPDATE_BUILD_ID` | String | Existing `MANTICORD_BUILD_ID`, or `local` |
-
-Android `versionCode = UPDATE_COMMIT_TIMESTAMP - 1577836800` (2020-01-01T00:00:00Z).
-Configuration fails unless the result is in `1..2147483647`; no fallback to versionCode 1,
-CI run number or the build machine's clock. `versionName` remains `1.0`. Git and the checked-out
-commit must be available even when the SHA environment variable is set. The SHA identifies the
-checkout, not uncommitted edits; the APK digest identifies the exact built bytes.
-
-This is monotonic for normal trunk commits with increasing committer timestamps, not a promise
-for backdated history. Same-second/different-commit releases can share a versionCode. The client
-allows a nondecreasing package version only when the source timestamp is strictly newer (and
-the full SHA differs); equal timestamps do not prove ordering and must not auto-prompt. Release
-publication time and build ID are display information, not source ordering. Clients must verify
-the downloaded SHA-256, size, package/version identity and use Android's signature-checked
-installer. The current signing key/configuration is unchanged.
-
-## Release Manifest
-
-From the repository root, the release pipeline runs:
-
-```sh
-chmod +x gradlew
-bash scripts/build.sh :app:assembleRelease :app:generateReleaseUpdateManifest
-```
-
-Task `:app:generateReleaseUpdateManifest` depends on release assembly and consumes AGP's APK
-artifact/output metadata. Release builds produce `app-universal-release.apk` plus one APK per architecture; the task requires
-all five, checks the package and version, and streams SHA-256 over the universal APK without
-loading it into memory. The workflow publishes the universal APK as `app-release.apk` beside the
-splits. The splits share the universal APK's build identity, so the manifest describes only the
-universal APK; the Worker takes the splits' digests and sizes from GitHub's release assets.
-The workflow also publishes each APK's baseline profiles from AGP's `baselineProfiles/` output as
-`app[-<abi>]-release-api28.dm` and `-api31.dm`, failing if AGP's API ranges stop matching the Worker's;
-their digests likewise come from the release assets.
-Output: `app/build/outputs/update/release/update-manifest.json`.
-
-The UTF-8 JSON object contains:
-
-| Field | Contract |
-| --- | --- |
-| `commitSha` | Full 40-hex build commit SHA, not a branch name or abbreviated hash |
-| `commitTimestamp` | Integer committer epoch seconds |
-| `versionCode` | Positive Android int, exactly `commitTimestamp - 1577836800` |
-| `versionName` | Nonblank string from the APK output metadata |
-| `sha256` | 64-hex digest of the final signed APK |
-| `size` | Positive APK byte count |
-| `packageName` | Exactly `dev.mantikafasi.manticord` |
-
-CI keeps pushes as debug artifact uploads only. Manual `workflow_dispatch` builds release APKs
-and publishes the manifest beside `app-release.apk`, failing if either file is missing. The
-release's `target_commitish` is pinned to `github.sha` to avoid branch movement during a build.
-There are no schedules or automatic releases. No GitHub credential is embedded in either file.
-Manual runs accept an optional string `release_notes` input, passed directly to the release
-action's `body`, never through a shell. These are public notes, not private build instructions.
-The owner can alternatively edit the release body on GitHub; the Worker exposes its bounded text
-after the metadata cache expires.
-
-The Worker fetches only the exact `update-manifest.json` asset ID listed on the same release as
-the APK. It permits a direct 200 response or one 302 to the observed media origin, with manual
-redirect handling and no auth/cookies on the media fetch. Subsequent redirects fail closed. Both
-the declared asset size and streamed response are bounded to 16 KiB; body length must match the
-manifest asset size. Parsed APK hash/size must match GitHub's APK asset digest/size, and all build
-fields must satisfy the table above. Additional manifest fields are ignored, not exposed.
-
-## Verify And Deploy
-
-From this directory:
-
-```sh
-node --test worker.test.mjs
-wrangler deploy --dry-run
-wrangler deploy
-```
-
-The Wrangler config pins the deployment account and the user-approved
-`microcord.mantikafasi.dev` Workers Custom Domain. Confirm any additional hostname before
-changing routes. Keep these public endpoints free of browser-only access challenges.
-
-The release API's digest must be present. Drafts, prereleases, missing APKs, missing digests,
-unexpected redirect hosts and upstream errors fail closed. Changes to Enterprise download
-hosting require verifying the new origin before changing the allowlist. Public request abuse
-can still consume GitHub API quota; configure Cloudflare rate limiting if needed rather than
-building an in-memory limiter. Signed redirect URLs are temporary bearer URLs: don't log them.

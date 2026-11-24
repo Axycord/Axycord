@@ -10,7 +10,7 @@ class ChannelMembersListViewHolderRoleHeader(private val binding: WidgetChannelM
     RecyclerView.ViewHolder(binding.root) {
     fun bind(data: ChannelMembersListAdapter.Item.RoleHeader) {
         val text = binding.root.findViewById<android.widget.TextView>(R.id.channel_members_list_item_header_text)
-        text.text = binding.root.context.getString(R.string.manticord_member_group_count, data.roleName, data.memberCount)
+        text.text = binding.root.context.getString(R.string.axycord_member_group_count, data.roleName, data.memberCount)
         ViewCompat.setAccessibilityHeading(text, true)
         binding.root.findViewById<RoleIconView>(R.id.channel_members_list_item_header_role_icon)
             .setRole(data.roleId, data.guildId)

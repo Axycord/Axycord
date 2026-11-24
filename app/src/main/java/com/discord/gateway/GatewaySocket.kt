@@ -697,7 +697,7 @@ class GatewaySocket(
          * carry guild-event and onboarding read states; without it they never arrive.
          */
         private const val MAX_VERBOSE_LOG_BYTES = 256 * 1024
-        const val TAG = "ManticordGateway"
+        const val TAG = "AxycordGateway"
         const val HELLO_TIMEOUT_MS = 20_000L
         const val ACTIVE_HEARTBEAT_ACK_TIMEOUT_MS = 5_000L
         const val RESUME_WINDOW_MS = 180_000L

@@ -20,8 +20,8 @@ import com.discord.utilities.feature.PluginSurfaceCustomization
 import com.discord.utilities.feature.PluginSurfaceCustomization.Surface
 import com.discord.views.user.UserAvatarPresenceView
 import com.discord.views.user.UserAvatarPresenceViewController
-import dev.mantikafasi.manticord.plugins.api.PluginBottomTabContext
-import dev.mantikafasi.manticord.plugins.api.pluginBottomTabContext
+import mmaarij.axycord.plugins.api.PluginBottomTabContext
+import mmaarij.axycord.plugins.api.pluginBottomTabContext
 
 class TabsHostBottomNavigationView @JvmOverloads constructor(
     context: Context,

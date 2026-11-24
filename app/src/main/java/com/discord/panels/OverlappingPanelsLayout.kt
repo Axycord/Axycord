@@ -97,7 +97,7 @@ open class OverlappingPanelsLayout @JvmOverloads constructor(
     private var nonFullScreenSidePanelWidth: Int
 
     /**
-     * Manticord divergence: a wide window (a tablet, or a resizable WSA/desktop window) docks the
+     * Axycord divergence: a wide window (a tablet, or a resizable WSA/desktop window) docks the
      * side panels beside the chat, like the desktop client, instead of sliding them over it. The
      * start panel is always shown, the end panel (members) is toggled by [openEndPanel], and
      * there is nothing to swipe. Read once: the main activity is recreated when its size changes.

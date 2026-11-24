@@ -3,14 +3,14 @@ plugins {
     `maven-publish`
 }
 
-group = "dev.mantikafasi.manticord"
+group = "mmaarij.axycord"
 version = "1.0.0"
 
 gradlePlugin {
     plugins {
-        create("manticordPlugin") {
-            id = "dev.mantikafasi.manticord.plugin"
-            implementationClass = "dev.mantikafasi.manticord.gradle.ManticordPluginGradlePlugin"
+        create("axycordPlugin") {
+            id = "mmaarij.axycord.plugin"
+            implementationClass = "mmaarij.axycord.gradle.AxycordPluginGradlePlugin"
         }
     }
 }
@@ -25,16 +25,6 @@ publishing {
         maven {
             name = "Public"
             url = uri(rootProject.layout.buildDirectory.dir("public-maven"))
-        }
-        maven {
-            name = "GitHubEnterprise"
-            url = uri("https://maven.git.hoodnet.work/microcord/microcord")
-            credentials {
-                username = providers.environmentVariable("GITHUB_ACTOR").orNull
-                    ?: providers.gradleProperty("gpr.user").orNull
-                password = providers.environmentVariable("GITHUB_TOKEN").orNull
-                    ?: providers.gradleProperty("gpr.key").orNull
-            }
         }
     }
 }

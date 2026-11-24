@@ -177,7 +177,7 @@ object EmbedResourceUtils {
      * not have; the display metrics of the passed context are equivalent for a full-width activity
      * and differ only in multi-window, where the metrics are the more accurate of the two.
      *
-     * Manticord divergence: also capped at [MAX_MEDIA_WIDTH_DP], the desktop client's limit, so a
+     * Axycord divergence: also capped at [MAX_MEDIA_WIDTH_DP], the desktop client's limit, so a
      * tablet or a wide window does not blow media up to the whole width. A portrait phone is
      * narrower than that and is unaffected.
      */

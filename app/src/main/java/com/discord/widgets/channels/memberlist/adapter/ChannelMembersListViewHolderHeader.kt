@@ -14,7 +14,7 @@ class ChannelMembersListViewHolderHeader(private val binding: WidgetChannelMembe
             ChannelMembersListAdapter.Item.Header.Type.OFFLINE -> R.string.status_offline
             ChannelMembersListAdapter.Item.Header.Type.GROUP_DM -> R.string.members
         })
-        text.text = binding.root.context.getString(R.string.manticord_member_group_count, label, data.memberCount)
+        text.text = binding.root.context.getString(R.string.axycord_member_group_count, label, data.memberCount)
         binding.root.findViewById<android.view.View>(R.id.channel_members_list_item_header_role_icon).visibility = android.view.View.GONE
         ViewCompat.setAccessibilityHeading(text, true)
     }

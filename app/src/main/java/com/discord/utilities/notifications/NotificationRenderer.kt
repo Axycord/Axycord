@@ -52,7 +52,7 @@ class NotificationRenderer(private val cache: NotificationCache = NotificationCa
             .setDefaults(notificationDefaults(settings))
             .setCategory(if (data.kind == NotificationKind.SOCIAL) NotificationCompat.CATEGORY_SOCIAL else NotificationCompat.CATEGORY_MESSAGE)
             .setVisibility(if (private) NotificationCompat.VISIBILITY_PRIVATE else NotificationCompat.VISIBILITY_PUBLIC)
-            .setGroup(if (data.channelId > 0L) "manticord.channel.${data.channelId}" else "manticord.general")
+            .setGroup(if (data.channelId > 0L) "axycord.channel.${data.channelId}" else "axycord.general")
             .setNumber(snapshot.messages.size)
             .setContentIntent(contentIntent(context, data))
             .setDeleteIntent(actionIntent(context, data, NotificationActionReceiver.ACTION_DELETE))
@@ -71,7 +71,7 @@ class NotificationRenderer(private val cache: NotificationCache = NotificationCa
         if (private) builder.setPublicVersion(
             NotificationCompat.Builder(context, channelId)
                 .setSmallIcon(notificationIcon(data.kind))
-                .setContentTitle(context.getString(R.string.manticord_app_name))
+                .setContentTitle(context.getString(R.string.axycord_app_name))
                 // `new_messages` is the unread divider's template ("{count} since {timestamp}"),
                 // not a standalone label.
                 .setContentText(context.getString(R.string.new_messages_divider))
@@ -321,7 +321,7 @@ class NotificationRenderer(private val cache: NotificationCache = NotificationCa
         val uri = data.deepLink?.takeIf(String::isNotBlank) ?: run {
             val guild = data.guildId?.toString() ?: "@me"
             val message = data.messageId?.let { "/$it" }.orEmpty()
-            "manticord://app/channels/$guild/${data.channelId}$message"
+            "axycord://app/channels/$guild/${data.channelId}$message"
         }
         val intent = Intent(
             Intent.ACTION_VIEW,
@@ -374,7 +374,7 @@ class NotificationRenderer(private val cache: NotificationCache = NotificationCa
         NotificationCache.notificationId(data.channelId) * 31 + salt
 
     private fun actionUri(action: String, channelId: Long) =
-        Uri.parse("manticord://notification/${action.substringAfterLast('.')}/$channelId")
+        Uri.parse("axycord://notification/${action.substringAfterLast('.')}/$channelId")
 
     private fun immutableFlags() = PendingIntent.FLAG_UPDATE_CURRENT or
         if (Build.VERSION.SDK_INT >= 23) PendingIntent.FLAG_IMMUTABLE else 0
@@ -420,9 +420,9 @@ class NotificationRenderer(private val cache: NotificationCache = NotificationCa
         const val CHANNEL_GENERAL = NotificationClient.NOTIF_GENERAL
 
         /** The account a notification was addressed to, so a tap can reach it. */
-        const val EXTRA_RECEIVING_USER_ID = "manticord.receivingUserId"
+        const val EXTRA_RECEIVING_USER_ID = "axycord.receivingUserId"
 
-        private const val EXTRA_LATEST_MESSAGE_ID = "manticord.latestMessageId"
+        private const val EXTRA_LATEST_MESSAGE_ID = "axycord.latestMessageId"
         private const val LIGHT_PERIOD_MS = 1_500
         private const val REPLY_STATUS_TIMEOUT_MS = 3_000L
 

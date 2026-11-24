@@ -3,9 +3,9 @@ package com.discord.plugins
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import dev.mantikafasi.manticord.plugins.api.PluginMessageContext
-import dev.mantikafasi.manticord.plugins.api.PluginMessagePlacement
-import dev.mantikafasi.manticord.plugins.api.PluginMessageViews
+import mmaarij.axycord.plugins.api.PluginMessageContext
+import mmaarij.axycord.plugins.api.PluginMessagePlacement
+import mmaarij.axycord.plugins.api.PluginMessageViews
 import com.discord.utilities.feature.PluginSurfaceCustomization
 import com.discord.utilities.feature.PluginSurfaceCustomization.Surface
 

@@ -1,6 +1,6 @@
 # Discord 333.5 Voice Runtime
 
-Binary-only packaging for Manticord's modern Discord voice runtime. It contains
+Binary-only packaging for Axycord's modern Discord voice runtime. It contains
 the public WebRTC Android AAR and no Aliucord APIs, source, or runtime dependency.
 
 ## Provenance

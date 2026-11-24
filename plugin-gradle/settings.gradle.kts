@@ -6,7 +6,7 @@ pluginManagement {
     }
 }
 
-// Used only when plugin repositories include this build on its own; inside Microcord's build it is a
+// Used only when plugin repositories include this build on its own; inside Axycord's build it is a
 // subproject and gets the catalog from there.
 dependencyResolutionManagement {
     repositories {
@@ -18,4 +18,4 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "manticord-plugin-gradle"
+rootProject.name = "axycord-plugin-gradle"

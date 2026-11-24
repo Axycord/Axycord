@@ -18,7 +18,7 @@ import rx.Observable
 import rx.schedulers.Schedulers
 
 /**
- * The plugin index, published on github.com/microcord/plugins' `builds` branch and read through
+ * The plugin index, published on github.com/Axycord/Axycord-Plugins' `builds` branch and read through
  * jsDelivr, which GitHub's raw-file rate limits do not apply to. Official APK links are jsDelivr links
  * pinned to a commit; third-party ones may be any HTTPS link. Every APK is pinned by its SHA-256 and
  * signer, so the link itself is not trusted.
@@ -52,7 +52,7 @@ data class PluginIndex(val version: Int = 0, val plugins: List<Entry>? = null) {
     }
 
     companion object {
-        const val INDEX_URL = "https://cdn.jsdelivr.net/gh/microcord/plugins@builds/plugins.json"
+        const val INDEX_URL = "https://cdn.jsdelivr.net/gh/Axycord/Axycord-Plugins@builds/plugins.json"
         private const val MAX_INDEX_BYTES = 256L * 1024
         private const val MAX_APK_BYTES = 50L * 1024 * 1024
         private val PACKAGE = Regex("[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+")

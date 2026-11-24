@@ -647,7 +647,7 @@ class InputAutocomplete(
                     ),
                 )
             }
-            // A deliberate Manticord addition — 126.21 leaves typed URLs unstyled — so an
+            // A deliberate Axycord addition — 126.21 leaves typed URLs unstyled — so an
             // appended GIF link reads as a link. `Patterns.WEB_URL` is the platform matcher.
             val linkColor = ColorCompat.getThemedColor(editText, R.attr.colorTextLink)
             val urlMatcher = Patterns.WEB_URL.matcher(editable)

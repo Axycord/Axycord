@@ -45,7 +45,7 @@ import com.discord.widgets.guilds.invite.WidgetGuildInviteShare
 import com.discord.widgets.search.WidgetSearch
 import com.discord.widgets.user.calls.PrivateCallLauncher
 import com.discord.plugins.PluginUiRegistry
-import dev.mantikafasi.manticord.plugins.api.pluginChannelContext
+import mmaarij.axycord.plugins.api.pluginChannelContext
 import java.util.WeakHashMap
 
 object WidgetHomeHeaderManager {

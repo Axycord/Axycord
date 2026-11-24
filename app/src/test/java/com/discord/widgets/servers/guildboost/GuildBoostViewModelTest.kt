@@ -190,7 +190,7 @@ class GuildBoostViewModelTest {
     )
 
     private fun purchase(acknowledged: Boolean) = Purchase(
-        """{"packageName":"dev.mantikafasi.manticord","productId":"sku","purchaseToken":"token","purchaseState":0,"acknowledged":$acknowledged}""",
+        """{"packageName":"mmaarij.axycord","productId":"sku","purchaseToken":"token","purchaseState":0,"acknowledged":$acknowledged}""",
         "signature",
     )
 

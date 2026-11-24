@@ -32,7 +32,7 @@ internal object ThemeActions {
         val store = ThemeRuntime.store(context)
         val themes = ids.mapNotNull(store::read)
         if (themes.any { theme -> ThemeAssets.references(theme).any { ThemeAssets.local(context, it) == null } }) {
-            AppToast.show(context, R.string.microcord_themes_downloading)
+            AppToast.show(context, R.string.axycord_themes_downloading)
         }
         Observable.fromCallable {
             val failed = ThemeAssets.fetchMissing(context, themes).size
@@ -43,7 +43,7 @@ internal object ThemeActions {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 { failed ->
-                    if (failed > 0) AppToast.show(context, context.getString(R.string.microcord_themes_download_failed, failed))
+                    if (failed > 0) AppToast.show(context, context.getString(R.string.axycord_themes_download_failed, failed))
                     apply(fragment, ids)
                 },
                 { apply(fragment, ids) },
@@ -57,7 +57,7 @@ internal object ThemeActions {
     fun applyClientTheme(activity: AppActivity?, theme: ClientTheme): Boolean {
         if (activity == null) return false
         if (!ThemeRuntime.isSupported) {
-            AppToast.show(activity, R.string.microcord_themes_unsupported)
+            AppToast.show(activity, R.string.axycord_themes_unsupported)
             return false
         }
         val sync = StoreStream.getUsers().getMe().isPremiumTier2 && StoreStream.getUserSettingsSystem().getIsThemeSyncEnabled()
@@ -65,7 +65,7 @@ internal object ThemeActions {
         try {
             ThemeRuntime.setClientTheme(activity, picked)
         } catch (e: Exception) {
-            AppToast.show(activity, activity.getString(R.string.microcord_themes_apply_failed, e.message ?: e.javaClass.simpleName))
+            AppToast.show(activity, activity.getString(R.string.axycord_themes_apply_failed, e.message ?: e.javaClass.simpleName))
             return false
         }
         ThemeRuntime.store(activity).previewRestore = null
@@ -85,7 +85,7 @@ internal object ThemeActions {
         try {
             ThemeRuntime.setClientTheme(activity, theme.withSynced(false))
         } catch (e: Exception) {
-            AppToast.show(activity, activity.getString(R.string.microcord_themes_apply_failed, e.message ?: e.javaClass.simpleName))
+            AppToast.show(activity, activity.getString(R.string.axycord_themes_apply_failed, e.message ?: e.javaClass.simpleName))
             return
         }
         store.previewRestore = restore
@@ -107,11 +107,11 @@ internal object ThemeActions {
         try {
             ThemeRuntime.enable(context, ids)
         } catch (e: Exception) {
-            AppToast.show(context, context.getString(R.string.microcord_themes_apply_failed, e.message ?: e.javaClass.simpleName))
+            AppToast.show(context, context.getString(R.string.axycord_themes_apply_failed, e.message ?: e.javaClass.simpleName))
             return
         }
         val skipped = ThemeRuntime.lastWarnings.size
-        if (skipped > 0) AppToast.show(context, context.getString(R.string.microcord_themes_skipped, skipped))
+        if (skipped > 0) AppToast.show(context, context.getString(R.string.axycord_themes_skipped, skipped))
         fragment.appActivity?.takeIf { fragment.isResumed }?.let(AppScreenRouter::recreate)
     }
 }

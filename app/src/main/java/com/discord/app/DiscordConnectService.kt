@@ -104,7 +104,7 @@ class DiscordConnectService : Service() {
         private const val CONNECTION_TIMEOUT_MILLIS = 10_000L
 
         fun launch(context: Context, channelId: Long? = null) {
-            val uri = Uri.parse("manticord://app/connect${channelId?.let { "/$it" }.orEmpty()}")
+            val uri = Uri.parse("axycord://app/connect${channelId?.let { "/$it" }.orEmpty()}")
             val intent = Intent(context, DiscordConnectService::class.java).setData(uri)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) context.startForegroundService(intent)
             else context.startService(intent)

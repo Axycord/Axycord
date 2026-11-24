@@ -12,12 +12,12 @@ No framework hooks are involved; everything goes through the public `ResourcesLo
 2. **Layer.** Several themes can be enabled; `ThemeDefinition.layer` merges them in order, later ones winning key by key, as Aliucord does. Material You references (`system_accent1_500`, …) are resolved against the device here.
 3. **Resolve.** `ThemeResolver` turns the theme into theme attributes, palette colors and drawable tints, all keyed by name. `ThemeLinks` then carries each overridden attribute to every attribute with the same color on the base theme (the tab bar, message box and tertiary background share one on Ash). Pure white, pure black and transparent are not linked.
 4. **Build the table.** `ThemeTableBuilder` writes a small `resources.arsc` (`ArscWriter`) plus the files it points at:
-   - Attributes become the items of `ThemeOverlay.Microcord.Runtime`, a placeholder style in `res/values/microcord_theme.xml`. The table replaces the style wholesale.
+   - Attributes become the items of `ThemeOverlay.Axycord.Runtime`, a placeholder style in `res/values/axycord_theme.xml`. The table replaces the style wholesale.
    - Colors become plain color entries that replace the APK's.
    - **Tinted drawables** point at a copy of the APK's compiled XML with `android:tint` added (`BinaryXml`). PNGs get a `<bitmap>` wrapper around a copy of the image, which is added as a new entry so the wrapper does not load itself. Selectors and layer lists tint the drawables they reference through new tinted entries.
    - **Fonts and sounds** point at copies of the theme's files.
    - A sentinel color is always written. Reading it back proves the device honoured the table.
-5. **Load.** The table is checked (`ArscReader`) and served through `ResourcesProvider.loadFromTable`. Its files are served by an `AssetsProvider` under `res/microcord/`.
+5. **Load.** The table is checked (`ArscReader`) and served through `ResourcesProvider.loadFromTable`. Its files are served by an `AssetsProvider` under `res/axycord/`.
 6. **Apply the overlay.** Every themed context layers the placeholder style over its base theme with `ThemeRuntime.applyOverlay`. That overlay beats every base layer, including literal hex values and Onyx's shared `@color/black`.
 
 Places that apply the overlay today:
@@ -39,7 +39,7 @@ Places that apply the overlay today:
 
 ## Background image
 
-`ThemeWallpaper` bakes the black scrim (`overlay_alpha`) and the blur into a JPEG when the table is built, as Aliucord's Themer does. Where it shows follows Themer's transparency modes (`microcord.transparency`):
+`ThemeWallpaper` bakes the black scrim (`overlay_alpha`) and the blur into a JPEG when the table is built, as Aliucord's Themer does. Where it shows follows Themer's transparency modes (`axycord.transparency`):
 
 | Mode | Shown behind |
 |---|---|
@@ -63,6 +63,8 @@ Discord's client themes live in `ClientTheme`: the 23 gradient presets and custo
 
 ## File format
 
+Exports use the `axycord` section. Imports also accept the legacy theme options section, with `axycord` taking precedence when both are present.
+
 Themes are stored as `filesDir/themes/<id>.json`; the enabled ids are in `filesDir/themes/active`, one per line. Downloaded and picked files are in `filesDir/themes/assets`. They live in files rather than preferences so they survive logout and account switches.
 
 The format is Aliucord's JSON plus two sections of our own:
@@ -74,7 +76,7 @@ The format is Aliucord's JSON plus two sections of our own:
 | `background` | `url`, `overlay_alpha` (0–255) and `blur_radius` (0–25), as in Aliucord. |
 | `fonts`, `raws` | Font (`*` for all) and sound name → `https://` link or `file://` path, as in Aliucord. |
 | `attrs` | Ours. Theme attribute name → color, exported as `#AARRGGBB`. Names prefixed `android:` refer to framework attributes. |
-| `microcord` | Ours. `formatVersion`, `base` (`dark`, `darker`, `midnight`, `light` or `materialYou`) and `transparency`. |
+| `axycord` | Ours. `formatVersion`, `base` (`dark`, `darker`, `midnight`, `light` or `materialYou`) and `transparency`. |
 | Unknown keys | Kept verbatim. |
 
 Aliucord's legacy flat format (`simple_accent_color`, `color_*`, `drawablecolor_*`, …) is converted on import. Themes can also be installed from a `.json` attachment through the message actions, and `manifest.updater` is checked when the Themes screen opens.

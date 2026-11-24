@@ -14,7 +14,7 @@ class DeepLinkParserTest {
         )
         assertEquals(DeepLinkRoute.Guild(10), internal("https://discord.com/channels/10"))
         assertEquals(DeepLinkRoute.Channel(10, 20, 30), internal("discord://app/channels/10/20/30"))
-        assertEquals(DeepLinkRoute.Channel(null, 20, null), internal("manticord://app/channels/@me/20"))
+        assertEquals(DeepLinkRoute.Channel(null, 20, null), internal("axycord://app/channels/@me/20"))
         assertEquals(DeepLinkRoute.DirectMessage(40), internal("https://discord.com/channels/@me/user/40"))
         assertEquals(DeepLinkRoute.User(50, "friend"), internal("https://discord.com/users/50?friend_token=friend"))
         assertEquals(DeepLinkRoute.Settings("account"), internal("https://discord.com/settings/account"))
@@ -45,7 +45,7 @@ class DeepLinkParserTest {
         )
         routes.forEach { (uri, route) -> assertEquals(uri, route, internal(uri)) }
         assertTrue(internal("discord://action/oauth2/authorize?client_id=1") is DeepLinkRoute.Authorization)
-        assertTrue(internal("https://discord.com/query/?type=server&serverName=Manticord") is DeepLinkRoute.Query)
+        assertTrue(internal("https://discord.com/query/?type=server&serverName=Axycord") is DeepLinkRoute.Query)
     }
 
     @Test

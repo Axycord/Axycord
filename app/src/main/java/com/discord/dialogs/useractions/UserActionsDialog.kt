@@ -28,8 +28,8 @@ import com.discord.widgets.chat.input.applauncher.WidgetContextCommandsSheet
 import com.discord.utilities.rx.appSubscribe
 import com.discord.utilities.rx.ui
 import com.discord.plugins.PluginContextMenuHost
-import dev.mantikafasi.manticord.plugins.api.PluginContextMenuSurface
-import dev.mantikafasi.manticord.plugins.api.pluginContextMenuContext
+import mmaarij.axycord.plugins.api.PluginContextMenuSurface
+import mmaarij.axycord.plugins.api.pluginContextMenuContext
 
 /** The overflow menu for a user, anchored under the profile's ⋯ button. */
 class UserActionsDialog : AppDialog(R.layout.user_actions_dialog) {

@@ -1,4 +1,4 @@
-# Microcord Development Plan
+# Axycord Development Plan
 
 This document tracks architecture, compatibility decisions, feature status and
 remaining work. [README.md](README.md) covers installation and building;
@@ -15,7 +15,7 @@ Implementation history and older audit reports are available in Git history.
 | Reference | Discord Android 126.21 Stable; use newer client/runtime evidence for intentional backports |
 | Goal | Preserve the native Android experience and reconstruct complete feature behavior |
 | Language and UI | Readable Kotlin, Android Views and XML, generated view bindings |
-| Application ID | `dev.mantikafasi.manticord` |
+| Application ID | `mmaarij.axycord` |
 | Namespace | `com.discord`; JNI-facing names remain exact |
 | Current build | Minimum SDK 23, target SDK 36, compile SDK 37; see `app/build.gradle.kts` |
 | State | Existing store/dispatcher/fragment architecture |
@@ -148,6 +148,7 @@ coverage and passing builds do not establish complete behavioral parity.
 
 | Area | Retained decision |
 | --- | --- |
+| Axycord branding | Maintained by `mmaarij`. Client text, source/resource names and theme exports use Axycord. Application ID is `mmaarij.axycord`, version name is `1.0`, and updates come from `Axycord/Axycord` GitHub Releases. Plugin API, Gradle IDs and codegen use `mmaarij.axycord`; plugins require a rebuild against the renamed SDK. Cloud backup and theme imports retain legacy format compatibility. Discord namespaces and JNI names preserve their binary contracts. |
 | Modern features | Backport confirmed modern usernames, profile cosmetics, polls, forwarding, bot components, Apps/Activities and other explicitly requested features without replacing the native UI architecture |
 | Display names | Use the shared guild nickname/global name/username resolution; do not invent precedence separately per screen |
 | Gateway | Use zstd only, streaming Gson and CLIENT_STATE_V2; the Fastjson2 experiment and zlib fallback were removed |
@@ -158,10 +159,10 @@ coverage and passing builds do not establish complete behavioral parity.
 | Firebase | Reuse of Discord's client-side FCM configuration was explicitly approved on 2026-08-11; Admin/service-account credentials are excluded |
 | Giphy | The embedded API key is a public client key, confirmed by the user; retain it |
 | External services | Missing project-owned OAuth, products or signing relationships must degrade safely; Samsung OAuth is out of scope |
-| Signing | Local and CI debug/release APKs use the same repository development identity for in-place updates; it is not a production trust identity |
-| Releases | Pushes produce debug artifacts; manual workflow runs publish a signed APK and matching update manifest |
+| Signing | Axycord builds use a stable maintainer-supplied `app/axycord-dev.keystore`. Local development defaults use the `axycord` alias/password. CI restores that identity from `AXYCORD_KEYSTORE_BASE64`; signing files are excluded from Git. |
+| Releases | The manual Axycord Build workflow saves APKs and the update manifest as GitHub Actions artifacts. Stable app releases are published in `Axycord/Axycord`. |
 | Vendored dependency | `com.github.mmin18:RealtimeBlurView:82df3520b4` (v1.2.1, Apache 2.0) is checked in as an AAR under `third_party/maven` and resolved from there: JitPack stopped serving that version (404), so a machine without a warm Gradle cache could not build. The older `f54dc3c34d` that JitPack still serves lacks v1.2.1's fallback blur implementation, so it was not substituted |
-| CI runner | The hoodnet runner's CPU is too limited (about 1 h per build; the release compile ran out of memory), so `continuous-release.yml` only dispatches the build (with `MIRROR_TOKEN`) to the public github.com mirror, whose `.github/workflows/build.yml` (the one `.github/` file the mirror keeps) runs on a Blacksmith 4 vCPU runner. The mirror lacks Discord's files, so the job clones the real source anonymously from hoodnet (public), builds with no cache or artifact on github.com, publishes the APKs as hoodnet releases and reports a `build` commit status. Needs the `HOODNET_TOKEN` secret and Blacksmith on the mirror, `MIRROR_TOKEN` with Workflows permission, and 1-day Actions log retention; job logs of the public mirror are public. Blacksmith's own hoodnet (GHES) support needs an email to their support, which the user declined. Not yet run end to end |
+| CI runner | `.github/workflows/build.yml` builds the current Axycord checkout on Ubuntu with JDK 21. Recovered Android resources, native libraries and the signing identity must be supplied before APK builds can complete. The workflow has not been run end to end in this checkout. |
 | Version identity | Source SHA and commit timestamp identify builds; versionCode is commit timestamp minus the 2020 epoch, not the CI build number |
 | Bookmarks | Synced viewing, jumping and removal are retained; local bookmark creation was withdrawn by user request |
 | Nearby friends | Removed by user request; the retired Google Nearby Messages backend has no supported transport |
@@ -169,7 +170,7 @@ coverage and passing builds do not establish complete behavioral parity.
 | Resource compatibility | Restore first-party attributes; let dependencies own their attributes. Retain decoded-layout compatibility repairs and the inherited lint baseline |
 | Observer errors | Preserve the DEX-proven `ObservationDeck` exception/log-level behavior; do not remove it based on incomplete JADX output |
 | Minimum API safety | `NewApi` lint is fatal for `:app` and `:plugin-api` (CI step before the debug build), because one call newer than minSdk 23 crashed Android 6 at launch. Desugaring does not rewrite `CompletableFuture`, so plugin startup uses the `streamsupport-cfuture` backport; `java.time` and streams are desugared and fine |
-| Custom themes | Runtime `ResourcesLoader` overlay (API 30+, no hooks): a generated resource table replaces palette colors and a placeholder overlay style that every themed context applies. Format is Aliucord theme JSON plus `attrs`/`microcord`; Aliucord's by-value color swaps are replayed through a table generated from the reference. Icon tints, fonts and sounds are table entries served by the loader's `AssetsProvider`; the background image is baked once and shown per Themer's transparency modes. Android 6-10 keep the built-in themes. Discord's Nitro client themes (23 presets, and custom themes synced from other clients) are generated into the lowest layer; anyone can apply one, and it syncs only for Nitro; see [docs/theming.md](docs/theming.md) |
+| Custom themes | Runtime `ResourcesLoader` overlay (API 30+, no hooks): a generated resource table replaces palette colors and a placeholder overlay style that every themed context applies. Format is Aliucord theme JSON plus `attrs`/`axycord`; Aliucord's by-value color swaps are replayed through a table generated from the reference. Icon tints, fonts and sounds are table entries served by the loader's `AssetsProvider`; the background image is baked once and shown per Themer's transparency modes. Android 6-10 keep the built-in themes. Discord's Nitro client themes (23 presets, and custom themes synced from other clients) are generated into the lowest layer; anyone can apply one, and it syncs only for Nitro; see [docs/theming.md](docs/theming.md) |
 | Report flow | The modern report menu is parsed leniently: element types newer than 126.21 (free text, dropdowns, radio groups) are skipped, not rendered. The post-report Block button uses the standard fit button size instead of the reference's 32dp, by user request |
 | Guild header | RN's guild actions row (search, invite, events) replaces the reference events row, and every community server gets RN's Browse Channels row (Channels & Roles once onboarding has prompts), by user request |
 | Startup caches | The channels, guilds and roles Persister caches (the startup-critical, largest ones) bypass Kryo's reflective field serializer: `@CachedFormat` models get a field-by-field codec generated at compile time by the `:cache-codegen` KSP processor, approved by the user on 2026-11-13. Each file's header carries a generated layout hash, so a model change discards the cache and the gateway refills it at READY (the restore drops guild versions whose data was lost). Measured on a 10.5k-channel account: cache restore 175 ms → ~50 ms. kotlinx.serialization was prototyped and rejected, decoding channels about 2x slower than the hand-written equivalent |
@@ -184,32 +185,29 @@ beside the implementation; investigate their evidence before changing them.
 
 ## Updater and Distribution
 
-- Stable download: https://microcord.mantikafasi.dev/latest.apk.
-- The worker resolves the latest published APK and returns an uncached redirect
-  to its version-pinned URL. Latest-release metadata may be cached for 60 seconds.
-- Each release manifest binds source identity, package/version, APK size and
-  SHA-256. The app verifies downloaded bytes and package/signing identity before
-  handing the APK to Android's installer.
-- Changelogs compare the installed SHA with the release manifest SHA. Valid
-  diverged histories are supported after rebases; patch-equivalent commits can
-  reappear under new SHAs. Unknown bases remain unavailable rather than guessed.
+- Stable releases are published at https://github.com/Axycord/Axycord/releases.
+- The app queries GitHub's public latest-release API, then reads the release's
+  `update-manifest.json` and universal APK. Drafts and prereleases are excluded.
+  No published release is treated as no available update.
+- Each release must attach the same build's `app-universal-release.apk` (or
+  `app-release.apk`) and generated manifest. The manifest binds source identity,
+  package/version, universal APK size and SHA-256. GitHub asset digests cover
+  optional per-architecture APKs and baseline profiles.
+- Downloads are restricted to the configured repository and release. Downloaded
+  bytes, APK package `mmaarij.axycord`, version and signing identity are verified
+  before installation. Version name is currently `1.0`.
+- Release descriptions provide notes. GitHub's compare API supplies commit history
+  when available, with release notes retained if comparison is unavailable.
 - Automatic checks run on foreground entry, at most once every six hours for the
-  same installed source build. Changing builds makes a fresh check eligible.
-- Manual discoveries can queue an update banner without postponing automatic
-  checks. Banners wait for Home/main Settings and are not cleared as ordinary
-  message notifications. This is not background polling or an OS update alert.
-- DownloadManager owns background downloads. Downloads and installation start
-  only through the user's actions.
-- Releases publish per-APK baseline profiles (`-api28`/`-api31.dm`). On API 28+
-  the updater installs the matching SHA-256-verified `.dm` with the APK through a
-  PackageInstaller session, so ART compiles at install (`reason=install-dm`,
-  verified via adb on the A065); any profile failure falls back to ACTION_VIEW with
-  the APK alone. The first update onto this build still uses the old APK-only path.
-  `app/src/main/baseline-prof.txt` adds the warm-cache Kryo read path and other
-  startup classes the fresh-login generator never records.
+  same source build. Checks and update notices reuse the existing settings and UI.
+- Downloads and installation start through the user's actions. DownloadManager
+  owns background downloads. Optional verified baseline profiles install beside
+  their APK through PackageInstaller, falling back to the APK-only installer.
+- Older persisted worker downloads remain readable. The worker under
+  `tools/update-worker/` is optional legacy tooling configured for Axycord's
+  GitHub repository. Its Cloudflare account and custom domain are maintainer-supplied.
 
-Endpoint contracts, deployment instructions and cache limits live in
-[tools/update-worker/README.md](tools/update-worker/README.md).
+Publishing requirements are documented in README.md under Publishing app updates.
 
 ## Open Work and Risks
 

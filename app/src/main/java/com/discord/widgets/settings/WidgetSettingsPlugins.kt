@@ -1,6 +1,6 @@
 package com.discord.widgets.settings
 
-import dev.mantikafasi.manticord.plugins.api.PLUGIN_API_LEVEL
+import mmaarij.axycord.plugins.api.PLUGIN_API_LEVEL
 import android.os.Bundle
 import android.content.res.ColorStateList
 import android.graphics.drawable.Drawable
@@ -97,7 +97,7 @@ class WidgetSettingsPlugins : AppFragment(R.layout.widget_settings_plugins) {
                 val packageEnabled = PluginLoadingPolicy.isPackageEnabled(descriptor.packageName)
                 val signerApproved = PluginLoadingPolicy.approvedSigner(descriptor.packageName) ==
                     descriptor.signerSha256
-                val appCompatible = PLUGIN_API_LEVEL >= descriptor.manifest.manticordVersionMinimum
+                val appCompatible = PLUGIN_API_LEVEL >= descriptor.manifest.axycordVersionMinimum
                 add(
                     Row(
                         packageName = descriptor.packageName,
@@ -105,7 +105,7 @@ class WidgetSettingsPlugins : AppFragment(R.layout.widget_settings_plugins) {
                         title = snapshot?.manifest?.name ?: descriptor.label,
                         status = snapshot?.statusText() ?: when {
                             packageEnabled && !signerApproved -> "Signer changed · approval required"
-                            !appCompatible -> "Incompatible Microcord version"
+                            !appCompatible -> "Incompatible Axycord version"
                             PluginRuntime.externalFailure(descriptor.packageName) != null ->
                                 "Failed · ${PluginRuntime.externalFailure(descriptor.packageName)}"
                             packageEnabled -> "Loading"

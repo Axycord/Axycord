@@ -11,12 +11,12 @@ import com.discord.utilities.rx.restSubscribeOn
  *
  * This is the seam that decides whether reconstructed-client telemetry leaves the device at all.
  * The reference has no such seam — `AnalyticsUtils.Tracker` posts unconditionally to Discord's
- * `POST /science` endpoint. Manticord is a reconstruction running against a live consumer backend
+ * `POST /science` endpoint. Axycord is a reconstruction running against a live consumer backend
  * under a different application identity, so shipping it with the production analytics transport
  * wired up would silently send this client's telemetry to Discord. The default is therefore
  * [Disabled], and turning it on is one explicit assignment (see [AnalyticsSink.install]).
  *
- * See `PLAN.md` → "Live Backend Safety" and Phase 13, which registers Manticord-owned analytics
+ * See `PLAN.md` → "Live Backend Safety" and Phase 13, which registers Axycord-owned analytics
  * configuration.
  */
 interface AnalyticsSink {
@@ -57,7 +57,7 @@ interface AnalyticsSink {
      * Posts the batch to `POST /science` on whatever backend [api] is configured for.
      *
      * **Not installed by default and must not be installed against Discord's production
-     * backend.** It exists so the pipeline can be exercised end to end against a Manticord-owned
+     * backend.** It exists so the pipeline can be exercised end to end against a Axycord-owned
      * endpoint once Phase 13 registers one.
      */
     class ScienceEndpoint(private val api: RestAPIInterface) : AnalyticsSink {

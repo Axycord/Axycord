@@ -2,7 +2,7 @@ package com.discord.utilities.feature
 
 import android.content.SharedPreferences
 import com.discord.utilities.cache.SharedPreferencesProvider
-import com.discord.utilities.feature.ManticordSettingsBackupCodec.Payload
+import com.discord.utilities.feature.AxycordSettingsBackupCodec.Payload
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull

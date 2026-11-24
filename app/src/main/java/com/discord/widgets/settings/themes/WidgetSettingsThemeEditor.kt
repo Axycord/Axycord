@@ -29,7 +29,7 @@ import com.discord.widgets.settings.profile.ProfileColorPickerDialog
  * Every change is saved as it is made. **Apply theme** turns the theme on (on top of any others
  * that are on) and recreates the screen, so the edit shows across the whole app.
  */
-class WidgetSettingsThemeEditor : ThemeEditorPage(R.layout.widget_settings_theme_editor, R.string.microcord_theme_editor_title) {
+class WidgetSettingsThemeEditor : ThemeEditorPage(R.layout.widget_settings_theme_editor, R.string.axycord_theme_editor_title) {
 
     private var _binding: WidgetSettingsThemeEditorBinding? = null
     private val binding get() = requireNotNull(_binding)
@@ -87,25 +87,25 @@ class WidgetSettingsThemeEditor : ThemeEditorPage(R.layout.widget_settings_theme
         QUICK_COLORS.forEach { (key, label) -> addQuickColor(binding.themeEditorQuickColors, key, label) }
         binding.themeEditorPages.removeAllViews()
         val pages = binding.themeEditorPages
-        addPage(pages, R.string.microcord_theme_colors, count(theme.colors.size + theme.attrs.size), WidgetSettingsThemeColors::class.java)
-        addPage(pages, R.string.microcord_theme_icons, count(theme.drawableTints.size), WidgetSettingsThemeIcons::class.java)
+        addPage(pages, R.string.axycord_theme_colors, count(theme.colors.size + theme.attrs.size), WidgetSettingsThemeColors::class.java)
+        addPage(pages, R.string.axycord_theme_icons, count(theme.drawableTints.size), WidgetSettingsThemeIcons::class.java)
         addPage(
             pages,
-            R.string.microcord_theme_background,
-            theme.background?.let { describeFile(context, it.url) } ?: getString(R.string.microcord_theme_background_none),
+            R.string.axycord_theme_background,
+            theme.background?.let { describeFile(context, it.url) } ?: getString(R.string.axycord_theme_background_none),
             WidgetSettingsThemeBackground::class.java,
         )
-        addPage(pages, R.string.microcord_theme_fonts, count(theme.fonts.size), WidgetSettingsThemeFiles::class.java, WidgetSettingsThemeFiles.KIND_FONTS)
-        addPage(pages, R.string.microcord_theme_sounds, count(theme.raws.size), WidgetSettingsThemeFiles::class.java, WidgetSettingsThemeFiles.KIND_SOUNDS)
+        addPage(pages, R.string.axycord_theme_fonts, count(theme.fonts.size), WidgetSettingsThemeFiles::class.java, WidgetSettingsThemeFiles.KIND_FONTS)
+        addPage(pages, R.string.axycord_theme_sounds, count(theme.raws.size), WidgetSettingsThemeFiles::class.java, WidgetSettingsThemeFiles.KIND_SOUNDS)
     }
 
-    private fun count(changed: Int) = if (changed == 0) getString(R.string.microcord_theme_file_default) else getString(R.string.microcord_theme_changes, changed)
+    private fun count(changed: Int) = if (changed == 0) getString(R.string.axycord_theme_file_default) else getString(R.string.axycord_theme_changes, changed)
 
     private fun addQuickColor(parent: LinearLayout, key: String, @StringRes label: Int) {
         val row = WidgetSettingsThemeEditorColorItemBinding.inflate(layoutInflater, parent, true)
         val color = theme.simpleColors[key]
         val system = theme.systemColors["${ThemeDefinition.SECTION_SIMPLE_COLORS}.$key"]
-        ThemeColorRows.bind(row, getString(label), color, detail = system ?: color?.let(ThemeColorParser::toHex) ?: getString(R.string.microcord_theme_not_set))
+        ThemeColorRows.bind(row, getString(label), color, detail = system ?: color?.let(ThemeColorParser::toHex) ?: getString(R.string.axycord_theme_not_set))
         row.themeEditorColorReset.isVisible = color != null || system != null
         row.themeEditorColorReset.setOnClickListener { setQuickColor(key, null) }
         row.root.setOnClickListener {
@@ -132,8 +132,8 @@ class WidgetSettingsThemeEditor : ThemeEditorPage(R.layout.widget_settings_theme
     private fun confirmReset() {
         WidgetNoticeDialog.show(
             parentFragmentManager,
-            headerText = getString(R.string.microcord_theme_reset_everything),
-            bodyText = getString(R.string.microcord_theme_reset_everything_confirm),
+            headerText = getString(R.string.axycord_theme_reset_everything),
+            bodyText = getString(R.string.axycord_theme_reset_everything_confirm),
             okText = getString(R.string.reset),
             cancelText = getString(R.string.cancel),
             listenerMap = mapOf(R.id.notice_ok to { _: View ->
@@ -151,9 +151,9 @@ class WidgetSettingsThemeEditor : ThemeEditorPage(R.layout.widget_settings_theme
         }
         WidgetNoticeDialog.show(
             parentFragmentManager,
-            headerText = getString(R.string.microcord_theme_apply),
-            bodyText = getString(R.string.microcord_theme_low_contrast),
-            okText = getString(R.string.microcord_theme_apply),
+            headerText = getString(R.string.axycord_theme_apply),
+            bodyText = getString(R.string.axycord_theme_low_contrast),
+            okText = getString(R.string.axycord_theme_apply),
             cancelText = getString(R.string.cancel),
             listenerMap = mapOf(R.id.notice_ok to { _: View -> apply() }),
         )
@@ -170,13 +170,13 @@ class WidgetSettingsThemeEditor : ThemeEditorPage(R.layout.widget_settings_theme
 
         /** Aliucord's `simple_colors`, the quickest way to restyle the app. */
         private val QUICK_COLORS = listOf(
-            "accent" to R.string.microcord_theme_simple_accent,
-            "background" to R.string.microcord_theme_simple_background,
-            "background_secondary" to R.string.microcord_theme_simple_background_secondary,
-            "mention_highlight" to R.string.microcord_theme_simple_mention_highlight,
-            "active_channel" to R.string.microcord_theme_simple_active_channel,
-            "input_background" to R.string.microcord_theme_simple_input_background,
-            "blocked_bg" to R.string.microcord_theme_simple_blocked_bg,
+            "accent" to R.string.axycord_theme_simple_accent,
+            "background" to R.string.axycord_theme_simple_background,
+            "background_secondary" to R.string.axycord_theme_simple_background_secondary,
+            "mention_highlight" to R.string.axycord_theme_simple_mention_highlight,
+            "active_channel" to R.string.axycord_theme_simple_active_channel,
+            "input_background" to R.string.axycord_theme_simple_input_background,
+            "blocked_bg" to R.string.axycord_theme_simple_blocked_bg,
         )
 
         fun launch(context: Context, themeId: String) = launch(context, WidgetSettingsThemeEditor::class.java, themeId)

@@ -5,7 +5,7 @@ import org.junit.Test
 
 class ApplicationConfigTest {
     @Test
-    fun usesManticordApplicationId() {
-        assertEquals("dev.mantikafasi.manticord", BuildConfig.APPLICATION_ID)
+    fun usesAxycordApplicationId() {
+        assertEquals("mmaarij.axycord", BuildConfig.APPLICATION_ID)
     }
 }

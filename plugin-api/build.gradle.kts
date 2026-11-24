@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    namespace = "dev.mantikafasi.manticord.plugins.api"
+    namespace = "mmaarij.axycord.plugins.api"
     compileSdk {
         version = release(37)
     }

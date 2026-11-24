@@ -11,11 +11,11 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ArscWriterTest {
-    private val pkg = "dev.mantikafasi.manticord"
+    private val pkg = "mmaarij.axycord"
     private val entries = listOf(
         Entry(0x7F060012, "color", "brand_new", Value.Color(0x805865F2.toInt())),
         Entry(0x7F060003, "color", "primary_600", Value.Color(-1)),
-        Entry(0x7F140301, "style", "ThemeOverlay.Microcord.Runtime", Value.Style(mapOf(0x7F040020 to 2, 0x01010031 to 1, 0x7F040001 to 3))),
+        Entry(0x7F140301, "style", "ThemeOverlay.Axycord.Runtime", Value.Style(mapOf(0x7F040020 to 2, 0x01010031 to 1, 0x7F040001 to 3))),
     )
 
     @Test
@@ -34,7 +34,7 @@ class ArscWriterTest {
             assertEquals(Value.Color(-1), config.getValue(0x03).value)
         }
         val style = table.types.getValue(0x14).configs.getValue(ArscWriter.Config(23)).getValue(0x301)
-        assertEquals("ThemeOverlay.Microcord.Runtime", style.key)
+        assertEquals("ThemeOverlay.Axycord.Runtime", style.key)
         // Bag items are sorted by unsigned attribute id: framework attributes first.
         assertEquals(listOf(0x01010031, 0x7F040001, 0x7F040020), (style.value as Value.Style).items.keys.toList())
     }
@@ -64,17 +64,17 @@ class ArscWriterTest {
             ArscWriter.write(
                 pkg,
                 listOf(
-                    Entry(0x7F080010, "drawable", "ic_a", Value.File("res/microcord/a.xml"), ArscWriter.ANY_DENSITY_CONFIGS),
-                    Entry(0x7F080011, "drawable", "src_b", Value.File("res/microcord/b.png"), listOf(ArscWriter.Config(0, 480))),
-                    Entry(0x7F0A0002, "font", "whitney_medium", Value.File("res/microcord/f.ttf")),
+                    Entry(0x7F080010, "drawable", "ic_a", Value.File("res/axycord/a.xml"), ArscWriter.ANY_DENSITY_CONFIGS),
+                    Entry(0x7F080011, "drawable", "src_b", Value.File("res/axycord/b.png"), listOf(ArscWriter.Config(0, 480))),
+                    Entry(0x7F0A0002, "font", "whitney_medium", Value.File("res/axycord/f.ttf")),
                 ),
             ),
         )
         val drawables = table.types.getValue(0x08).configs
         assertEquals(ArscWriter.ANY_DENSITY_CONFIGS.toSet() + ArscWriter.Config(0, 480), drawables.keys)
-        assertEquals(Value.File("res/microcord/a.xml"), drawables.getValue(ArscWriter.Config(24, ArscWriter.DENSITY_ANY)).getValue(0x10).value)
+        assertEquals(Value.File("res/axycord/a.xml"), drawables.getValue(ArscWriter.Config(24, ArscWriter.DENSITY_ANY)).getValue(0x10).value)
         assertEquals(setOf(0x11), drawables.getValue(ArscWriter.Config(0, 480)).keys)
-        assertEquals(Value.File("res/microcord/f.ttf"), table.types.getValue(0x0A).configs.getValue(ArscWriter.Config(23)).getValue(2).value)
+        assertEquals(Value.File("res/axycord/f.ttf"), table.types.getValue(0x0A).configs.getValue(ArscWriter.Config(23)).getValue(2).value)
     }
 
     @Test

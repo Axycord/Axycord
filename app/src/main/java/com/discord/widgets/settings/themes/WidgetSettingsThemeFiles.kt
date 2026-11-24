@@ -22,7 +22,7 @@ import rx.schedulers.Schedulers
  * A row picks a file from the device, which is copied into the app; Aliucord themes that link
  * their files keep the links and download them when applied.
  */
-class WidgetSettingsThemeFiles : ThemeEditorPage(R.layout.widget_settings_theme_list_page, R.string.microcord_theme_fonts) {
+class WidgetSettingsThemeFiles : ThemeEditorPage(R.layout.widget_settings_theme_list_page, R.string.axycord_theme_fonts) {
 
     private var _binding: WidgetSettingsThemeListPageBinding? = null
     private val binding get() = requireNotNull(_binding)
@@ -51,7 +51,7 @@ class WidgetSettingsThemeFiles : ThemeEditorPage(R.layout.widget_settings_theme_
 
     override fun onThemeLoaded(view: View) {
         _binding = WidgetSettingsThemeListPageBinding.bind(view)
-        if (!fonts) setActionBarTitle(R.string.microcord_theme_sounds)
+        if (!fonts) setActionBarTitle(R.string.axycord_theme_sounds)
         binding.themeListPageSearch.isVisible = false
         binding.themeListPageList.layoutManager = LinearLayoutManager(requireContext())
         binding.themeListPageList.itemAnimator = null
@@ -103,6 +103,6 @@ class WidgetSettingsThemeFiles : ThemeEditorPage(R.layout.widget_settings_theme_
 
         /** `whitney_semibold` → "Whitney semibold"; `*` → "All fonts". */
         private fun label(context: Context, key: String) =
-            if (key == ThemeDefinition.ALL_FONTS) context.getString(R.string.microcord_theme_fonts_all) else ThemeTokens.label(key)
+            if (key == ThemeDefinition.ALL_FONTS) context.getString(R.string.axycord_theme_fonts_all) else ThemeTokens.label(key)
     }
 }

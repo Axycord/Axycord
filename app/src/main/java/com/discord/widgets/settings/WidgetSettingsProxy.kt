@@ -11,7 +11,7 @@ import com.google.android.material.snackbar.Snackbar
 import rx.functions.Action1
 
 /**
- * Manticord's proxy setting ([ClientProxy]). Reachable from the login screen as well as settings,
+ * Axycord's proxy setting ([ClientProxy]). Reachable from the login screen as well as settings,
  * because a network that blocks Discord also blocks signing in.
  */
 class WidgetSettingsProxy : AppFragment(R.layout.widget_settings_proxy) {

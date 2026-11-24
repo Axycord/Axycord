@@ -27,7 +27,7 @@ import rx.schedulers.Schedulers
  *
  * The reset button removes only the first.
  */
-class WidgetSettingsThemeColors : ThemeEditorPage(R.layout.widget_settings_theme_list_page, R.string.microcord_theme_colors) {
+class WidgetSettingsThemeColors : ThemeEditorPage(R.layout.widget_settings_theme_list_page, R.string.axycord_theme_colors) {
 
     private var _binding: WidgetSettingsThemeListPageBinding? = null
     private val binding get() = requireNotNull(_binding)
@@ -77,11 +77,11 @@ class WidgetSettingsThemeColors : ThemeEditorPage(R.layout.widget_settings_theme
             if (changed.isNotEmpty()) {
                 items += ThemeEditorListAdapter.Item.Header("changed", getString(ThemeTokens.Group.CHANGED.title))
                 changed.forEach { items += colorItem(it, resolved, ThemeTokens.Group.CHANGED) }
-                items += ThemeEditorListAdapter.Item.Header("groups", getString(R.string.microcord_theme_colors))
+                items += ThemeEditorListAdapter.Item.Header("groups", getString(R.string.axycord_theme_colors))
             }
             tokens.groupBy { it.group }.forEach { (g, groupTokens) ->
                 val count = groupTokens.count { it.name in own(it) }
-                val detail = if (count > 0) getString(R.string.microcord_theme_changes, count) else groupTokens.size.toString()
+                val detail = if (count > 0) getString(R.string.axycord_theme_changes, count) else groupTokens.size.toString()
                 items += ThemeEditorListAdapter.Item.Nav("group:${g.name}", getString(g.title), detail) {
                     launch(requireContext(), WidgetSettingsThemeColors::class.java, themeId, Intent().putExtra(ARG_GROUP, g.name))
                 }

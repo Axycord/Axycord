@@ -45,15 +45,15 @@ class MemberVerificationDialogViewModelsTest {
     @Test
     fun `success dialog closes after the join request is acknowledged`() {
         assertEquals(
-            MemberVerificationSuccessViewModel.ViewState.Loaded("Manticord"),
+            MemberVerificationSuccessViewModel.ViewState.Loaded("Axycord"),
             MemberVerificationSuccessViewModel.reduce(
-                MemberVerificationSuccessViewModel.StoreState(null, "Manticord", 7L),
+                MemberVerificationSuccessViewModel.StoreState(null, "Axycord", 7L),
             ),
         )
         assertSame(
             MemberVerificationSuccessViewModel.ViewState.Acked,
             MemberVerificationSuccessViewModel.reduce(
-                MemberVerificationSuccessViewModel.StoreState("2026-07-30T00:00:00Z", "Manticord", 7L),
+                MemberVerificationSuccessViewModel.StoreState("2026-07-30T00:00:00Z", "Axycord", 7L),
             ),
         )
     }

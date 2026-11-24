@@ -19,8 +19,8 @@ object StrangerFriendRequest {
     fun confirm(fragmentManager: FragmentManager, context: Context, onConfirm: () -> Unit) =
         WidgetNoticeDialog.show(
             fragmentManager = fragmentManager,
-            headerText = context.getString(R.string.manticord_stranger_request_title),
-            bodyText = context.getString(R.string.manticord_stranger_request_body),
+            headerText = context.getString(R.string.axycord_stranger_request_title),
+            bodyText = context.getString(R.string.axycord_stranger_request_body),
             okText = context.getString(R.string.accept),
             cancelText = context.getString(R.string.cancel),
             listenerMap = mapOf(R.id.notice_ok to { _ -> onConfirm() }),

@@ -182,11 +182,11 @@ class StoreOutboundPromotions(
         /**
          * Application whose entitlements record "this account already redeemed a promotion".
          *
-         * **Needs Manticord-owned configuration.** The reference hardcodes Discord's own
+         * **Needs Axycord-owned configuration.** The reference hardcodes Discord's own
          * promotions application id; per the project's billing rules that value is not reproduced
          * here. `0L` makes the entitlements lookup return nothing, so no promotion is ever filtered
          * out as consumed — the list is otherwise fully functional. Replace with the
-         * Manticord-owned application id when one exists.
+         * Axycord-owned application id when one exists.
          */
         const val OUTBOUND_PROMOTIONS_APPLICATION_ID = 0L
     }

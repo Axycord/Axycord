@@ -3,7 +3,7 @@ import { afterEach, beforeEach, mock, test } from "node:test";
 import worker from "./worker.mjs";
 
 const origin = "https://updates.example.com";
-const api = "https://git.hoodnet.work/api/v3/repos/microcord/microcord";
+const api = "https://api.github.com/repos/Axycord/Axycord";
 const env = { GITHUB_TOKEN: "local-test-only" };
 const release = {
   tag_name: "build-42", draft: false, prerelease: false, published_at: "2026-09-06T12:00:00Z",
@@ -15,7 +15,7 @@ const release = {
 const commitTimestamp = Date.parse("2026-09-06T11:00:00Z") / 1000;
 const manifest = {
   commitSha: "b".repeat(40), commitTimestamp, versionCode: commitTimestamp - 1577836800,
-  versionName: "1.0", sha256: "a".repeat(64), size: 8, packageName: "dev.mantikafasi.manticord",
+  versionName: "1.0", sha256: "a".repeat(64), size: 8, packageName: "mmaarij.axycord",
 };
 const fromSha = "c".repeat(40);
 const legacyOrigin = "https://updates.example.workers.dev";
@@ -151,7 +151,7 @@ test("valid manifest exposes full build identity and caches only slim validated 
 });
 
 test("manifest media redirect is fetched without GitHub or caller credentials or automatic redirects", async () => {
-  const location = "https://media.git.hoodnet.work/manifest-test";
+  const location = "https://release-assets.githubusercontent.com/manifest-test";
   const body = JSON.stringify(manifest);
   responses.push(Response.json(withManifest(body)), new Response(null, {
     status: 302, headers: { Location: location, "Set-Cookie": "private" },
@@ -251,7 +251,7 @@ test("manifest bytes are bounded even without Content-Length and mismatched leng
 });
 
 test("manifest redirects reject untrusted origins and never follow a second redirect", async () => {
-  for (const location of ["https://evil.example/a", "https://media.git.hoodnet.work.evil.example/a", "http://media.git.hoodnet.work/a", "https://media.git.hoodnet.work:444/a", "https://user:secret@media.git.hoodnet.work/a", "/relative"]) {
+  for (const location of ["https://evil.example/a", "https://release-assets.githubusercontent.com.evil.example/a", "http://release-assets.githubusercontent.com/a", "https://release-assets.githubusercontent.com:444/a", "https://user:secret@release-assets.githubusercontent.com/a", "/relative"]) {
     responses.push(Response.json(withManifest()), new Response(null, { status: 302, headers: { Location: location } }));
     const count = calls.length;
     const response = await request();
@@ -260,7 +260,7 @@ test("manifest redirects reject untrusted origins and never follow a second redi
     assert.equal(calls.length, count + 2);
     assert.equal(cached.size, 0);
   }
-  responses.push(Response.json(withManifest()), new Response(null, { status: 302, headers: { Location: "https://media.git.hoodnet.work/manifest-test" } }),
+  responses.push(Response.json(withManifest()), new Response(null, { status: 302, headers: { Location: "https://release-assets.githubusercontent.com/manifest-test" } }),
     new Response(null, { status: 302, headers: { Location: "https://evil.example/a" } }));
   const count = calls.length;
   assert.equal((await request()).status, 503);
@@ -290,7 +290,7 @@ test("historical build-163 downloads remain pinned after the latest feed has a m
   responses.push(Response.json(withManifest()), new Response(JSON.stringify(manifest)));
   assert.equal((await request()).status, 200);
   responses.push(Response.json({ ...release, tag_name: "build-163", assets: [{ ...release.assets[0], id: 42 }] }),
-    new Response(null, { status: 302, headers: { Location: "https://media.git.hoodnet.work/legacy-test" } }));
+    new Response(null, { status: 302, headers: { Location: "https://release-assets.githubusercontent.com/legacy-test" } }));
   assert.equal((await request("/releases/build-163.apk", { method: "HEAD" })).status, 302);
   assert.equal(calls[2].url, `${api}/releases/tags/build-163`);
   assert.equal(calls[3].url, `${api}/releases/assets/42`);
@@ -314,7 +314,7 @@ test("old cache schema cannot bypass manifest lookup and cached feeds still requ
 });
 
 test("download resolves only the requested tag and redirects without forwarding user credentials", async () => {
-  const signedUrl = "https://media.git.hoodnet.work/asset?signature=temporary-test-value";
+  const signedUrl = "https://release-assets.githubusercontent.com/asset?signature=temporary-test-value";
   responses.push(Response.json(release), new Response(null, { status: 302, headers: { Location: signedUrl } }));
   const response = await request("/releases/build-42.apk", {
     headers: { Authorization: "untrusted", Cookie: "untrusted", Range: "bytes=4-" },
@@ -385,7 +385,7 @@ test("missing digests and invalid asset identities fail closed without publishin
 });
 
 test("unexpected redirect hosts, schemes, ports and credentials are rejected", async () => {
-  for (const location of ["https://evil.example/a", "https://media.git.hoodnet.work.evil.example/a", "http://media.git.hoodnet.work/a", "https://media.git.hoodnet.work:444/a", "https://user:secret@media.git.hoodnet.work/a"]) {
+  for (const location of ["https://evil.example/a", "https://release-assets.githubusercontent.com.evil.example/a", "http://release-assets.githubusercontent.com/a", "https://release-assets.githubusercontent.com:444/a", "https://user:secret@release-assets.githubusercontent.com/a"]) {
     cached.clear();
     responses.push(Response.json(release), new Response(null, { status: 302, headers: { Location: location } }));
     const response = await request("/releases/build-42.apk");
@@ -611,7 +611,7 @@ test("unknown bases, throttling, server/parse/timeout failures and redirects nev
   const failures = [
     ...[401, 403, 404, 422, 429, 500, 502, 503].map(status => new Response("DO NOT EXPOSE", { status })),
     ...[301, 302, 303, 307, 308].map(status => new Response("DO NOT EXPOSE", { status, headers: { Location: "https://evil.example/DO-NOT-EXPOSE" } })),
-    new Response(null, { status: 302, headers: { Location: "https://media.git.hoodnet.work/compare-test" } }),
+    new Response(null, { status: 302, headers: { Location: "https://release-assets.githubusercontent.com/compare-test" } }),
     new TypeError("DO NOT EXPOSE"), new DOMException("DO NOT EXPOSE", "TimeoutError"), new DOMException("DO NOT EXPOSE", "AbortError"),
     new Response("DO NOT EXPOSE invalid JSON"), new Response(new Uint8Array([0xff])),
     new Response(new ReadableStream({ start(controller) { controller.error(new Error("DO NOT EXPOSE body failure")); } })),
@@ -734,12 +734,12 @@ const ABIS = ["arm64-v8a", "armeabi-v7a", "x86_64", "x86"];
 const splitRelease = { ...release, assets: [...release.assets, ...ABIS.map(split)] };
 
 test("APKs are cached at the edge so repeat downloads never reach GHES", async () => {
-  const media = "https://media.git.hoodnet.work/asset?signature=temporary-test-value";
+  const media = "https://release-assets.githubusercontent.com/asset?signature=temporary-test-value";
   responses.push(Response.json(release), new Response(null, { status: 302, headers: { Location: media } }), upstreamApk());
   const first = await request("/releases/build-42.apk", { headers: { Cookie: "untrusted" } });
   assert.equal(first.status, 200);
   assert.deepEqual([...new Uint8Array(await first.arrayBuffer())], apkBytes);
-  assert.equal(first.headers.get("Content-Disposition"), 'attachment; filename="microcord-build-42.apk"');
+  assert.equal(first.headers.get("Content-Disposition"), 'attachment; filename="axycord-build-42.apk"');
   assert.equal(first.headers.get("ETag"), `"${"a".repeat(64)}"`);
   // The media fetch carries no GitHub or caller credentials and follows no further redirects.
   assert.equal(calls[2].url, media);
@@ -779,7 +779,7 @@ test("a short, ranged or non-APK upstream body is never cached", async () => {
     cached.clear();
     // The failed fill falls back to the redirect, which costs a second asset lookup.
     responses.push(Response.json(release), upstream,
-      new Response(null, { status: 302, headers: { Location: "https://media.git.hoodnet.work/asset" } }));
+      new Response(null, { status: 302, headers: { Location: "https://release-assets.githubusercontent.com/asset" } }));
     const response = await request("/releases/build-42.apk");
     assert.equal(response.status, 302);
     assert.deepEqual([...cached.keys()], [`${origin}/_release-cache/v4/build-42`]);
@@ -800,7 +800,7 @@ test("releases list their per-architecture APKs, which download and redirect by 
   responses.push(Response.json(splitRelease), upstreamApk());
   const apk = await request("/releases/build-42-x86.apk");
   assert.equal(apk.status, 200);
-  assert.equal(apk.headers.get("Content-Disposition"), 'attachment; filename="microcord-build-42-x86.apk"');
+  assert.equal(apk.headers.get("Content-Disposition"), 'attachment; filename="axycord-build-42-x86.apk"');
   assert.equal(calls.at(-1).url, `${api}/releases/assets/73`);
   assert.ok(cached.has(`${origin}/_apk-cache/v1/build-42/x86/${"3".repeat(64)}`));
   for (const path of ["/latest-mips.apk", "/releases/build-42-mips.apk", "/releases/build-42-arm64-v8a/changes.json"]) {
@@ -847,7 +847,7 @@ test("releases list each APK's baseline profiles, which download like their APK"
   const dm = await request("/releases/build-42-arm64-v8a-api31.dm");
   assert.equal(dm.status, 200);
   assert.equal(dm.headers.get("Content-Type"), "application/octet-stream");
-  assert.equal(dm.headers.get("Content-Disposition"), 'attachment; filename="microcord-build-42-arm64-v8a-api31.dm"');
+  assert.equal(dm.headers.get("Content-Disposition"), 'attachment; filename="axycord-build-42-arm64-v8a-api31.dm"');
   assert.equal(calls.at(-1).url, `${api}/releases/assets/92`);
   assert.ok(cached.has(`${origin}/_apk-cache/v1/build-42/arm64-v8a-api31/${"9".repeat(64)}`));
   for (const path of ["/releases/build-42-arm64-v8a-api28.dm", "/releases/build-42-x86-api29.dm", "/releases/build-42-api31.apk"]) {

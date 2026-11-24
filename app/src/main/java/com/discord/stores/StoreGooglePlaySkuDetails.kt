@@ -16,7 +16,7 @@ import rx.Observable
  * subscriptions are queried separately and must not evict each other.
  *
  * **Product ids are never declared here.** They come from
- * [com.discord.utilities.billing.GooglePlayInAppSku] entries, which is where Manticord-owned Play
+ * [com.discord.utilities.billing.GooglePlayInAppSku] entries, which is where Axycord-owned Play
  * product configuration belongs; this store only sees ids that a query already returned.
  */
 class StoreGooglePlaySkuDetails(

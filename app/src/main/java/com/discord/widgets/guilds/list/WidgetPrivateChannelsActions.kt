@@ -12,7 +12,7 @@ import com.discord.stores.StoreChannels
 import com.discord.stores.StoreStream
 
 /**
- * Long-press sheet for the guild list's Direct Messages button. Microcord addition; 126.21 has no
+ * Long-press sheet for the guild list's Direct Messages button. Axycord addition; 126.21 has no
  * long-press there.
  *
  * "Mark DMs as Read" marks every DM read and leaves servers alone.

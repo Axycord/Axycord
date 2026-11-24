@@ -1,171 +1,134 @@
-# Microcord
+# Axycord
 
-A native Android Discord client reconstructed in **Kotlin with Android Views and
-XML**, based on Discord Android **126.21 Stable**. Microcord keeps the classic
-Android interface while adding compatibility with newer Discord features and
-local customization.
+Axycord is a native Android Discord client maintained by **mmaarij**. It keeps the
+classic Android interface and adds support for newer messaging features,
+custom themes and APK plugins.
 
-This project is in an early development phase. Builds can contain bugs, missing
-behavior, and breaking changes. The application ID, package name, and related
-app identity may still change.
+![Axycord logo](app/src/main/res/mipmap-xxxhdpi/ic_launcher.png)
 
-Core messaging, social and media flows are implemented, but complete behavioral
-parity is still a work in progress. See [the development plan](PLAN.md) for
-status and remaining work.
+| Setting | Value |
+| --- | --- |
+| Client | Axycord |
+| Maintainer | mmaarij |
+| Version | 1.0 |
+| Application ID | `mmaarij.axycord` |
+| Android | 6.0 / API 23 or newer |
+| Updates | Published stable releases in `Axycord/Axycord` |
 
-**[Join the support server](https://discord.gg/YE8deBEVyd)** for help and feedback.
+Axycord is under development. Some features and device behavior still need
+verification. See [PLAN.md](PLAN.md) for the current status.
 
-## Download
+## Repositories and support
 
-**[Download the latest APK](https://microcord.mantikafasi.dev/latest-arm64-v8a.apk)** for almost every
-phone (64-bit ARM).
+- [Axycord](https://github.com/Axycord/Axycord)
+- [Axycord Plugins](https://github.com/Axycord/Axycord-Plugins)
+- [Axycord Plugin Template](https://github.com/Axycord/Axycord-Plugin-Template)
+- [Report an issue](https://github.com/Axycord/Axycord/issues)
 
-If that one will not install, your phone is older 32-bit hardware: use the
-[universal APK](https://microcord.mantikafasi.dev/latest.apk), which works on every phone but is larger.
-[32-bit ARM](https://microcord.mantikafasi.dev/latest-armeabi-v7a.apk),
-[x86_64](https://microcord.mantikafasi.dev/latest-x86_64.apk) and
-[x86](https://microcord.mantikafasi.dev/latest-x86.apk) builds are also available.
+## Download and updates
 
-- Requires **Android 6.0 (API 23) or newer**.
-- Install the APK with Android's package installer. Updates can be installed over
-  the existing app without clearing its data.
-- Current package is `dev.mantikafasi.manticord`, separate from Discord's official
-  app. This identifier is not final and may change during development.
+Download a published APK from [Releases](https://github.com/Axycord/Axycord/releases).
+Most phones use `app-arm64-v8a-release.apk`. The universal
+`app-universal-release.apk` supports every bundled architecture. Releases can also
+include `armeabi-v7a`, `x86_64` and `x86` builds.
 
-The **Updates** screen can check for new builds, show release notes and commit
-history, download an update for the phone's own architecture and open the installer. Automatic checks run when
-the app enters the foreground, at most once every six hours per installed build.
-Downloads do not start automatically.
+The app checks GitHub's latest stable release when it enters the foreground,
+at most once every six hours per installed source build. The Updates screen also
+offers manual checks, release notes, commit history, downloads and installation.
+Users start downloads and approve installation. The updater verifies the APK's
+size, SHA-256, package, version and signing identity.
 
 ## Features
 
-- Guilds, channels, DMs, group DMs, threads and forums.
+- Servers, channels, DMs, group DMs, threads and forums.
 - Messages, replies, reactions, attachments, search, pins and forwarding.
-- Emoji, stickers, GIFs, rich embeds, image galleries and video playback.
-- User profiles, presence, modern display names and profile cosmetics.
-- Voice calls, video, screen sharing and game-activity icons in voice-member rows.
-- Modern polls, bot components, application commands and embedded Activities.
-- Theme, chat-input and header customization, plus optional feature flags.
-- Bundled and external APK plugins through the [Microcord Plugin API](docs/plugin-api.md).
+- Emoji, stickers, GIFs, embeds, galleries and video.
+- Profiles, presence, display names and profile cosmetics.
+- Voice, video, screen sharing and embedded Activities.
+- Polls, bot components and application commands.
+- Custom themes, local settings and installed APK plugins.
 
-Some provider integrations and device-specific behavior remain incomplete; the
-[feature status table](PLAN.md#feature-status) distinguishes implementation from
-full verification.
+## Build
 
-## Build from Source
+The app uses Kotlin, Android Views/XML and Gradle. Requirements are JDK 21,
+Android SDK Platform 37, Build Tools 36.0.0 and Bash. Set `ANDROID_HOME` or
+`sdk.dir` in your local `local.properties`.
 
-> **Building from the GitHub mirror?** [github.com/microcord/microcord](https://github.com/microcord/microcord)
-> is a source-only mirror of [git.hoodnet.work/microcord/microcord](https://git.hoodnet.work/microcord/microcord).
-> It leaves out the files recovered from Discord (native libraries, assets, images, fonts, sounds
-> and most resource XML), the signing key and the Firebase config, so it does not build on its own.
-> The upstream repository has everything.
+This source checkout omits recovered resources, native libraries and the signing
+key. Those inputs must be restored before a complete APK can be built. Optional
+`app/google-services.json` enables push notifications and must match the app ID.
 
-### Requirements
-
-- A Git checkout, including the checked-in resources and `third_party` artifacts.
-  Build identity is derived from Git, so a source archive without `.git` is not sufficient.
-- A **JDK 21** installation. The Gradle daemon toolchain is pinned to Java 21.
-- Android SDK **Platform 37** and **Build Tools 36.0.0**, matching the current build/CI setup.
-- Bash and standard Unix command-line tools; use **Git Bash on Windows**.
-
-Configure the Android SDK through Android Studio, `ANDROID_HOME`, or `sdk.dir`
-in your local `local.properties`. Dependency versions are maintained in
-[gradle/libs.versions.toml](gradle/libs.versions.toml).
-
-Run all commands below from the repository root. Use `scripts/build.sh` rather
-than invoking Gradle directly: it serializes builds that share the checkout.
+Run builds through the repository's coordinating script.
 
 ```bash
-# Build a debug APK
 bash scripts/build.sh :app:assembleDebug
-
-# Install it on a connected Android device
-bash scripts/build.sh :app:installDebug
-
-# Build a release APK and its updater manifest
+bash scripts/build.sh :app:testDebugUnitTest
+bash scripts/build.sh :app:lintDebug :plugin-api:lintDebug
 bash scripts/build.sh :app:assembleRelease :app:generateReleaseUpdateManifest
 ```
 
-Outputs:
+The app expects `app/axycord-dev.keystore` for local development signing. Keep the
+same signing identity for future updates. Build identity comes from Git, and
+version codes are derived from the source commit timestamp.
 
-| Artifact | Path |
+The manual Axycord Build workflow builds this repository's checkout and saves its
+APKs and manifest as an Actions artifact. Restore the omitted resources and native
+libraries first, then set `AXYCORD_KEYSTORE_BASE64` to the Base64-encoded keystore
+with the development alias/password expected by `app/build.gradle.kts`.
+
+| Output | Path |
 | --- | --- |
 | Debug APK | `app/build/outputs/apk/debug/app-debug.apk` |
-| Release APK | `app/build/outputs/apk/release/app-release.apk` |
+| Universal release APK | `app/build/outputs/apk/release/app-universal-release.apk` |
 | Update manifest | `app/build/outputs/update/release/update-manifest.json` |
 
-The first build needs network access to resolve dependencies. Add `--offline`
-only after they are cached. `app/google-services.json` is optional for building;
-push notifications are inactive when that configuration is absent.
+## Publish a release
 
-Local and CI builds use a shared development signing identity so they can update
-one another in place. Build numbers are release labels; Android version codes
-are derived from the source commit timestamp.
+Publish a stable release in `Axycord/Axycord` with a tag such as `v1.0`. Attach
+the universal APK and `update-manifest.json` from the same build. The updater also
+accepts `app-release.apk` as the universal filename.
 
-### Tests
+Attach `app-<abi>-release.apk` files for smaller downloads. Optional baseline
+profiles use `app-release-api28.dm` / `app-release-api31.dm` for the universal APK
+and `app-<abi>-release-api28.dm` / `app-<abi>-release-api31.dm` for splits.
 
-```bash
-# JVM tests, or add --tests '<class or pattern>' for a focused run
-bash scripts/build.sh :app:testDebugUnitTest
-bash scripts/build.sh :app:lintDebug
+The release description supplies the update notes. Future builds need the same
+application ID and signing certificate, a newer source timestamp and a
+nondecreasing version code. Drafts and prereleases are excluded.
 
-# Release download/changelog worker tests (Node.js required)
-node --test tools/update-worker/worker.test.mjs
-```
+## Plugins and project layout
 
-Run instrumentation tests only on a dedicated test emulator or device, since
-test installation and cleanup can affect app data.
-
-## Project Layout
+The Axycord plugin API uses the `mmaarij.axycord.plugins.api` namespace.
+The packaging plugin ID is `mmaarij.axycord.plugin`, with the `axycordPlugin` DSL.
+Plugins built against the previous SDK need to be rebuilt against this API.
 
 | Directory | Purpose |
 | --- | --- |
-| `app/` | Android application, stores, screens, resources and tests |
-| `baselineprofile/` | Startup/profile generation |
-| `plugin-api/` | Plugin contracts and typed host services |
-| `plugin-gradle/` | Plugin packaging and manifest generation |
-| `third_party/` | Native/WebRTC artifacts, provenance and licenses |
-| `tools/update-worker/` | Release feed, APK downloads and changelogs |
-| `scripts/` | Build coordination and development tooling |
+| `app/` | Application, stores, screens, resources and tests |
+| `plugin-api/` | Plugin contracts and host services |
+| `plugin-gradle/` | Plugin APK packaging and manifest generation |
+| `cache-codegen/` | Generated cache codecs |
+| `baselineprofile/` | Startup profile generation |
+| `third_party/` | Bundled components, provenance and licenses |
+| `tools/update-worker/` | Legacy update-service tooling |
+| `scripts/` | Build and development tooling |
 
-## Contributing
+Read [plugin-api.md](docs/plugin-api.md), [theming.md](docs/theming.md) and
+[AGENTS.md](AGENTS.md) before changing their corresponding contracts.
 
-Read [PLAN.md](PLAN.md) for architecture and current work, and
-[AGENTS.md](AGENTS.md) for repository conventions. Keep changes focused, reuse
-existing components, and add a targeted check for non-trivial behavior. Bug
-reports should include the build number, Android/device version and reproduction
-steps; redact account credentials and private message content from diagnostics.
+## Attribution and license
 
-- [Plugin development](docs/plugin-api.md)
-- [Update service and release manifests](tools/update-worker/README.md)
-- [Native voice runtime provenance](third_party/webrtc-discord-333.5/README.md)
+Axycord is derived from [Microcord](https://github.com/microcord/microcord), based
+on Discord Android 126.21 Stable. Upstream authors retain ownership of their work.
+The source license is **AGPL-3.0-only**. See [LICENSE](LICENSE).
 
-## Credits
+Recovered Discord assets and bundled components retain their respective terms.
+Native runtime provenance is documented in
+[third_party/webrtc-discord-333.5](third_party/webrtc-discord-333.5/README.md).
+Vendored protocol definitions include their provenance in `app/src/main/proto/`.
 
-- [Discord Userdoccers](https://github.com/discord-userdoccers/discord-userdoccers)
-- [Aliucord](https://github.com/Aliucord/Aliucord/)
-- [zt64/aliucord-plugins](https://github.com/zt64/aliucord-plugins)
-- [BetterChatBox](https://github.com/wingio/plugins/tree/main/BetterChatbox)
-
-Microcord is not affiliated with or endorsed by Discord Inc. Recovered Discord
-assets and third-party components retain their respective ownership and licenses.
-
-## License
-
-Microcord's own source — the Kotlin, Java, XML and build scripts written for this
-project — is licensed under the **GNU Affero General Public License, version 3
-only** (AGPL-3.0-only). The full text is in [LICENSE](LICENSE).
-
-That license does not extend to material recovered from Discord's APK or to
-bundled third-party components, which keep their own terms:
-
-| Material | Terms |
-| --- | --- |
-| Recovered Discord layouts, drawables, assets, string tables and transliterated code | Discord Inc.; not relicensed or redistributed under the AGPL |
-| `app/src/main/jniLibs/**` and `third_party/webrtc-discord-333.5` | WebRTC BSD 3-Clause; see [the native runtime provenance](third_party/webrtc-discord-333.5/README.md) |
-| `app/src/main/proto/discord_protos/**` | Discord Userdoccers project; see its vendored provenance note |
-| Public libraries | Their published licenses, listed in `gradle/libs.versions.toml` |
-
-The AGPL's remote-network clause (section 13) applies to Microcord itself: anyone
-running a modified public network service built from this code must offer the
-Corresponding Source of their version to its users.
+Acknowledgements include [Discord Userdoccers](https://github.com/discord-userdoccers/discord-userdoccers),
+[Aliucord](https://github.com/Aliucord/Aliucord/),
+[zt64/aliucord-plugins](https://github.com/zt64/aliucord-plugins) and
+[BetterChatBox](https://github.com/wingio/plugins/tree/main/BetterChatbox).
+Axycord is independently maintained and is not affiliated with Discord Inc.

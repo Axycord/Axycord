@@ -32,7 +32,7 @@ import rx.Observable
 import rx.schedulers.Schedulers
 
 /**
- * The custom themes on this device: pick one, import Aliucord or Microcord theme files, and share,
+ * The custom themes on this device: pick one, import Aliucord or Axycord theme files, and share,
  * save, duplicate or delete them.
  *
  * Picking a theme applies it through [ThemeRuntime] and recreates the screen, so the whole app
@@ -68,7 +68,7 @@ class WidgetSettingsThemes : AppFragment(R.layout.widget_settings_themes) {
     override fun onViewBound(view: View) {
         super.onViewBound(view)
         _binding = WidgetSettingsThemesBinding.bind(view)
-        setActionBarTitle(R.string.microcord_custom_themes)
+        setActionBarTitle(R.string.axycord_custom_themes)
         setActionBarSubtitle(R.string.appearance)
         setActionBarDisplayHomeAsUpEnabled()
         // Anything a JSON theme is shared as: files are rarely labelled application/json.
@@ -96,8 +96,8 @@ class WidgetSettingsThemes : AppFragment(R.layout.widget_settings_themes) {
         val supported = ThemeRuntime.isSupported
         val store = ThemeRuntime.store(requireContext())
         val notice = when {
-            !supported -> getString(R.string.microcord_themes_unsupported)
-            store.consumeDisabledByGuard() -> getString(R.string.microcord_themes_guard_disabled)
+            !supported -> getString(R.string.axycord_themes_unsupported)
+            store.consumeDisabledByGuard() -> getString(R.string.axycord_themes_guard_disabled)
             else -> null
         }
         binding.settingsThemesNotice.text = notice
@@ -121,7 +121,7 @@ class WidgetSettingsThemes : AppFragment(R.layout.widget_settings_themes) {
             ThemePreviewDrawable().apply { colors = ThemePreviewDrawable.colorsOf(requireContext(), stored.theme, builtIn) },
         )
         row.settingsThemesItemSwitch.setText(stored.theme.manifest.name)
-        row.settingsThemesItemSwitch.setSubtext(getString(R.string.microcord_themes_author, stored.theme.manifest.author))
+        row.settingsThemesItemSwitch.setSubtext(getString(R.string.axycord_themes_author, stored.theme.manifest.author))
         row.settingsThemesItemSwitch.isChecked = active
         row.settingsThemesItemSwitch.isEnabled = enabled
         row.settingsThemesItemSwitch.setContainerClickListener { toggle(stored.id) }
@@ -147,10 +147,10 @@ class WidgetSettingsThemes : AppFragment(R.layout.widget_settings_themes) {
             .ui(this)
             .subscribe({ updated ->
                 updated.forEach { (_, theme) ->
-                    AppToast.show(context, getString(R.string.microcord_themes_updated, theme.manifest.name, theme.manifest.version))
+                    AppToast.show(context, getString(R.string.axycord_themes_updated, theme.manifest.name, theme.manifest.version))
                 }
                 if (updated.isEmpty() && !quiet) {
-                    themes.forEach { AppToast.show(context, getString(R.string.microcord_themes_up_to_date, it.theme.manifest.name)) }
+                    themes.forEach { AppToast.show(context, getString(R.string.axycord_themes_up_to_date, it.theme.manifest.name)) }
                 }
                 render()
                 val active = store.activeIds
@@ -161,10 +161,10 @@ class WidgetSettingsThemes : AppFragment(R.layout.widget_settings_themes) {
     private fun showOptions(anchor: View, stored: ThemeStore.Stored) {
         val popup = PopupMenu(ContextThemeWrapper(anchor.context, R.style.AppTheme_PopupMenu), anchor)
         popup.menu.add(0, MENU_EDIT, MENU_EDIT, R.string.edit)
-        popup.menu.add(0, MENU_DUPLICATE, MENU_DUPLICATE, R.string.microcord_themes_duplicate)
-        if (stored.theme.manifest.updater != null) popup.menu.add(0, MENU_UPDATE, MENU_UPDATE, R.string.microcord_themes_check_update)
+        popup.menu.add(0, MENU_DUPLICATE, MENU_DUPLICATE, R.string.axycord_themes_duplicate)
+        if (stored.theme.manifest.updater != null) popup.menu.add(0, MENU_UPDATE, MENU_UPDATE, R.string.axycord_themes_check_update)
         popup.menu.add(0, MENU_SHARE, MENU_SHARE, R.string.share)
-        popup.menu.add(0, MENU_SAVE, MENU_SAVE, R.string.manticord_save_to_file)
+        popup.menu.add(0, MENU_SAVE, MENU_SAVE, R.string.axycord_save_to_file)
         popup.menu.add(0, MENU_DELETE, MENU_DELETE, R.string.delete)
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
@@ -187,7 +187,7 @@ class WidgetSettingsThemes : AppFragment(R.layout.widget_settings_themes) {
     private fun createTheme() {
         val current = StoreStream.getUserSettingsSystem().getTheme()
         val theme = ThemeDefinition(
-            manifest = ThemeDefinition.Manifest(getString(R.string.microcord_theme_new_name)),
+            manifest = ThemeDefinition.Manifest(getString(R.string.axycord_theme_new_name)),
             base = current.takeIf { it in ThemeDefinition.BASES } ?: ThemeDefinition.BASE_DEFAULT,
         )
         val id = ThemeRuntime.store(requireContext()).save(theme)
@@ -196,7 +196,7 @@ class WidgetSettingsThemes : AppFragment(R.layout.widget_settings_themes) {
 
     private fun duplicate(stored: ThemeStore.Stored) {
         val manifest = stored.theme.manifest
-        val copy = stored.theme.copy(manifest = manifest.copy(name = getString(R.string.microcord_themes_copy_name, manifest.name)))
+        val copy = stored.theme.copy(manifest = manifest.copy(name = getString(R.string.axycord_themes_copy_name, manifest.name)))
         ThemeRuntime.store(requireContext()).save(copy)
         render()
     }
@@ -205,7 +205,7 @@ class WidgetSettingsThemes : AppFragment(R.layout.widget_settings_themes) {
         WidgetNoticeDialog.show(
             parentFragmentManager,
             headerText = getString(R.string.delete),
-            bodyText = getString(R.string.microcord_themes_delete_confirm, stored.theme.manifest.name),
+            bodyText = getString(R.string.axycord_themes_delete_confirm, stored.theme.manifest.name),
             okText = getString(R.string.delete),
             cancelText = getString(R.string.cancel),
             listenerMap = mapOf(R.id.notice_ok to { _: View -> delete(stored) }),
@@ -253,7 +253,7 @@ class WidgetSettingsThemes : AppFragment(R.layout.widget_settings_themes) {
             .subscribeOn(Schedulers.io())
             .ui(this)
             .subscribe(
-                { AppToast.show(this, R.string.microcord_themes_saved) },
+                { AppToast.show(this, R.string.axycord_themes_saved) },
                 { AppToast.show(this, R.string.default_failure_to_perform_action_message) },
             )
     }
@@ -276,7 +276,7 @@ class WidgetSettingsThemes : AppFragment(R.layout.widget_settings_themes) {
         val clip = context.getSystemService(ClipboardManager::class.java)?.primaryClip
         val text = clip?.takeIf { it.itemCount > 0 }?.getItemAt(0)?.coerceToText(context)?.toString()
         if (text.isNullOrBlank()) {
-            AppToast.show(this, R.string.microcord_themes_clipboard_empty)
+            AppToast.show(this, R.string.axycord_themes_clipboard_empty)
             return
         }
         try {
@@ -293,12 +293,12 @@ class WidgetSettingsThemes : AppFragment(R.layout.widget_settings_themes) {
     }
 
     private fun onImported(name: String) {
-        AppToast.show(this, getString(R.string.microcord_themes_imported, name))
+        AppToast.show(this, getString(R.string.axycord_themes_imported, name))
         render()
     }
 
     private fun onImportFailed(error: Throwable) {
-        AppToast.show(this, getString(R.string.microcord_themes_import_failed, error.message ?: error.javaClass.simpleName))
+        AppToast.show(this, getString(R.string.axycord_themes_import_failed, error.message ?: error.javaClass.simpleName))
     }
 
     companion object {

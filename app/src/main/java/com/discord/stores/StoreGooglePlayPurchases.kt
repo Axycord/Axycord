@@ -37,7 +37,7 @@ import rx.subjects.PublishSubject
  *   a purchase result must fire once, not replay to the next screen that subscribes.
  *
  * **No product ids appear in this file.** Everything is keyed by the ids Play itself returns, and
- * the SKU catalog (which is where Manticord-owned Play product configuration must be supplied)
+ * the SKU catalog (which is where Axycord-owned Play product configuration must be supplied)
  * lives in `utilities/billing/GooglePlayInAppSku.kt`.
  */
 class StoreGooglePlayPurchases(

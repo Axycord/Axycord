@@ -42,7 +42,7 @@ import com.discord.widgets.chat.list.entries.LoadingEntry
 import com.discord.widgets.chat.list.entries.MessageEntry
 import com.discord.widgets.chat.list.entries.NewMessagesEntry
 import com.discord.widgets.chat.list.model.WidgetChatListModel
-import dev.mantikafasi.manticord.plugins.api.PluginRegistration
+import mmaarij.axycord.plugins.api.PluginRegistration
 import java.lang.ref.WeakReference
 
 /**

@@ -304,7 +304,7 @@ class WidgetChannelListModelTest {
         )
 
         val header = items.indexOfFirst {
-            it is ChannelListItemHeader && it.textResId == R.string.manticord_channel_list_suggested
+            it is ChannelListItemHeader && it.textResId == R.string.axycord_channel_list_suggested
         }
         assertTrue(header >= 0)
         assertEquals(2L, (items[header + 1] as ChannelListItemTextChannel).channel.id)

@@ -1,15 +1,15 @@
 package com.discord.plugins
 
-import dev.mantikafasi.manticord.plugins.api.PluginContextMenuSurface
-import dev.mantikafasi.manticord.plugins.api.PluginMessagePlacement
-import dev.mantikafasi.manticord.plugins.api.PluginMessageInterceptionType
-import dev.mantikafasi.manticord.plugins.api.pluginContextMenuItem
-import dev.mantikafasi.manticord.plugins.api.pluginHeaderContribution
-import dev.mantikafasi.manticord.plugins.api.pluginSlashCommand
-import dev.mantikafasi.manticord.plugins.api.pluginMessageContribution
-import dev.mantikafasi.manticord.plugins.api.pluginMessageDeleteInterceptor
-import dev.mantikafasi.manticord.plugins.api.pluginMessageInterceptor
-import dev.mantikafasi.manticord.plugins.api.pluginMessageUpdateInterceptor
+import mmaarij.axycord.plugins.api.PluginContextMenuSurface
+import mmaarij.axycord.plugins.api.PluginMessagePlacement
+import mmaarij.axycord.plugins.api.PluginMessageInterceptionType
+import mmaarij.axycord.plugins.api.pluginContextMenuItem
+import mmaarij.axycord.plugins.api.pluginHeaderContribution
+import mmaarij.axycord.plugins.api.pluginSlashCommand
+import mmaarij.axycord.plugins.api.pluginMessageContribution
+import mmaarij.axycord.plugins.api.pluginMessageDeleteInterceptor
+import mmaarij.axycord.plugins.api.pluginMessageInterceptor
+import mmaarij.axycord.plugins.api.pluginMessageUpdateInterceptor
 import com.discord.models.message.Message
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse

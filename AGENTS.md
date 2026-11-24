@@ -16,11 +16,9 @@ When more than one agent is active, follow the concurrency protocol in the
 wait on the Gradle lock rather than disabling it, and defer cross-package
 cleanups to the owning wave through your handoff report.
 
-Target project:
-`C:\Users\manti\Desktop\projeler\manticordrebuild`
-
-Read-only reference:
-`C:\Users\manti\StudioProjects\discord-jadx`
+Target project is this Axycord checkout, maintained by mmaarij.
+External decompiled reference locations are machine-specific and are not configured
+here. Use reference paths supplied for the current development environment.
 
 Never modify the reference project.
 
@@ -28,7 +26,7 @@ Never modify the reference project.
 
 - Reconstruct Discord Android 126.21 Stable for feature parity.
 - Write readable Kotlin, using Android Views and XML.
-- Application ID is `dev.mantikafasi.manticord`.
+- Application ID is `mmaarij.axycord`.
 - Android namespace is `com.discord`.
 - Minimum SDK is 21.
 - Reuse recovered assets, layouts, and `libdiscord.so`.
@@ -70,9 +68,9 @@ work in one change unless the dependency is unavoidable.
 
 | Source | Path | Use for |
 | --- | --- | --- |
-| JADX Java export | `C:\Users\manti\StudioProjects\discord-jadx` | Structure, resources, manifest, call sites |
-| **Vineflower Kotlin decompile of the DEX** | `C:\Users\manti\Desktop\projeler\discorddecompile\out\**` (4,853 `.kt` files, paths mirror the reference) | Constructors, `equals`/`hashCode`/`toString`, declaration order, nullability — **recovers what JADX drops** |
-| **dex2jar JAR** | `C:\Users\manti\Desktop\projeler\discorddecompile\discord126.21-dex2jar.jar` | `javap -p` for exact signatures/arity/field types; `javap -v` for runtime-visible annotations |
+| JADX Java export | External reference supplied by the maintainer | Structure, resources, manifest, call sites |
+| **Vineflower Kotlin decompile of the DEX** | External Kotlin decompile, when available | Constructors, `equals`/`hashCode`/`toString`, declaration order, nullability — **recovers what JADX drops** |
+| **dex2jar JAR** | External reference JAR, when available | `javap -p` for exact signatures/arity/field types; `javap -v` for runtime-visible annotations |
 | Original DEX | `discord-jadx/app/src/main/classes*.dex` | `dexdump` when even the above disagree |
 | Discord Userdoccers | `https://docs.discord.food/llms.txt` | Undocumented modern Discord API fields, payloads, routes, and behavior; verify against runtime/reference evidence |
 
@@ -209,7 +207,7 @@ invalid decompiler constructs into the target.
 ## Build and Verification
 
 **Preserve the user's installed app and login (explicit user instruction, 2026-09-09).**
-- Never uninstall Manticord, clear its app data, or reset/logout the user's account for verification.
+- Never uninstall Axycord, clear its app data, or reset/logout the user's account for verification.
 - Do not run connected/instrumentation/Orchestrator tests on the user's daily-use phone
   (A065, serial `188b1209`); their install/cleanup or fixtures can remove the app or session.
   Use a dedicated test emulator/device for those tests. Default to builds and focused JVM tests.

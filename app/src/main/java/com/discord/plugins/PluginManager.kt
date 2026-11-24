@@ -2,10 +2,10 @@ package com.discord.plugins
 
 import android.content.Context
 import android.os.SystemClock
-import dev.mantikafasi.manticord.plugins.api.ManticordPlugin
-import dev.mantikafasi.manticord.plugins.api.PluginLoadMode
-import dev.mantikafasi.manticord.plugins.api.PluginManifest
-import dev.mantikafasi.manticord.plugins.api.PluginSettings
+import mmaarij.axycord.plugins.api.AxycordPlugin
+import mmaarij.axycord.plugins.api.PluginLoadMode
+import mmaarij.axycord.plugins.api.PluginManifest
+import mmaarij.axycord.plugins.api.PluginSettings
 import rx.Observable
 import rx.subjects.BehaviorSubject
 import java8.util.concurrent.CompletableFuture
@@ -57,7 +57,7 @@ internal class PluginManager(
     )
 
     private val coordinator = Executors.newSingleThreadExecutor { runnable ->
-        Thread(runnable, "ManticordPluginCoordinator").apply { isDaemon = true }
+        Thread(runnable, "AxycordPluginCoordinator").apply { isDaemon = true }
     }
     private val snapshotsSubject = BehaviorSubject.create<List<PluginSnapshot>>(emptyList()).toSerialized()
     private val metricsSubject = BehaviorSubject.create(PluginMetrics()).toSerialized()
@@ -170,7 +170,7 @@ internal class PluginManager(
     fun snapshots(): List<PluginSnapshot> = snapshotList()
 
     @Synchronized
-    fun plugin(id: String): ManticordPlugin? = runtimes[id]?.discovered?.plugin
+    fun plugin(id: String): AxycordPlugin? = runtimes[id]?.discovered?.plugin
 
     @Synchronized
     fun settings(id: String): PluginSettings? = runtimes[id]?.settings
@@ -343,7 +343,7 @@ internal class PluginManager(
 
     private fun newPluginExecutor(id: String): ExecutorService =
         Executors.newSingleThreadExecutor { runnable ->
-            Thread(runnable, "ManticordPlugin-$id").apply { isDaemon = true }
+            Thread(runnable, "AxycordPlugin-$id").apply { isDaemon = true }
         }
 
     private fun elapsedMs(startedAt: Long): Long =
@@ -365,7 +365,7 @@ internal object PluginRuntime {
         CompositePluginSource(BundledPluginSource(BundledPlugins.all), externalSource),
     )
     private val controls = Executors.newSingleThreadExecutor { runnable ->
-        Thread(runnable, "ManticordPluginControls").apply { isDaemon = true }
+        Thread(runnable, "AxycordPluginControls").apply { isDaemon = true }
     }
 
     fun prefetchDiscovery(context: Context) = manager.prefetchDiscovery(context)
@@ -373,7 +373,7 @@ internal object PluginRuntime {
     fun observeSnapshots(): Observable<List<PluginSnapshot>> = manager.observeSnapshots()
     fun observeMetrics(): Observable<PluginMetrics> = manager.observeMetrics()
     fun snapshots(): List<PluginSnapshot> = manager.snapshots()
-    fun plugin(id: String): ManticordPlugin? = manager.plugin(id)
+    fun plugin(id: String): AxycordPlugin? = manager.plugin(id)
     fun settings(id: String): PluginSettings? = manager.settings(id)
     fun manifest(id: String): PluginManifest? = manager.manifest(id)
     fun externalPlugins(context: Context): List<ExternalPluginDescriptor> = externalSource.catalog(context)

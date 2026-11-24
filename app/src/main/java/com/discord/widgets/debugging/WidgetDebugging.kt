@@ -168,7 +168,7 @@ class WidgetDebugging : AppFragment(R.layout.widget_debugging) {
                         Intent(Intent.ACTION_CREATE_DOCUMENT)
                             .addCategory(Intent.CATEGORY_OPENABLE)
                             .setType("text/plain")
-                            .putExtra(Intent.EXTRA_TITLE, "manticord-debug-${System.currentTimeMillis()}.txt"),
+                            .putExtra(Intent.EXTRA_TITLE, "axycord-debug-${System.currentTimeMillis()}.txt"),
                         REQUEST_SAVE_LOGS,
                     )
                 }
@@ -200,7 +200,7 @@ class WidgetDebugging : AppFragment(R.layout.widget_debugging) {
             val directory = File(context.cacheDir, "debug_logs").apply { mkdirs() }
             // Only the latest export is kept; older ones are already shared or abandoned.
             directory.listFiles()?.forEach { it.delete() }
-            File(directory, "microcord-debug-${System.currentTimeMillis()}.txt").apply { writeText(output) }
+            File(directory, "axycord-debug-${System.currentTimeMillis()}.txt").apply { writeText(output) }
         }
             .subscribeOn(Schedulers.io())
             .ui(this)
@@ -338,7 +338,7 @@ internal fun deviceInfo(context: Context): String {
     }
     val metrics = context.resources.displayMetrics
     return listOf(
-        "App: ${context.getString(R.string.manticord_build_label)} (${context.packageName})",
+        "App: ${context.getString(R.string.axycord_build_label)} (${context.packageName})",
         "Android: ${android.os.Build.VERSION.RELEASE} (SDK ${android.os.Build.VERSION.SDK_INT})",
         "Device: ${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL} (${android.os.Build.DEVICE})",
         "ABIs: ${android.os.Build.SUPPORTED_ABIS.joinToString()}",
@@ -387,7 +387,7 @@ internal fun debugLogExport(
     previousSessionLogs: String = "",
     header: String = "",
 ): String = buildString {
-    appendLine("Microcord debug log")
+    appendLine("Axycord debug log")
     if (header.isNotBlank()) {
         appendLine(header)
         appendLine()

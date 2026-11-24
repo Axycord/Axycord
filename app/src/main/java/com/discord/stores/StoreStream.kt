@@ -7,8 +7,8 @@ import com.discord.utilities.permissions.PermissionUtils
 import com.discord.utilities.rest.ClientBackend
 import com.discord.utilities.feature.ClientPreferenceSnapshot
 import com.discord.utilities.feature.LocalSettingsSnapshot
-import com.discord.utilities.feature.ManticordSettingsBackupCodec
-import com.discord.utilities.feature.ManticordSettingsBackup
+import com.discord.utilities.feature.AxycordSettingsBackupCodec
+import com.discord.utilities.feature.AxycordSettingsBackup
 import com.discord.utilities.feature.FeatureFlags
 import com.discord.app.ClientSettingsRestoreActivity
 import android.content.Intent
@@ -113,7 +113,7 @@ import com.discord.utilities.websocket.GatewayCompression
 import com.discord.utilities.websocket.OkHttpGatewayWebSocketFactory
 import com.discord.models.message.Message as DomainMessage
 import com.discord.plugins.PluginUiRegistry
-import dev.mantikafasi.manticord.plugins.api.PluginMessageInterceptionType
+import mmaarij.axycord.plugins.api.PluginMessageInterceptionType
 import com.discord.utilities.messagesend.MessageSendCoordinator
 import com.discord.utilities.notifications.NotificationData
 import com.discord.utilities.notifications.NotificationKind
@@ -1236,7 +1236,7 @@ class StoreStream private constructor(
 
     private var gatewayInitTimeout: GatewayCancellable? = null
     private var gatewayToken: String? = null
-    /** Set by a login, so the first READY after it puts back the account's Microcord cloud settings. */
+    /** Set by a login, so the first READY after it puts back the account's Axycord cloud settings. */
     private var restoreCloudSettingsOnReady = false
     @Volatile private var authGeneration = 0
     /** Drives `StoreNotifications`' foreground/system split. Fed by `Backgrounded.observe()`. */
@@ -3304,7 +3304,7 @@ class StoreStream private constructor(
                             channelsSelected.handleStoreInitTimeout()
                             navigation.updateAuthState(authentication.getAuthState())
                         } else {
-                            Log.w("ManticordGateway", "READY timeout with no cached guild/channel state")
+                            Log.w("AxycordGateway", "READY timeout with no cached guild/channel state")
                         }
                     }
                 }
@@ -3341,7 +3341,7 @@ class StoreStream private constructor(
     }
 
     /**
-     * Restores the account's Microcord cloud settings backup, if it has one, the way Restore in
+     * Restores the account's Axycord cloud settings backup, if it has one, the way Restore in
      * Feature Flags does. Finding one turns the cloud settings feature on, since the account uses it.
      */
     @StoreThread
@@ -3349,11 +3349,11 @@ class StoreStream private constructor(
         if (!::applicationContext.isInitialized) return
         val app = applicationContext
         val auth = authentication.getAuthState() ?: return
-        val backup = ManticordSettingsBackup(RestAPI.api) { authentication.getAuthState() === auth }
+        val backup = AxycordSettingsBackup(RestAPI.api) { authentication.getAuthState() === auth }
         backup.load().subscribeOn(Schedulers.io()).subscribe({ payload ->
             backup.checkPermitted()
             FeatureFlags.setCloudSettingsBackupEnabled(true)
-            ManticordSettingsBackup.stageRestore(app, payload, ManticordSettingsBackup.authFingerprint())
+            AxycordSettingsBackup.stageRestore(app, payload, AxycordSettingsBackup.authFingerprint())
             app.startActivity(
                 Intent(app, ClientSettingsRestoreActivity::class.java)
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK),
@@ -4100,7 +4100,7 @@ class StoreStream private constructor(
          */
         private const val RTC_LATENCY_URL = "https://latency.discord.media/rtc?v=2"
         private const val GATEWAY_INIT_TIMEOUT_MS = 10_000L
-        private const val GATEWAY_TAG = "ManticordGateway"
+        private const val GATEWAY_TAG = "AxycordGateway"
         /** Longer than [Backgrounded]'s own debounce, so a real exit is always seen. */
         private const val TASK_REMOVAL_BACKGROUND_TIMEOUT_S = 5L
         @Volatile private var instance: StoreStream? = null
@@ -4279,7 +4279,7 @@ class StoreStream private constructor(
         @JvmStatic fun getPendingReplies() = requireInstance().pendingReplies
         @JvmStatic fun getPinnedMessages() = requireInstance().pinnedMessages
         @JvmStatic fun getSavedMessages() = requireInstance().savedMessages
-        internal fun captureClientSettings(context: android.content.Context): rx.Observable<ManticordSettingsBackupCodec.Payload> =
+        internal fun captureClientSettings(context: android.content.Context): rx.Observable<AxycordSettingsBackupCodec.Payload> =
             rx.Observable.create { subscriber ->
                 requireInstance().dispatcher.schedule {
                     if (!subscriber.isUnsubscribed) {
@@ -4287,7 +4287,7 @@ class StoreStream private constructor(
                             check(com.discord.utilities.persister.Persister.persist(LocalSettingsSnapshot.persistedKeys)) { "Could not flush local settings" }
                             val preferences = ClientPreferenceSnapshot.capture(context)
                             val local = LocalSettingsSnapshot.capture(preferences)
-                            subscriber.onNext(ManticordSettingsBackupCodec.Payload(
+                            subscriber.onNext(AxycordSettingsBackupCodec.Payload(
                                 preferences.booleans + local.booleans, preferences.strings + local.strings,
                             ))
                             subscriber.onCompleted()

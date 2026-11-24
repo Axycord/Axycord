@@ -7,7 +7,7 @@ import com.discord.utilities.feature.ClientSettings.BackupPolicy
 import com.discord.utilities.feature.ClientSettings.Scope
 import com.discord.utilities.feature.ClientSettings.Type
 import com.discord.utilities.feature.ClientSettings.backupType
-import com.discord.utilities.feature.ManticordSettingsBackupCodec.Payload
+import com.discord.utilities.feature.AxycordSettingsBackupCodec.Payload
 import com.google.gson.JsonArray
 import com.google.gson.Strictness
 import com.google.gson.stream.JsonReader

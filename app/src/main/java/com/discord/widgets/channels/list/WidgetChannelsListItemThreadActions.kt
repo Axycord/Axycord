@@ -44,8 +44,8 @@ import java.util.Locale
 import rx.Observable
 import rx.subscriptions.CompositeSubscription
 import com.discord.plugins.PluginContextMenuHost
-import dev.mantikafasi.manticord.plugins.api.PluginContextMenuSurface
-import dev.mantikafasi.manticord.plugins.api.pluginContextMenuContext
+import mmaarij.axycord.plugins.api.PluginContextMenuSurface
+import mmaarij.axycord.plugins.api.pluginContextMenuContext
 
 /**
  * The long-press sheet for a thread row in the channels sidebar.

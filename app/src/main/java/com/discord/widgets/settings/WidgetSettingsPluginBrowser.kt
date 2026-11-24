@@ -18,7 +18,7 @@ import com.discord.plugins.PluginIndex
 import com.discord.utilities.color.ColorCompat
 import com.discord.utilities.rx.ui
 import com.discord.utilities.views.SimpleRecyclerAdapter
-import dev.mantikafasi.manticord.plugins.api.PLUGIN_API_LEVEL
+import mmaarij.axycord.plugins.api.PLUGIN_API_LEVEL
 import java.io.File
 
 /**

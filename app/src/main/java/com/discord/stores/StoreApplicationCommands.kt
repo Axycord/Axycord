@@ -38,9 +38,9 @@ import com.discord.utilities.rx.appSubscribe
 import com.discord.utilities.rx.restSubscribeOn
 import com.discord.utilities.user.UserUtils.synthesizeApiUser
 import com.discord.widgets.chat.input.models.ApplicationCommandValue
-import dev.mantikafasi.manticord.plugins.api.pluginChannelContext
-import dev.mantikafasi.manticord.plugins.api.pluginSlashCommandContext
-import dev.mantikafasi.manticord.plugins.api.PluginSlashCommandOptionType
+import mmaarij.axycord.plugins.api.pluginChannelContext
+import mmaarij.axycord.plugins.api.pluginSlashCommandContext
+import mmaarij.axycord.plugins.api.PluginSlashCommandOptionType
 import java.util.concurrent.TimeUnit
 import retrofit2.Response
 import rx.Observable

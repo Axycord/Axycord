@@ -150,7 +150,7 @@ class WidgetSettingsAppearance : AppFragment(R.layout.widget_settings_appearance
         val list = binding.settingsAppearanceNitroThemesList
         list.removeAllViews()
         WidgetSettingsAppearanceNitroThemeItemBinding.inflate(layoutInflater, list, true).apply {
-            val name = getString(R.string.manticord_custom_theme_create)
+            val name = getString(R.string.axycord_custom_theme_create)
             nitroThemeItemName.text = name
             nitroThemeItemSwatch.scaleType = ImageView.ScaleType.CENTER
             nitroThemeItemSwatch.setImageResource(R.drawable.ic_add_24dp)
@@ -162,10 +162,10 @@ class WidgetSettingsAppearance : AppFragment(R.layout.widget_settings_appearance
             root.contentDescription = name
             root.setOnClickListener { WidgetSettingsCustomClientTheme.launch(requireContext()) }
         }
-        val size = resources.getDimensionPixelSize(R.dimen.manticord_nitro_theme_swatch)
+        val size = resources.getDimensionPixelSize(R.dimen.axycord_nitro_theme_swatch)
         themes.forEach { theme ->
             val item = WidgetSettingsAppearanceNitroThemeItemBinding.inflate(layoutInflater, list, true)
-            val name = getString(if (theme is ClientTheme.Preset) theme.name else R.string.manticord_nitro_theme_custom)
+            val name = getString(if (theme is ClientTheme.Preset) theme.name else R.string.axycord_nitro_theme_custom)
             val selected = theme.sameAs(current)
             item.nitroThemeItemName.text = name
             item.nitroThemeItemSwatch.setImageDrawable(
@@ -186,7 +186,7 @@ class WidgetSettingsAppearance : AppFragment(R.layout.widget_settings_appearance
 
     private fun selectionRing(): Drawable = GradientDrawable().apply {
         shape = GradientDrawable.OVAL
-        setStroke(resources.getDimensionPixelSize(R.dimen.manticord_nitro_theme_ring), ThemedColor.resolve(requireContext(), R.attr.colorTextLink))
+        setStroke(resources.getDimensionPixelSize(R.dimen.axycord_nitro_theme_ring), ThemedColor.resolve(requireContext(), R.attr.colorTextLink))
     }
 
     /** The installed local themes with their switches; the full manager is one row below. */
@@ -202,7 +202,7 @@ class WidgetSettingsAppearance : AppFragment(R.layout.widget_settings_appearance
                 ThemePreviewDrawable().apply { colors = ThemePreviewDrawable.colorsOf(requireContext(), stored.theme, builtIn) },
             )
             row.settingsThemesItemSwitch.setText(stored.theme.manifest.name)
-            row.settingsThemesItemSwitch.setSubtext(getString(R.string.microcord_themes_author, stored.theme.manifest.author))
+            row.settingsThemesItemSwitch.setSubtext(getString(R.string.axycord_themes_author, stored.theme.manifest.author))
             row.settingsThemesItemSwitch.isChecked = stored.id in active
             row.settingsThemesItemSwitch.isEnabled = ThemeRuntime.isSupported
             row.settingsThemesItemSwitch.setContainerClickListener {

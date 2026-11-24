@@ -18,8 +18,8 @@ import com.discord.widgets.guilds.leave.WidgetLeaveGuildDialog
 import com.discord.widgets.guilds.profile.WidgetGuildProfileSheet
 import com.discord.widgets.servers.WidgetServerNotifications
 import com.discord.plugins.PluginContextMenuHost
-import dev.mantikafasi.manticord.plugins.api.PluginContextMenuSurface
-import dev.mantikafasi.manticord.plugins.api.pluginContextMenuContext
+import mmaarij.axycord.plugins.api.PluginContextMenuSurface
+import mmaarij.axycord.plugins.api.pluginContextMenuContext
 
 /** The guild long-press menu: mark as read, notifications, leave, and the guild profile sheet. */
 class WidgetGuildContextMenu : AnchoredContextMenu(R.layout.widget_guild_context_menu) {

@@ -118,7 +118,7 @@ class WidgetGuildDiscoverySearch : AppFragment(R.layout.widget_guild_discovery_s
             } else {
                 categoryNames[id]
             } ?: return@forEach
-            addPill(row, getString(R.string.manticord_discovery_category_count, name, count), id)
+            addPill(row, getString(R.string.axycord_discovery_category_count, name, count), id)
         }
     }
 

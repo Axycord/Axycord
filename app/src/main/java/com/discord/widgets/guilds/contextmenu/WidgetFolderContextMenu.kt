@@ -12,8 +12,8 @@ import com.discord.databinding.WidgetFolderContextMenuBinding
 import com.discord.utilities.rx.appSubscribe
 import com.discord.utilities.rx.bindToComponentLifecycle
 import com.discord.plugins.PluginContextMenuHost
-import dev.mantikafasi.manticord.plugins.api.PluginContextMenuSurface
-import dev.mantikafasi.manticord.plugins.api.pluginContextMenuContext
+import mmaarij.axycord.plugins.api.PluginContextMenuSurface
+import mmaarij.axycord.plugins.api.pluginContextMenuContext
 
 /** The folder long-press menu: mark every guild in the folder read, or open folder settings. */
 class WidgetFolderContextMenu : AnchoredContextMenu(R.layout.widget_folder_context_menu) {

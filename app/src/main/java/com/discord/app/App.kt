@@ -46,7 +46,7 @@ class App : Application(), Configuration.Provider {
         if (currentProcessName() == "$packageName:settings_restore") return
         if (!initialized.compareAndSet(false, true)) return
 
-        if (!com.discord.utilities.feature.ManticordSettingsBackup.awaitRestore(this)) {
+        if (!com.discord.utilities.feature.AxycordSettingsBackup.awaitRestore(this)) {
             settingsRecoveryRequired = true
             if (isFcmProcess(currentProcessName(), packageName)) android.os.Process.killProcess(android.os.Process.myPid())
             return
@@ -101,7 +101,7 @@ class App : Application(), Configuration.Provider {
         StoreStream.initialize(this)
         PluginRuntime.initialize(this)
         val restorePreferences = SharedPreferencesProvider.getPrefsSessionDurable()
-        val restoreKey = com.discord.utilities.feature.ManticordSettingsBackup.RESTORE_RESULT
+        val restoreKey = com.discord.utilities.feature.AxycordSettingsBackup.RESTORE_RESULT
         if (restorePreferences.contains(restoreKey)) {
             val restored = restorePreferences.getBoolean(restoreKey, false)
             restorePreferences.edit().remove(restoreKey).apply()

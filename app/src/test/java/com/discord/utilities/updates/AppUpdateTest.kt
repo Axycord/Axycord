@@ -16,7 +16,7 @@ class AppUpdateTest {
     private val bytes = "sanitized-apk-fixture".toByteArray()
     private val digest = MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it.toInt() and 255) }
     private val update = AppUpdate("build-42", "https://microcord.mantikafasi.dev/releases/build-42.apk",
-        digest, bytes.size.toLong(), "b".repeat(40), 1_800_000_000L, 222_163_200L, "1.0", "dev.mantikafasi.manticord")
+        digest, bytes.size.toLong(), "b".repeat(40), 1_800_000_000L, 222_163_200L, "1.0", "mmaarij.axycord")
 
     @Test fun `automatic checks default on and use the shared backed up typed setting`() {
         val prefs = MemoryPreferences()

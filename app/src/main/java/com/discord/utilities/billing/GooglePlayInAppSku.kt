@@ -16,15 +16,15 @@ data class GooglePlayInAppSku(
      * **Null in this reconstruction, deliberately.** The reference hardcodes Discord's own SKU ids
      * here; those are credentials recovered from the reference APK and `PLAN.md` forbids reusing
      * them. They are also unusable: Play products are scoped to the publishing package, so under
-     * `dev.mantikafasi.manticord` a purchase against Discord's SKU could never resolve.
+     * `mmaarij.axycord` a purchase against Discord's SKU could never resolve.
      *
-     * Populate from Manticord-owned configuration in Phase 13 via [InAppSkuConfig.installSkuIds].
+     * Populate from Axycord-owned configuration in Phase 13 via [InAppSkuConfig.installSkuIds].
      */
     var skuId: Long? = null,
 )
 
 /**
- * Maps this build's gift products onto Manticord-owned Discord SKU ids.
+ * Maps this build's gift products onto Axycord-owned Discord SKU ids.
  *
  * Fails closed: with nothing installed every [GooglePlayInAppSku.skuId] stays null, so the gifting
  * flow can render and price its products but cannot complete a purchase against a SKU that is not
@@ -35,7 +35,7 @@ object InAppSkuConfig {
     @Volatile
     private var skuIdsByProductId: Map<String, Long> = emptyMap()
 
-    /** `true` once every configured Play gift has a Manticord-owned Discord SKU id. */
+    /** `true` once every configured Play gift has a Axycord-owned Discord SKU id. */
     val isInstalled: Boolean get() = premiumGifts.all { it.skuId != null }
 
     fun installSkuIds(skuIdsByProductId: Map<String, Long>) {

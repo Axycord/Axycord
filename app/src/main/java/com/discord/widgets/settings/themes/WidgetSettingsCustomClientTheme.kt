@@ -63,7 +63,7 @@ class WidgetSettingsCustomClientTheme : AppFragment(R.layout.widget_settings_cus
     override fun onViewBound(view: View) {
         super.onViewBound(view)
         _binding = WidgetSettingsCustomClientThemeBinding.bind(view)
-        setActionBarTitle(R.string.manticord_custom_theme_title)
+        setActionBarTitle(R.string.axycord_custom_theme_title)
         setActionBarSubtitle(R.string.appearance)
         setActionBarDisplayHomeAsUpEnabled()
         SettingsNavigation.bindBack(this)
@@ -126,25 +126,25 @@ class WidgetSettingsCustomClientTheme : AppFragment(R.layout.widget_settings_cus
 
     private fun render() {
         val binding = _binding ?: return
-        binding.customClientThemeAngleLabel.text = getString(R.string.manticord_custom_theme_angle, angle)
-        binding.customClientThemeMixLabel.text = getString(R.string.manticord_custom_theme_mix, baseMix)
+        binding.customClientThemeAngleLabel.text = getString(R.string.axycord_custom_theme_angle, angle)
+        binding.customClientThemeMixLabel.text = getString(R.string.axycord_custom_theme_mix, baseMix)
         binding.customClientThemeAddColor.isEnabled = colors.size < ClientTheme.MAX_COLORS
         binding.customClientThemeRemoveColor.isEnabled = colors.size > 1
         renderChips(binding.customClientThemeColors)
         val theme = ClientTheme.custom(base, colors, emptyList(), angle.toFloat(), baseMix, synced = false) ?: return
         val preview = binding.customClientThemePreview
-        val width = preview.width.takeIf { it > 0 } ?: (resources.displayMetrics.widthPixels - 2 * resources.getDimensionPixelSize(R.dimen.manticord_custom_theme_margin))
-        val height = resources.getDimensionPixelSize(R.dimen.manticord_custom_theme_preview_height)
+        val width = preview.width.takeIf { it > 0 } ?: (resources.displayMetrics.widthPixels - 2 * resources.getDimensionPixelSize(R.dimen.axycord_custom_theme_margin))
+        val height = resources.getDimensionPixelSize(R.dimen.axycord_custom_theme_preview_height)
         preview.setImageDrawable(
             RoundedBitmapDrawableFactory.create(resources, theme.render(width / 2, height / 2)).apply {
-                cornerRadius = resources.getDimension(R.dimen.manticord_custom_theme_corner)
+                cornerRadius = resources.getDimension(R.dimen.axycord_custom_theme_corner)
             },
         )
     }
 
     private fun renderChips(container: LinearLayout) {
         container.removeAllViews()
-        val size = resources.getDimensionPixelSize(R.dimen.manticord_custom_theme_chip)
+        val size = resources.getDimensionPixelSize(R.dimen.axycord_custom_theme_chip)
         val ring = ThemedColor.resolve(requireContext(), R.attr.colorBackgroundModifierStrong)
         colors.forEach { color ->
             val chip = View(requireContext()).apply {
@@ -152,11 +152,11 @@ class WidgetSettingsCustomClientTheme : AppFragment(R.layout.widget_settings_cus
                 background = GradientDrawable().apply {
                     shape = GradientDrawable.OVAL
                     setColor(color)
-                    setStroke(resources.getDimensionPixelSize(R.dimen.manticord_nitro_theme_ring), ring)
+                    setStroke(resources.getDimensionPixelSize(R.dimen.axycord_nitro_theme_ring), ring)
                 }
-                contentDescription = getString(R.string.manticord_custom_theme_colors)
+                contentDescription = getString(R.string.axycord_custom_theme_colors)
                 setOnClickListener {
-                    RoleColorPickerDialog.showMulti(parentFragmentManager, colors, R.string.manticord_custom_theme_colors)
+                    RoleColorPickerDialog.showMulti(parentFragmentManager, colors, R.string.axycord_custom_theme_colors)
                 }
             }
             container.addView(chip)

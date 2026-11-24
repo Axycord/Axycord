@@ -75,7 +75,7 @@ class WidgetDebuggingRowTextTest {
             listOf(item("request failed", IllegalStateException("token=$secret"))),
         )
 
-        assertTrue(exported.startsWith("Microcord debug log\n"))
+        assertTrue(exported.startsWith("Axycord debug log\n"))
         assertFalse(exported.contains(secret))
         assertTrue(exported.contains(AppLog.REDACTED))
     }
@@ -93,7 +93,7 @@ class WidgetDebuggingRowTextTest {
     fun `header sits between the title and the log rows`() {
         val exported = debugLogExport(listOf(item("row", null)), header = "Device: Test Phone")
 
-        assertTrue(exported.startsWith("Microcord debug log\nDevice: Test Phone\n\nrow"))
+        assertTrue(exported.startsWith("Axycord debug log\nDevice: Test Phone\n\nrow"))
     }
 
 }

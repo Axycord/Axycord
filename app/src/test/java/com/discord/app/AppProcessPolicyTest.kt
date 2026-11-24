@@ -7,8 +7,8 @@ import org.junit.Test
 class AppProcessPolicyTest {
     @Test
     fun onlyDedicatedFcmProcessSkipsTheAppGraph() {
-        assertTrue(isFcmProcess("dev.mantikafasi.manticord:fcm", "dev.mantikafasi.manticord"))
-        assertFalse(isFcmProcess("dev.mantikafasi.manticord", "dev.mantikafasi.manticord"))
-        assertFalse(isFcmProcess(null, "dev.mantikafasi.manticord"))
+        assertTrue(isFcmProcess("mmaarij.axycord:fcm", "mmaarij.axycord"))
+        assertFalse(isFcmProcess("mmaarij.axycord", "mmaarij.axycord"))
+        assertFalse(isFcmProcess(null, "mmaarij.axycord"))
     }
 }

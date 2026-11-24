@@ -23,7 +23,7 @@ import com.discord.views.ThemedColor
 /**
  * Searches the rows of every settings page that [WidgetSettings] pushes ([WidgetSettings.routes]).
  *
- * Microcord addition; Discord 126.21 has no settings search. The index is read from the pages'
+ * Axycord addition; Discord 126.21 has no settings search. The index is read from the pages'
  * own layouts, so a new row is searchable without registering it anywhere. Text a page only sets
  * in code is not indexed. Picking a result opens the page, scrolls to the row and flashes it.
  */

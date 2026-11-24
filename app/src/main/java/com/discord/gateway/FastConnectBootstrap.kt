@@ -27,7 +27,7 @@ object FastConnectBootstrap {
             (StoreClientDataState.readFastConnectState(preferences) ?: StoreClientDataState.ClientDataState())
                 .toIdentifyData()
         }.onFailure { error ->
-            Log.w("ManticordGateway", "client state cache read failed: ${error.javaClass.simpleName}: ${error.message}")
+            Log.w("AxycordGateway", "client state cache read failed: ${error.javaClass.simpleName}: ${error.message}")
         }.getOrNull()
         val installation = sessionDurablePreferences
             .getString(StoreAuthentication.CACHE_KEY_INSTALLATION, null)

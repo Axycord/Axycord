@@ -80,18 +80,27 @@ object AppUpdater {
             .putLong("next_check", now + RETRY_DELAY).apply()
         states.onNext(State(Phase.CHECKING, state.update))
         Observable.fromCallable {
-            http.newCall(Request.Builder().url(UPDATE_FEED_URL).build()).execute().use { response ->
-                readJson(response, AppUpdate::class.java, 16_384).forAbis(Build.SUPPORTED_ABIS.toList()).validate()
+            http.newCall(Request.Builder().url(UPDATE_FEED_URL)
+                .header("Accept", "application/vnd.github+json")
+                .header("X-GitHub-Api-Version", "2026-03-10").build()).execute().use { response ->
+                if (response.code == 404) return@fromCallable null
+                val release = readJson(response, GitHubUpdateRelease::class.java, 512 * 1024)
+                val manifestAsset = release.manifestAsset()
+                assetHttp.newCall(Request.Builder().url(requireNotNull(manifestAsset.url)).build()).execute().use { manifestResponse ->
+                    release.toUpdate(readJson(manifestResponse, AppUpdate::class.java, 16_384))
+                        .forAbis(Build.SUPPORTED_ABIS.toList()).validate()
+                }
             }
         }.subscribeOn(Schedulers.io()).ui().subscribe({ update ->
             if (automatic) preferences(app).edit().putLong("next_check", System.currentTimeMillis() + SIX_HOURS).apply()
             val phase = when {
+                update == null -> Phase.CURRENT
                 !update.hasBuildMetadata -> Phase.LEGACY
                 isNewer(update) -> Phase.AVAILABLE
                 else -> Phase.CURRENT
             }
             states.onNext(State(phase, update))
-            if (phase == Phase.AVAILABLE && automaticChecksEnabled()) notifyUpdate(app, update)
+            if (phase == Phase.AVAILABLE && automaticChecksEnabled()) notifyUpdate(app, requireNotNull(update))
         }, {
             states.onNext(State(Phase.ERROR, state.update, error = R.string.updater_check_failed))
         })
@@ -100,12 +109,30 @@ object AppUpdater {
     fun loadChanges(update: AppUpdate): Observable<AppUpdateChanges> = Observable.defer {
         update.validate()
         val from = BuildConfig.UPDATE_COMMIT_SHA
+        if (isGitHubReleaseAsset(update.apkUrl, update.release)) return@defer loadGitHubChanges(update, from)
         val url = update.changesUrl + "?from=$from"
         val call = http.newCall(Request.Builder().url(url).build())
         Observable.fromCallable {
             call.execute().use { readJson(it, AppUpdateChanges::class.java, 128 * 1024).validate(update, from) }
         }.doOnUnsubscribe(call::cancel)
     }.subscribeOn(Schedulers.io())
+
+    private fun loadGitHubChanges(update: AppUpdate, from: String): Observable<AppUpdateChanges> = Observable.fromCallable {
+        val fallback = AppUpdateChanges(update.release, from, update.commitSha, update.releaseNotes.orEmpty(), update.releaseNotesTruncated,
+            emptyList(), AppUpdateChanges.Comparison.UNAVAILABLE, null, false)
+        if (from == update.commitSha) {
+            return@fromCallable fallback.copy(comparison = AppUpdateChanges.Comparison.IDENTICAL, totalCommits = 0)
+                .validate(update, from)
+        }
+        runCatching {
+            val url = "$UPDATE_REPOSITORY_API/compare/$from...${update.commitSha}?per_page=100"
+            http.newCall(Request.Builder().url(url)
+                .header("Accept", "application/vnd.github+json")
+                .header("X-GitHub-Api-Version", "2026-03-10").build()).execute().use {
+                readJson(it, GitHubUpdateComparison::class.java, 4 * 1024 * 1024).toChanges(update, from)
+            }
+        }.getOrElse { fallback.validate(update, from) }
+    }
 
     private fun <T> readJson(response: Response, type: Class<T>, maxBytes: Long): T {
         kotlin.check(response.isSuccessful)
@@ -304,6 +331,6 @@ object AppUpdater {
 
     // App update notices must survive navigation's dismissal of message notifications.
     internal fun noticeName(sha: String) = "UpdateAvailable-$sha"
-    private fun preferences(context: Context) = context.getSharedPreferences("manticord_updater_runtime", Context.MODE_PRIVATE)
+    private fun preferences(context: Context) = context.getSharedPreferences("axycord_updater_runtime", Context.MODE_PRIVATE)
     private fun downloads(context: Context) = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
 }

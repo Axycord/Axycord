@@ -22,18 +22,18 @@ internal object ThemeTokens {
 
     enum class Group(@get:StringRes val title: Int) {
         /** Not a token group: the editor lists what the theme itself changes here, ahead of everything. */
-        CHANGED(R.string.microcord_theme_group_changed),
-        SURFACES(R.string.microcord_theme_group_surfaces),
-        TEXT(R.string.microcord_theme_group_text),
-        INTERACTIVE(R.string.microcord_theme_group_interactive),
-        BRAND(R.string.microcord_theme_group_brand),
-        BUTTONS(R.string.microcord_theme_group_buttons),
-        STATUS(R.string.microcord_theme_group_status),
-        CHAT(R.string.microcord_theme_group_chat),
-        LEGACY(R.string.microcord_theme_group_legacy),
-        OTHER(R.string.microcord_theme_group_other),
-        PALETTE(R.string.microcord_theme_group_palette),
-        LIBRARIES(R.string.microcord_theme_group_libraries),
+        CHANGED(R.string.axycord_theme_group_changed),
+        SURFACES(R.string.axycord_theme_group_surfaces),
+        TEXT(R.string.axycord_theme_group_text),
+        INTERACTIVE(R.string.axycord_theme_group_interactive),
+        BRAND(R.string.axycord_theme_group_brand),
+        BUTTONS(R.string.axycord_theme_group_buttons),
+        STATUS(R.string.axycord_theme_group_status),
+        CHAT(R.string.axycord_theme_group_chat),
+        LEGACY(R.string.axycord_theme_group_legacy),
+        OTHER(R.string.axycord_theme_group_other),
+        PALETTE(R.string.axycord_theme_group_palette),
+        LIBRARIES(R.string.axycord_theme_group_libraries),
     }
 
     /** [base] is the color on the built-in base theme, before any custom theme. */

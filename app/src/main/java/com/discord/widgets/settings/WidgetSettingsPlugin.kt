@@ -16,9 +16,9 @@ import com.discord.views.CheckedSetting
 import com.discord.widgets.hubs.RadioSelectorItem
 import com.discord.widgets.hubs.RadioSelectorItems
 import com.discord.widgets.hubs.WidgetRadioSelectorBottomSheet
-import dev.mantikafasi.manticord.plugins.api.PluginSetting
-import dev.mantikafasi.manticord.plugins.api.ManticordPlugin
-import dev.mantikafasi.manticord.plugins.api.PluginSettings
+import mmaarij.axycord.plugins.api.PluginSetting
+import mmaarij.axycord.plugins.api.AxycordPlugin
+import mmaarij.axycord.plugins.api.PluginSettings
 import com.discord.utilities.rx.ui
 
 class WidgetSettingsPlugin : AppFragment(R.layout.widget_settings_plugin) {
@@ -47,7 +47,7 @@ class WidgetSettingsPlugin : AppFragment(R.layout.widget_settings_plugin) {
 
     private fun render(
         binding: WidgetSettingsPluginBinding,
-        plugin: ManticordPlugin,
+        plugin: AxycordPlugin,
         settings: PluginSettings,
     ) {
         binding.pluginSettingsContainer.removeAllViews()

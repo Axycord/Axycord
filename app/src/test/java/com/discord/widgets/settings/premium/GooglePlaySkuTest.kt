@@ -27,6 +27,6 @@ class GooglePlaySkuTest {
 
     @Test
     fun `unknown product id is never invented`() {
-        assertNull(GooglePlaySku.fromSkuName("manticord_product_not_configured"))
+        assertNull(GooglePlaySku.fromSkuName("axycord_product_not_configured"))
     }
 }

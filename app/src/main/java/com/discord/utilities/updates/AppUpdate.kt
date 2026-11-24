@@ -6,7 +6,9 @@ import java.io.OutputStream
 import java.net.URI
 import java.security.MessageDigest
 
-const val UPDATE_FEED_URL = "https://microcord.mantikafasi.dev/latest.json"
+const val UPDATE_REPOSITORY = "Axycord/Axycord"
+const val UPDATE_REPOSITORY_API = "https://api.github.com/repos/$UPDATE_REPOSITORY"
+const val UPDATE_FEED_URL = "$UPDATE_REPOSITORY_API/releases/latest"
 private const val UPDATE_ORIGIN = "https://microcord.mantikafasi.dev"
 private val SHA256 = Regex("[0-9a-f]{64}")
 private const val MAX_DEX_METADATA_SIZE = 16L * 1024 * 1024
@@ -29,6 +31,8 @@ data class AppUpdate(
     val apks: Map<String, Apk>? = null,
     /** Baseline profiles for [apkUrl], one per API range; absent on releases from before they were published. */
     val dexMetadata: List<DexMetadata>? = null,
+    val releaseNotes: String? = null,
+    val releaseNotesTruncated: Boolean = false,
 ) {
     data class Apk(val apkUrl: String?, val sha256: String?, val size: Long?, val dexMetadata: List<DexMetadata>? = null)
 
@@ -38,7 +42,9 @@ data class AppUpdate(
     val hasBuildMetadata get() = commitSha != null
 
     /** Where this release's changelog lives; independent of which APK is downloaded. */
-    val changesUrl get() = "$UPDATE_ORIGIN/releases/$release/changes.json"
+    val changesUrl get() = if (isGitHubReleaseAsset(apkUrl, release)) {
+        "$UPDATE_REPOSITORY_API/releases/tags/$release"
+    } else "$UPDATE_ORIGIN/releases/$release/changes.json"
 
     /**
      * This update with the APK for the first of [supportedAbis] the release has a split for, so a
@@ -63,7 +69,7 @@ data class AppUpdate(
     }
 
     fun validate(): AppUpdate = apply {
-        require(release != null && Regex("build-[1-9][0-9]{0,9}").matches(release))
+        require(release != null && Regex("[A-Za-z0-9][A-Za-z0-9._-]{0,99}").matches(release))
         require(isReleaseAsset(apkUrl, ".apk"))
         require(sha256 != null && SHA256.matches(sha256))
         require(size != null && size in 1..1_073_741_824L)
@@ -72,12 +78,21 @@ data class AppUpdate(
             require(commitTimestamp != null && versionCode != null &&
                 versionCode in 1..Int.MAX_VALUE.toLong() && versionCode == commitTimestamp - 1_577_836_800L)
             require(!versionName.isNullOrBlank() && versionName.length <= 100)
-            require(packageName == "dev.mantikafasi.manticord")
+            require(packageName == "mmaarij.axycord")
         }
     }
 
     /** Whether [url] is one of this release's own files on the update origin: universal or one architecture's. */
     private fun isReleaseAsset(url: String?, suffix: String): Boolean {
+        if (isGitHubReleaseAsset(url, release)) {
+            val name = URI(requireNotNull(url)).rawPath.substringAfterLast('/')
+            val expected = if (suffix == ".apk") {
+                listOf("app-release.apk", "app-universal-release.apk") + UPDATE_ABIS.map { "app-$it-release.apk" }
+            } else {
+                listOf("app-release$suffix") + UPDATE_ABIS.map { "app-$it-release$suffix" }
+            }
+            return name in expected
+        }
         val uri = URI(requireNotNull(url))
         return uri.scheme == "https" && uri.host == "microcord.mantikafasi.dev" &&
             uri.port in listOf(-1, 443) && uri.rawUserInfo == null && uri.rawQuery == null &&

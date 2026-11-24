@@ -2,24 +2,24 @@ package com.discord.plugins
 
 import com.discord.api.channel.Channel
 import com.discord.stores.BuiltInCommands
-import dev.mantikafasi.manticord.plugins.api.PluginLoadMode
-import dev.mantikafasi.manticord.plugins.api.PluginManifest
-import dev.mantikafasi.manticord.plugins.api.PluginRequirement
-import dev.mantikafasi.manticord.plugins.api.PluginComposerContribution
-import dev.mantikafasi.manticord.plugins.api.PluginComposerZone
-import dev.mantikafasi.manticord.plugins.api.PluginHeaderContribution
-import dev.mantikafasi.manticord.plugins.api.PluginSettingsSchema
-import dev.mantikafasi.manticord.plugins.api.PluginSetting
-import dev.mantikafasi.manticord.plugins.api.pluginComposerContribution
-import dev.mantikafasi.manticord.plugins.api.pluginBottomTabContribution
-import dev.mantikafasi.manticord.plugins.api.pluginHeaderContribution
-import dev.mantikafasi.manticord.plugins.api.pluginProfileContribution
-import dev.mantikafasi.manticord.plugins.api.pluginProfileTabContribution
-import dev.mantikafasi.manticord.plugins.api.pluginSlashCommand
-import dev.mantikafasi.manticord.plugins.api.pluginManifest
-import dev.mantikafasi.manticord.plugins.api.pluginRequirement
-import dev.mantikafasi.manticord.plugins.api.pluginSettings
-import dev.mantikafasi.manticord.plugins.api.PLUGIN_API_LEVEL
+import mmaarij.axycord.plugins.api.PluginLoadMode
+import mmaarij.axycord.plugins.api.PluginManifest
+import mmaarij.axycord.plugins.api.PluginRequirement
+import mmaarij.axycord.plugins.api.PluginComposerContribution
+import mmaarij.axycord.plugins.api.PluginComposerZone
+import mmaarij.axycord.plugins.api.PluginHeaderContribution
+import mmaarij.axycord.plugins.api.PluginSettingsSchema
+import mmaarij.axycord.plugins.api.PluginSetting
+import mmaarij.axycord.plugins.api.pluginComposerContribution
+import mmaarij.axycord.plugins.api.pluginBottomTabContribution
+import mmaarij.axycord.plugins.api.pluginHeaderContribution
+import mmaarij.axycord.plugins.api.pluginProfileContribution
+import mmaarij.axycord.plugins.api.pluginProfileTabContribution
+import mmaarij.axycord.plugins.api.pluginSlashCommand
+import mmaarij.axycord.plugins.api.pluginManifest
+import mmaarij.axycord.plugins.api.pluginRequirement
+import mmaarij.axycord.plugins.api.pluginSettings
+import mmaarij.axycord.plugins.api.PLUGIN_API_LEVEL
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.assertSame
@@ -210,7 +210,7 @@ class PluginDependencyResolverTest {
                 candidate("needs-missing", requirements = listOf(requirement("missing"))),
                 candidate("old-library", versionCode = 1),
                 candidate("needs-new-library", requirements = listOf(requirement("old-library", minimum = 2))),
-                candidate("wrong-app", manticordMinimum = 2),
+                candidate("wrong-app", axycordMinimum = 2),
             ),
         )
 
@@ -221,7 +221,7 @@ class PluginDependencyResolverTest {
             PluginBlockReason.IncompatibleRequirement("old-library", 1),
             plan.blocked["needs-new-library"],
         )
-        assertEquals(PluginBlockReason.IncompatibleManticord(1), plan.blocked["wrong-app"])
+        assertEquals(PluginBlockReason.IncompatibleAxycord(1), plan.blocked["wrong-app"])
         assertEquals(listOf("old-library"), plan.plugins.map { it.manifest.id })
     }
 
@@ -244,7 +244,7 @@ class PluginDependencyResolverTest {
 
     /** The fixtures target plugin API level 1. */
     private fun resolveAtAppVersionOne(candidates: List<PluginCandidate>) =
-        PluginDependencyResolver.resolve(candidates, manticordVersion = 1)
+        PluginDependencyResolver.resolve(candidates, axycordVersion = 1)
 
     /**
      * A plugin built for an older API, with the default maximum of 2, still loads on a newer host;
@@ -254,15 +254,15 @@ class PluginDependencyResolverTest {
     fun `old plugins load on newer hosts and only the minimum is enforced`() {
         val plan = PluginDependencyResolver.resolve(
             listOf(
-                candidate("old", manticordMinimum = 1),
-                candidate("future", manticordMinimum = PLUGIN_API_LEVEL + 1),
+                candidate("old", axycordMinimum = 1),
+                candidate("future", axycordMinimum = PLUGIN_API_LEVEL + 1),
             ),
-            manticordVersion = PLUGIN_API_LEVEL + 5,
+            axycordVersion = PLUGIN_API_LEVEL + 5,
         )
         assertEquals(setOf("old", "future"), plan.plugins.map { it.manifest.id }.toSet())
         assertEquals(
-            PluginBlockReason.IncompatibleManticord(PLUGIN_API_LEVEL),
-            PluginDependencyResolver.resolve(listOf(candidate("future", manticordMinimum = PLUGIN_API_LEVEL + 1))).blocked["future"],
+            PluginBlockReason.IncompatibleAxycord(PLUGIN_API_LEVEL),
+            PluginDependencyResolver.resolve(listOf(candidate("future", axycordMinimum = PLUGIN_API_LEVEL + 1))).blocked["future"],
         )
     }
 
@@ -273,13 +273,13 @@ class PluginDependencyResolverTest {
         priority: Int = 0,
         loadMode: PluginLoadMode = PluginLoadMode.ASYNC,
         requirements: List<PluginRequirement> = emptyList(),
-        manticordMinimum: Int = 1,
+        axycordMinimum: Int = 1,
     ) = PluginCandidate(
         manifest = pluginManifest(id, id, versionCode.toString(), versionCode) {
             this.priority = priority
             this.loadMode = loadMode
-            manticordVersionMinimum = manticordMinimum
-            manticordVersionMaximumExclusive = manticordMinimum + 1
+            axycordVersionMinimum = axycordMinimum
+            axycordVersionMaximumExclusive = axycordMinimum + 1
             requirements.forEach(::requires)
         },
         enabled = enabled,

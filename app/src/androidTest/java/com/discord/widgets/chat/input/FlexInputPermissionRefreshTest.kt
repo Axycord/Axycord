@@ -111,7 +111,7 @@ class FlexInputPermissionRefreshTest {
                     host.flexInput.addExternalAttachment(
                         SourcedAttachment<Any>(
                             id = 100L + index,
-                            uri = Uri.parse("content://manticord/selected/$index"),
+                            uri = Uri.parse("content://axycord/selected/$index"),
                             displayName = "selected.png",
                             source = "media_picker",
                         ),
@@ -127,7 +127,7 @@ class FlexInputPermissionRefreshTest {
 
             instrumentation.runOnMainSync {
                 host.flexInput.addExternalAttachment(
-                    SourcedAttachment<Any>(99L, Uri.parse("content://manticord/last"), "last.png", source = "media_picker"),
+                    SourcedAttachment<Any>(99L, Uri.parse("content://axycord/last"), "last.png", source = "media_picker"),
                 )
             }
             clickGate(page.recycler(), R.id.pick_media_btn)
@@ -174,7 +174,7 @@ class FlexInputPermissionRefreshTest {
 
             picked = Intent().apply {
                 clipData = ClipData.newRawUri("fixture", uri).apply {
-                    repeat(10) { addItem(ClipData.Item(Uri.parse("content://manticord/overflow/$it"))) }
+                    repeat(10) { addItem(ClipData.Item(Uri.parse("content://axycord/overflow/$it"))) }
                 }
             }
             clickGate(page.recycler(), R.id.pick_media_btn)
@@ -231,7 +231,7 @@ class FlexInputPermissionRefreshTest {
             host.flexInput.addExternalAttachment(
                 SourcedAttachment<Any>(
                     id = 7L,
-                    uri = Uri.parse("content://manticord/selected"),
+                    uri = Uri.parse("content://axycord/selected"),
                     displayName = "selected.png",
                     source = "media_picker",
                 ),

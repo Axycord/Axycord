@@ -1,5 +1,5 @@
-const API = "https://git.hoodnet.work/api/v3/repos/microcord/microcord";
-const DOWNLOAD_ORIGIN = "https://media.git.hoodnet.work";
+const API = "https://api.github.com/repos/Axycord/Axycord";
+const DOWNLOAD_ORIGIN = "https://release-assets.githubusercontent.com";
 const APK_NAME = "app-release.apk";
 const ABIS = ["arm64-v8a", "armeabi-v7a", "x86_64", "x86"];
 const ABI_PATTERN = "arm64-v8a|armeabi-v7a|x86_64|x86";
@@ -13,7 +13,7 @@ const MANIFEST_NAME = "update-manifest.json";
 const MAX_MANIFEST_BYTES = 16 * 1024;
 const MAX_COMPARE_BYTES = 4 * 1024 * 1024;
 const MAX_CHANGES_BYTES = 128 * 1024;
-const PACKAGE_NAME = "dev.mantikafasi.manticord";
+const PACKAGE_NAME = "mmaarij.axycord";
 const VERSION_EPOCH = 1577836800;
 const MAX_VERSION_CODE = 2147483647;
 const RELEASE_TAG = /^build-[1-9]\d{0,9}$/;
@@ -33,7 +33,7 @@ function githubHeaders(token, accept) {
   return {
     Authorization: `Bearer ${token}`,
     Accept: accept,
-    "User-Agent": "manticord-updates",
+    "User-Agent": "axycord-updates",
     "X-GitHub-Api-Version": "2022-11-28",
   };
 }
@@ -339,7 +339,7 @@ async function handle(request, env, ctx) {
   // A profile is served like its APK: the same digest-keyed edge cache and upstream fallback.
   const asset = dm ? apk?.dms?.[dm] : apk;
   if (!asset) return error(404, dm ? "No profile for this APK in that release" : "No APK for this architecture in that release");
-  const filename = `microcord-${release.release}${abi ? `-${abi}` : ""}${dm ? `-${dm}.dm` : ".apk"}`;
+  const filename = `axycord-${release.release}${abi ? `-${abi}` : ""}${dm ? `-${dm}.dm` : ".apk"}`;
   const type = dm ? "application/octet-stream" : "application/vnd.android.package-archive";
   const cached = await cachedApk(request, url, release.release, `${abi ?? "universal"}${dm ? `-${dm}` : ""}`, asset, env.GITHUB_TOKEN);
   if (cached) return apkResponse(cached, filename, type);

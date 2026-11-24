@@ -20,7 +20,7 @@ class ManifestRoutingContractTest {
         assertTrue(xml.contains("com.discord.app.AppActionActivity"))
         assertTrue(xml.contains("android.intent.action.SEND_MULTIPLE"))
         assertTrue(xml.contains("com.discord.intent.action.SDK"))
-        assertTrue(xml.contains("android:scheme=\"manticord\""))
+        assertTrue(xml.contains("android:scheme=\"axycord\""))
 
         // Scoped to activity intent-filters, not the whole file. `<queries>` declares an
         // `http` VIEW intent purely for API 30+ package visibility — without it `UriHandler`

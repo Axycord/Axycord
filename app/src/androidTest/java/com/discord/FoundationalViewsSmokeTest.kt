@@ -22,7 +22,7 @@ class FoundationalViewsSmokeTest {
             assertEquals(0, MaxHeightRecyclerView(context).maxHeight)
             RoundedRelativeLayout(context)
             RoundedCoordinatorLayout(context)
-            LinkifiedTextView(context).text = "Manticord"
+            LinkifiedTextView(context).text = "Axycord"
             TypingDots(context, null).run {
                 start()
                 stop()

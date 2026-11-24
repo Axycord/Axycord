@@ -1,6 +1,6 @@
 package com.discord.plugins
 
-import dev.mantikafasi.manticord.plugins.api.PLUGIN_API_LEVEL
+import mmaarij.axycord.plugins.api.PLUGIN_API_LEVEL
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
@@ -10,17 +10,17 @@ import android.os.Build
 import android.os.SystemClock
 import android.view.LayoutInflater
 import dalvik.system.PathClassLoader
-import dev.mantikafasi.manticord.plugins.api.ManticordPlugin
-import dev.mantikafasi.manticord.plugins.api.PluginLoadMode
-import dev.mantikafasi.manticord.plugins.api.PluginManifest
-import dev.mantikafasi.manticord.plugins.api.PluginResources
-import dev.mantikafasi.manticord.plugins.api.pluginManifest
-import dev.mantikafasi.manticord.plugins.api.pluginRequirement
+import mmaarij.axycord.plugins.api.AxycordPlugin
+import mmaarij.axycord.plugins.api.PluginLoadMode
+import mmaarij.axycord.plugins.api.PluginManifest
+import mmaarij.axycord.plugins.api.PluginResources
+import mmaarij.axycord.plugins.api.pluginManifest
+import mmaarij.axycord.plugins.api.pluginRequirement
 import java.security.MessageDigest
 import java.util.concurrent.ConcurrentHashMap
 
 internal data class DiscoveredPlugin(
-    val plugin: ManticordPlugin,
+    val plugin: AxycordPlugin,
     val manifest: PluginManifest,
     val sourcePackage: String?,
     val resources: PluginResources,
@@ -46,7 +46,7 @@ internal fun interface PluginSource {
 }
 
 internal data class BundledPlugin(
-    val plugin: ManticordPlugin,
+    val plugin: AxycordPlugin,
     val manifest: PluginManifest,
 )
 
@@ -70,7 +70,7 @@ internal class ExternalPluginSource : PluginSource {
                 PluginLoadingPolicy.approvedSigner(descriptor.packageName) == descriptor.signerSha256
             }
             .filter { descriptor ->
-                PLUGIN_API_LEVEL >= descriptor.manifest.manticordVersionMinimum
+                PLUGIN_API_LEVEL >= descriptor.manifest.axycordVersionMinimum
             }
             .map { descriptor -> PluginHandle(descriptor.manifest) { load(context, descriptor) } }
     }
@@ -98,9 +98,9 @@ internal class ExternalPluginSource : PluginSource {
             val metadata = service.metaData ?: return@mapNotNull null
             val entrypoint = metadata.getString(ENTRYPOINT_METADATA) ?: return@mapNotNull null
             val pluginId = metadata.getString(ID_METADATA) ?: return@mapNotNull null
-            val manticordMinimum = metadata.getInt(MANTICORD_MINIMUM_METADATA, 0).takeIf { it > 0 }
+            val axycordMinimum = metadata.getInt(AXYCORD_MINIMUM_METADATA, 0).takeIf { it > 0 }
                 ?: return@mapNotNull null
-            val manticordMaximum = metadata.getInt(MANTICORD_MAXIMUM_METADATA, 0).takeIf { it > 0 }
+            val axycordMaximum = metadata.getInt(AXYCORD_MAXIMUM_METADATA, 0).takeIf { it > 0 }
             val loadMode = metadata.getString(LOAD_MODE_METADATA)
                 ?.let { runCatching { PluginLoadMode.valueOf(it) }.getOrNull() }
                 ?: return@mapNotNull null
@@ -124,8 +124,8 @@ internal class ExternalPluginSource : PluginSource {
                 versionCode,
             ) {
                 description = metadata.getString(DESCRIPTION_METADATA).orEmpty()
-                manticordVersionMinimum = manticordMinimum
-                manticordVersionMaximumExclusive = manticordMaximum
+                axycordVersionMinimum = axycordMinimum
+                axycordVersionMaximumExclusive = axycordMaximum
                 priority = metadata.getInt(PRIORITY_METADATA, 0)
                 this.loadMode = loadMode
                 usesResources = metadata.getBoolean(USES_RESOURCES_METADATA, false)
@@ -162,7 +162,7 @@ internal class ExternalPluginSource : PluginSource {
                     context.classLoader,
                 )
                 val plugin = classLoader.loadClass(descriptor.entrypoint)
-                    .asSubclass(ManticordPlugin::class.java)
+                    .asSubclass(AxycordPlugin::class.java)
                     .getDeclaredConstructor()
                     .newInstance()
                 val resources = if (descriptor.manifest.usesResources) {
@@ -229,16 +229,16 @@ internal class ExternalPluginSource : PluginSource {
     ) : PluginResources
 
     companion object {
-        const val PLUGIN_ACTION = "dev.mantikafasi.manticord.PLUGIN"
-        const val ENTRYPOINT_METADATA = "dev.mantikafasi.manticord.plugin.ENTRYPOINT"
-        const val ID_METADATA = "dev.mantikafasi.manticord.plugin.ID"
-        const val DESCRIPTION_METADATA = "dev.mantikafasi.manticord.plugin.DESCRIPTION"
-        const val USES_RESOURCES_METADATA = "dev.mantikafasi.manticord.plugin.USES_RESOURCES"
-        const val MANTICORD_MINIMUM_METADATA = "dev.mantikafasi.manticord.plugin.MANTICORD_VERSION_MINIMUM"
-        const val MANTICORD_MAXIMUM_METADATA = "dev.mantikafasi.manticord.plugin.MANTICORD_VERSION_MAXIMUM_EXCLUSIVE"
-        const val LOAD_MODE_METADATA = "dev.mantikafasi.manticord.plugin.LOAD_MODE"
-        const val PRIORITY_METADATA = "dev.mantikafasi.manticord.plugin.PRIORITY"
-        const val REQUIREMENTS_METADATA = "dev.mantikafasi.manticord.plugin.REQUIREMENTS"
+        const val PLUGIN_ACTION = "mmaarij.axycord.PLUGIN"
+        const val ENTRYPOINT_METADATA = "mmaarij.axycord.plugin.ENTRYPOINT"
+        const val ID_METADATA = "mmaarij.axycord.plugin.ID"
+        const val DESCRIPTION_METADATA = "mmaarij.axycord.plugin.DESCRIPTION"
+        const val USES_RESOURCES_METADATA = "mmaarij.axycord.plugin.USES_RESOURCES"
+        const val AXYCORD_MINIMUM_METADATA = "mmaarij.axycord.plugin.AXYCORD_VERSION_MINIMUM"
+        const val AXYCORD_MAXIMUM_METADATA = "mmaarij.axycord.plugin.AXYCORD_VERSION_MAXIMUM_EXCLUSIVE"
+        const val LOAD_MODE_METADATA = "mmaarij.axycord.plugin.LOAD_MODE"
+        const val PRIORITY_METADATA = "mmaarij.axycord.plugin.PRIORITY"
+        const val REQUIREMENTS_METADATA = "mmaarij.axycord.plugin.REQUIREMENTS"
     }
 }
 

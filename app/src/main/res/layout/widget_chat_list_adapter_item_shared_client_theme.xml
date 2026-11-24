@@ -44,7 +44,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/manticord_custom_theme_shared"
+                    android:text="@string/axycord_custom_theme_shared"
                     style="@style/UiKit.TextView.Semibold" />
 
                 <com.google.android.material.button.MaterialButton
@@ -52,14 +52,14 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
-                    android:text="@string/manticord_custom_theme_shared_preview"
+                    android:text="@string/axycord_custom_theme_shared_preview"
                     style="@style/UiKit.Material.Button.Secondary" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/shared_client_theme_apply"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/manticord_custom_theme_shared_apply"
+                    android:text="@string/axycord_custom_theme_shared_apply"
                     style="@style/UiKit.Material.Button" />
             </LinearLayout>
         </LinearLayout>

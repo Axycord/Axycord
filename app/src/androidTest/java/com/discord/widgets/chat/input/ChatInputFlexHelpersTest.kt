@@ -54,7 +54,7 @@ class ChatInputFlexHelpersTest {
         try {
             val original = SourcedAttachment<Any>(
                 id = 42L,
-                uri = Uri.parse("content://manticord/image"),
+                uri = Uri.parse("content://axycord/image"),
                 displayName = "image.png",
                 source = "keyboard",
                 spoiler = true,

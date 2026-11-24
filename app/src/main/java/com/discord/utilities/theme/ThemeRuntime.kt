@@ -29,7 +29,7 @@ import java.security.MessageDigest
  * nothing else runs. Enabling themes generates a small resource table ([ThemeTableBuilder])
  * and the files it points at. The loader serves both on top of the APK's own resources:
  * - palette colors, tinted drawables, fonts and sounds are replaced in place;
- * - theme attributes land in [R.style.ThemeOverlay_Microcord_Runtime], which [applyOverlay] layers
+ * - theme attributes land in [R.style.ThemeOverlay_Axycord_Runtime], which [applyOverlay] layers
  *   over each base theme.
  *
  * Several themes can be enabled at once. They layer like Aliucord's: later ones win key by key.
@@ -199,13 +199,13 @@ object ThemeRuntime {
 
     /** Layers the enabled themes' attributes over [theme]. A no-op when no theme is enabled. */
     fun applyOverlay(theme: Resources.Theme) {
-        if (overlayActive) theme.applyStyle(R.style.ThemeOverlay_Microcord_Runtime, true)
+        if (overlayActive) theme.applyStyle(R.style.ThemeOverlay_Axycord_Runtime, true)
     }
 
     /** [applyOverlay] for a dialog; under a see-through theme its surfaces are made solid as well. */
     fun applyDialogOverlay(theme: Resources.Theme) {
         applyOverlay(theme)
-        if (ThemeWallpaper.mode == ThemeDefinition.Transparency.FULL) theme.applyStyle(R.style.ThemeOverlay_Microcord_OpaqueSurfaces, true)
+        if (ThemeWallpaper.mode == ThemeDefinition.Transparency.FULL) theme.applyStyle(R.style.ThemeOverlay_Axycord_OpaqueSurfaces, true)
     }
 
     /** Called when an activity resumes; ends the probation of a themed launch once it has stayed up. */

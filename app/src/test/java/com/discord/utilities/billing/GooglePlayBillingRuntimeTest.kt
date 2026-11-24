@@ -31,7 +31,7 @@ class GooglePlayBillingRuntimeTest {
     }
 
     @Test
-    fun `Manticord SKU configuration installs atomically and clears`() {
+    fun `Axycord SKU configuration installs atomically and clears`() {
         val ids = premiumGifts.mapIndexed { index, sku -> sku.paymentGatewaySkuId to (index + 1L) }.toMap()
 
         InAppSkuConfig.installSkuIds(ids)

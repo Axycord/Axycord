@@ -31,7 +31,7 @@ import com.discord.utilities.images.MGImages
 import com.discord.plugins.PluginUiRegistry
 import com.discord.views.CheckedSetting
 import com.discord.api.channel.Channel
-import dev.mantikafasi.manticord.plugins.api.pluginChannelContext
+import mmaarij.axycord.plugins.api.pluginChannelContext
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
 import kotlin.math.abs

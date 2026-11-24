@@ -9,7 +9,7 @@ import java.util.zip.ZipFile
 /**
  * Turns resolved overrides into the resource table [ThemeRuntime] loads, plus the files it serves.
  *
- * - **Theme attributes** become items of the [R.style.ThemeOverlay_Microcord_Runtime] placeholder,
+ * - **Theme attributes** become items of the [R.style.ThemeOverlay_Axycord_Runtime] placeholder,
  *   which the table replaces wholesale and every themed context applies on top of its base theme.
  * - **Palette colors** become plain color entries. Color state lists are skipped: one color cannot
  *   stand in for their states.
@@ -50,7 +50,7 @@ internal class ThemeTableBuilder(
             val id = attrId(name)
             if (id == 0) warnings += "Unknown theme attribute $name" else items[id] = color
         }
-        if (items.isNotEmpty()) entries += entry(R.style.ThemeOverlay_Microcord_Runtime, ArscWriter.Value.Style(items))
+        if (items.isNotEmpty()) entries += entry(R.style.ThemeOverlay_Axycord_Runtime, ArscWriter.Value.Style(items))
         resolved.colors.forEach { (name, color) ->
             val id = resources.getIdentifier(name, "color", packageName)
             when {
@@ -130,9 +130,9 @@ internal class ThemeTableBuilder(
     private fun newDrawableEntry(name: String, value: ArscWriter.Value, configs: List<ArscWriter.Config>): Int {
         val type = R.drawable.ic_chevron_right_grey_12dp and 0xFFFF0000.toInt()
         if (nextDrawableEntry < 0) nextDrawableEntry = firstFreeEntry(type)
-        var key = "microcord_$name"
+        var key = "axycord_$name"
         var suffix = 2
-        while (!usedNames.add(key)) key = "microcord_${name}_${suffix++}"
+        while (!usedNames.add(key)) key = "axycord_${name}_${suffix++}"
         val id = type or nextDrawableEntry++
         entries += ArscWriter.Entry(id, "drawable", key, value, configs)
         return id
@@ -181,7 +181,7 @@ internal class ThemeTableBuilder(
         private const val MAX_DEPTH = 3
 
         /** Where the table's files live, as the loader's assets provider is asked for them. */
-        const val ASSET_PREFIX = "res/microcord/"
+        const val ASSET_PREFIX = "res/axycord/"
 
         /** Written into every table. Reading it back proves the device actually honours the table. */
         const val SENTINEL = 0x5A0A1E57

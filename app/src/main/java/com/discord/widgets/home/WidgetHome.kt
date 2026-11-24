@@ -71,7 +71,7 @@ import com.discord.widgets.chat.input.AppFlexInputViewModel
 import com.discord.widgets.settings.WidgetMuteSettingsSheet
 import com.discord.widgets.user.calls.PrivateCallLauncher
 import com.discord.plugins.PluginUiRegistry
-import dev.mantikafasi.manticord.plugins.api.PluginRegistration
+import mmaarij.axycord.plugins.api.PluginRegistration
 import com.discord.widgets.user.usersheet.WidgetUserSheet
 import com.discord.widgets.forums.WidgetForumBrowser
 import com.discord.widgets.message_requests.WidgetMessageRequests

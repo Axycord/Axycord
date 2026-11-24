@@ -34,7 +34,7 @@ import java.util.Locale
  * - **Adjust and Firebase events.** The reference fires install-attribution events through the
  *   Adjust SDK using event tokens baked into the APK, and a handful of events (`handle_ext_share`,
  *   `unhandled_uri`) only through Firebase Analytics. Those identifiers belong to Discord and
- *   `PLAN.md` forbids reusing them; Phase 13 registers Manticord-owned configuration.
+ *   `PLAN.md` forbids reusing them; Phase 13 registers Axycord-owned configuration.
  * - Events whose parameter types have no target equivalent yet (`callReportProblem`,
  *   `failedMessageResolved`, `fileUploadAlertViewed`, `deepLinkReceived`, `quickSwitcherSelect`,
  *   the payment-flow family, the account-link family). Their `StoreAnalytics` entry points are

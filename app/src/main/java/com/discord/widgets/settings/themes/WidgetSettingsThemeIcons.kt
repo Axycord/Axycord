@@ -19,7 +19,7 @@ import rx.schedulers.Schedulers
  *
  * Lists the tinted icons; searching finds any of the app's drawables to tint.
  */
-class WidgetSettingsThemeIcons : ThemeEditorPage(R.layout.widget_settings_theme_list_page, R.string.microcord_theme_icons) {
+class WidgetSettingsThemeIcons : ThemeEditorPage(R.layout.widget_settings_theme_list_page, R.string.axycord_theme_icons) {
 
     private var _binding: WidgetSettingsThemeListPageBinding? = null
     private val binding get() = requireNotNull(_binding)
@@ -29,8 +29,8 @@ class WidgetSettingsThemeIcons : ThemeEditorPage(R.layout.widget_settings_theme_
 
     override fun onThemeLoaded(view: View) {
         _binding = WidgetSettingsThemeListPageBinding.bind(view)
-        binding.themeListPageSearch.setHint(getString(R.string.microcord_theme_icons_search))
-        binding.themeListPageHelp.setText(R.string.microcord_theme_icons_help)
+        binding.themeListPageSearch.setHint(getString(R.string.axycord_theme_icons_search))
+        binding.themeListPageHelp.setText(R.string.axycord_theme_icons_help)
         binding.themeListPageList.layoutManager = LinearLayoutManager(requireContext())
         binding.themeListPageList.itemAnimator = null
         binding.themeListPageList.adapter = adapter
@@ -64,7 +64,7 @@ class WidgetSettingsThemeIcons : ThemeEditorPage(R.layout.widget_settings_theme_
         val items = mutableListOf<ThemeEditorListAdapter.Item>()
         if (needle.isEmpty()) {
             if (theme.drawableTints.isNotEmpty()) {
-                items += ThemeEditorListAdapter.Item.Header("tinted", getString(R.string.microcord_theme_icons_tinted))
+                items += ThemeEditorListAdapter.Item.Header("tinted", getString(R.string.axycord_theme_icons_tinted))
                 theme.drawableTints.keys.sorted().forEach { items += iconItem(it) }
             }
         } else {
@@ -80,7 +80,7 @@ class WidgetSettingsThemeIcons : ThemeEditorPage(R.layout.widget_settings_theme_
             id = name,
             label = name,
             color = tint,
-            detail = tint?.let(ThemeColorParser::toHex) ?: getString(R.string.microcord_theme_file_default),
+            detail = tint?.let(ThemeColorParser::toHex) ?: getString(R.string.axycord_theme_file_default),
             overridden = tint != null,
             icon = {
                 val id = context.resources.getIdentifier(name, "drawable", context.packageName)

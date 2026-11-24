@@ -71,8 +71,8 @@ import rx.Observable
 import rx.subscriptions.CompositeSubscription
 import com.discord.utilities.user.UserUtils.getDisplayName
 import com.discord.plugins.PluginContextMenuHost
-import dev.mantikafasi.manticord.plugins.api.PluginContextMenuSurface
-import dev.mantikafasi.manticord.plugins.api.pluginContextMenuContext
+import mmaarij.axycord.plugins.api.PluginContextMenuSurface
+import mmaarij.axycord.plugins.api.pluginContextMenuContext
 import com.discord.utilities.threads.ThreadUtils
 
 class WidgetChatListActions : AppBottomSheet() {

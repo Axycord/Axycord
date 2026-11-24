@@ -45,7 +45,7 @@ class WidgetChatListAdapterItemSharedClientTheme private constructor(
         val activity = { (adapter.appPermissionsRequests as? AppFragment)?.appActivity }
         binding.sharedClientThemePreviewButton.isEnabled = supported && (previewing || !inUse)
         binding.sharedClientThemePreviewButton.setText(
-            if (previewing) R.string.manticord_custom_theme_shared_revert else R.string.manticord_custom_theme_shared_preview,
+            if (previewing) R.string.axycord_custom_theme_shared_revert else R.string.axycord_custom_theme_shared_preview,
         )
         binding.sharedClientThemePreviewButton.setOnClickListener {
             if (previewing) ThemeActions.endPreview(activity()) else ThemeActions.previewClientTheme(activity(), entry.theme)

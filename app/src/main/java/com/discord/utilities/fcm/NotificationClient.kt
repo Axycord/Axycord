@@ -19,7 +19,7 @@ import com.discord.utilities.persister.Persister
  *
  * Everything here is deliberately provider-agnostic. The reference's `FCMMessagingService` is a
  * `FirebaseMessagingService` subclass, and the Firebase SDK is not a dependency of this project —
- * registering project-owned Firebase configuration for `dev.mantikafasi.manticord` is Phase 13
+ * registering project-owned Firebase configuration for `mmaarij.axycord` is Phase 13
  * work, and the reference APK's Firebase values must never be reused. A future messaging service
  * only has to call [onNewToken] and [handlePushNotification]; no other class needs to change.
  */

@@ -11,7 +11,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
 import com.discord.R
 import com.discord.utilities.color.ColorCompat
-import dev.mantikafasi.manticord.plugins.api.PluginContextMenuContext
+import mmaarij.axycord.plugins.api.PluginContextMenuContext
 
 object PluginContextMenuHost {
     fun bind(container: ViewGroup, context: PluginContextMenuContext, dismiss: () -> Unit, modern: Boolean = false) {

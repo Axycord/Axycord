@@ -42,9 +42,9 @@ class WidgetAuthLogin : AuthFragment(R.layout.widget_auth_login, AuthRoute.LOGIN
         val activity = appActivity as? AppActivity ?: return
         WidgetNoticeDialog.showInputModal(
             activity = activity,
-            headerText = getString(R.string.manticord_login_with_token),
+            headerText = getString(R.string.axycord_login_with_token),
             bodyText = "",
-            hintText = getString(R.string.manticord_token),
+            hintText = getString(R.string.axycord_token),
             onOKClicked = { _, token -> submit(AuthAction.TokenLogin(token)) },
             cancelable = true,
             isPassword = true,

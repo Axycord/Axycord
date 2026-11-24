@@ -27,7 +27,7 @@ class ApplicationSmokeTest {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val context = instrumentation.targetContext
 
-        assertEquals("dev.mantikafasi.manticord", context.packageName)
+        assertEquals("mmaarij.axycord", context.packageName)
         assertTrue(context.applicationContext is App)
         assertSame(context.applicationContext, ApplicationProvider.get())
         assertNotNull(SharedPreferencesProvider.get())

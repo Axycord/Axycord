@@ -29,9 +29,9 @@ import com.discord.utilities.images.MGImages
 import com.discord.views.VitoImageView
 import com.google.android.material.snackbar.Snackbar
 import com.discord.views.CheckedSetting
-import dev.mantikafasi.manticord.plugins.api.PluginComposerZone
-import dev.mantikafasi.manticord.plugins.api.pluginChannelContext
-import dev.mantikafasi.manticord.plugins.api.pluginComposerContext
+import mmaarij.axycord.plugins.api.PluginComposerZone
+import mmaarij.axycord.plugins.api.pluginChannelContext
+import mmaarij.axycord.plugins.api.pluginComposerContext
 import kotlin.math.abs
 import androidx.core.view.ViewCompat
 

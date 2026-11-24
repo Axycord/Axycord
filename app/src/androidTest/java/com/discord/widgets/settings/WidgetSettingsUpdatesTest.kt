@@ -67,7 +67,7 @@ class WidgetSettingsUpdatesTest {
         val preferences = SharedPreferencesProvider.get()
         val setting = ClientSettings.automaticUpdateChecks
         val originalAutomatic = if (preferences.contains(setting.key)) preferences.getBoolean(setting.key, true) else null
-        val runtime = instrumentation.targetContext.getSharedPreferences("manticord_updater_runtime", Context.MODE_PRIVATE)
+        val runtime = instrumentation.targetContext.getSharedPreferences("axycord_updater_runtime", Context.MODE_PRIVATE)
         val originalNextCheck = if (runtime.contains("next_check")) runtime.getLong("next_check", 0) else null
         val originalCheckBuild = runtime.getString("last_check_build", null)
         val versionCode = maxOf(
@@ -85,7 +85,7 @@ class WidgetSettingsUpdatesTest {
             commitTimestamp = versionCode + 1_577_836_800L,
             versionCode = versionCode,
             versionName = "instrumentation-fixture",
-            packageName = "dev.mantikafasi.manticord",
+            packageName = "mmaarij.axycord",
         ).validate()
         val available = State(Phase.AVAILABLE, update)
         val checkedNetwork = AtomicBoolean(false)

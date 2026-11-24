@@ -8,7 +8,7 @@ import com.google.gson.JsonElement
  *
  * Every Aliucord section means what it means to Aliucord's Themer, so its themes import unchanged:
  * `manifest`, `background`, `fonts`, `raws`, `simple_colors`, `colors` and `drawable_tints`.
- * Ours are `attrs`, which overrides theme attributes directly by name, and `microcord`, which picks
+ * Ours are `attrs`, which overrides theme attributes directly by name, and `axycord`, which picks
  * the built-in theme the overrides sit on and how the background shows.
  *
  * Unknown top-level keys are kept verbatim in [extras], so re-exporting a theme loses nothing.

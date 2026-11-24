@@ -256,7 +256,7 @@ object AuthUiRules {
     }
 
     fun token(token: String): Map<String, Int> =
-        if (token.isBlank()) mapOf("token" to R.string.manticord_token_required) else emptyMap()
+        if (token.isBlank()) mapOf("token" to R.string.axycord_token_required) else emptyMap()
 
     fun identity(mode: AuthIdentityMode, value: String): Map<String, Int> = buildMap {
         val valid = when (mode) {

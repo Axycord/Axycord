@@ -33,8 +33,8 @@ import com.discord.databinding.WidgetChatListAdapterItemFailedBinding
 import com.discord.databinding.WidgetChatListAdapterItemMinimalBinding
 import com.discord.databinding.WidgetChatListAdapterItemTextBinding
 import com.discord.plugins.PluginMessageHost
-import dev.mantikafasi.manticord.plugins.api.PluginMessageViews
-import dev.mantikafasi.manticord.plugins.api.pluginMessageContext
+import mmaarij.axycord.plugins.api.PluginMessageViews
+import mmaarij.axycord.plugins.api.pluginMessageContext
 import com.discord.api.permission.Permission
 import com.discord.i18n.Hook
 import com.discord.i18n.I18nHooks

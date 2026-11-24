@@ -9,6 +9,28 @@ import org.junit.Test
 
 class ThemeJsonTest {
     @Test
+    fun importsLegacyThemeOptionsAndExportsAxycordOptions() {
+        val theme = ThemeJson.parse(
+            """{"microcord":{"base":"midnight","transparency":"chat_settings"}}""",
+        ).theme
+        assertEquals("midnight", theme.base)
+        assertEquals(ThemeDefinition.Transparency.CHAT_SETTINGS, theme.transparency)
+        val exported = JsonParser.parseString(ThemeJson.toJson(theme)).asJsonObject
+        assertTrue(exported.has("axycord"))
+        assertFalse(exported.has("microcord"))
+        assertEquals(theme, ThemeJson.parse(exported.toString()).theme)
+    }
+
+    @Test
+    fun axycordOptionsTakePrecedenceOverLegacyOptions() {
+        val theme = ThemeJson.parse(
+            """{"microcord":{"base":"light"},"axycord":{"base":"midnight"}}""",
+        ).theme
+        assertEquals("midnight", theme.base)
+        assertTrue(theme.extras.isEmpty())
+    }
+
+    @Test
     fun readsAnAliucordThemeAndKeepsUnappliedSections() {
         val parsed = ThemeJson.parse(
             """
@@ -102,7 +124,7 @@ class ThemeJsonTest {
     @Test
     fun badSectionsAndBasesWarnInsteadOfFailing() {
         val parsed = ThemeJson.parse(
-            """{"colors": [1, 2], "attrs": {"colorTextNormal": "#fff"}, "microcord": {"base": "neon"}}""",
+            """{"colors": [1, 2], "attrs": {"colorTextNormal": "#fff"}, "axycord": {"base": "neon"}}""",
         )
         assertEquals(mapOf("colorTextNormal" to -1), parsed.theme.attrs)
         assertEquals(ThemeDefinition.BASE_DEFAULT, parsed.theme.base)

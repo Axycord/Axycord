@@ -278,7 +278,7 @@ class StoreClientDataState(
         fun readFastConnectState(preferences: SharedPreferences): ClientDataState? =
             preferences.getString(FAST_CONNECT_CACHE_KEY, null)?.let { json ->
                 runCatching { gson.fromJson(json, ClientDataState::class.java) }
-                    .onFailure { Log.w("ManticordGateway", "fast connect mirror read failed: ${it.javaClass.simpleName}: ${it.message}") }
+                    .onFailure { Log.w("AxycordGateway", "fast connect mirror read failed: ${it.javaClass.simpleName}: ${it.message}") }
                     .getOrNull()
             }
 

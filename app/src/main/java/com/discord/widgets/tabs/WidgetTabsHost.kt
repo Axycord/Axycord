@@ -57,7 +57,7 @@ import com.discord.widgets.user.WidgetUserSetCustomStatus
 import com.discord.widgets.user.WidgetUserStatusSheet
 import com.discord.widgets.user.search.WidgetGlobalSearchDialog
 import com.discord.widgets.user.usersheet.WidgetUserSheet
-import dev.mantikafasi.manticord.plugins.api.PluginRegistration
+import mmaarij.axycord.plugins.api.PluginRegistration
 
 /**
  * The signed-in shell: one fragment per tab, all kept alive, plus the bottom navigation bar.

@@ -35,11 +35,12 @@ object ThemeJson {
     private const val BACKGROUND = "background"
     private const val FONTS = "fonts"
     private const val RAWS = "raws"
-    private const val MICROCORD = "microcord"
+    private const val AXYCORD = "axycord"
+    private const val LEGACY_THEME_SECTION = "microcord"
     private const val SYSTEM_COLOR_PREFIX = "system_"
     private val SECTIONS = setOf(
         MANIFEST, BACKGROUND, FONTS, RAWS, SECTION_SIMPLE_COLORS, SECTION_COLORS, SECTION_DRAWABLE_TINTS,
-        SECTION_ATTRS, MICROCORD,
+        SECTION_ATTRS, AXYCORD, LEGACY_THEME_SECTION,
     )
     private val MANIFEST_KEYS = setOf("name", "author", "version", "license", "updater")
 
@@ -79,10 +80,12 @@ object ThemeJson {
         require(entries <= MAX_ENTRIES) { "Theme has more than $MAX_ENTRIES entries" }
 
         val manifest = json.get(MANIFEST) as? JsonObject ?: JsonObject()
-        val microcord = json.get(MICROCORD) as? JsonObject ?: JsonObject()
-        val base = microcord.string("base") ?: ThemeDefinition.BASE_DEFAULT
+        val axycord = json.get(AXYCORD) as? JsonObject
+            ?: json.get(LEGACY_THEME_SECTION) as? JsonObject
+            ?: JsonObject()
+        val base = axycord.string("base") ?: ThemeDefinition.BASE_DEFAULT
         if (base !in ThemeDefinition.BASES) warnings += "Unknown base theme \"$base\", using the default"
-        val transparency = microcord.string("transparency")
+        val transparency = axycord.string("transparency")
         if (transparency != null && ThemeDefinition.Transparency.of(transparency) == null) {
             warnings += "Unknown transparency \"$transparency\""
         }
@@ -116,7 +119,7 @@ object ThemeJson {
      * Aliucord's section order, then ours.
      *
      * Aliucord sections keep signed int colors, because Aliucord's loader throws on anything else.
-     * It ignores `attrs` and `microcord`, so the same file still loads there. `attrs` is written as
+     * It ignores `attrs` and `axycord`, so the same file still loads there. `attrs` is written as
      * hex for readability.
      */
     fun toJson(theme: ThemeDefinition): String {
@@ -141,7 +144,7 @@ object ThemeJson {
         root.add(SECTION_COLORS, colors(theme, SECTION_COLORS, theme.colors) { JsonPrimitive(it) })
         root.add(SECTION_DRAWABLE_TINTS, colors(theme, SECTION_DRAWABLE_TINTS, theme.drawableTints) { JsonPrimitive(it) })
         root.add(SECTION_ATTRS, colors(theme, SECTION_ATTRS, theme.attrs) { JsonPrimitive(ThemeColorParser.toHex(it)) })
-        root.add(MICROCORD, JsonObject().apply {
+        root.add(AXYCORD, JsonObject().apply {
             addProperty("formatVersion", FORMAT_VERSION)
             addProperty("base", theme.base)
             theme.transparency?.let { addProperty("transparency", it.wire) }

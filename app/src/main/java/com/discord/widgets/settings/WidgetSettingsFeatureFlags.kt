@@ -14,8 +14,8 @@ import com.discord.databinding.WidgetSettingsFeatureFlagsBinding
 import com.discord.stores.StoreStream
 import com.discord.utilities.display.setMaximumRefreshRate
 import com.discord.utilities.feature.FeatureFlags
-import com.discord.utilities.feature.ManticordSettingsBackup
-import com.discord.utilities.feature.ManticordSettingsBackupCodec
+import com.discord.utilities.feature.AxycordSettingsBackup
+import com.discord.utilities.feature.AxycordSettingsBackupCodec
 import com.discord.utilities.feature.PluginSurfaceCustomization.Surface
 import com.discord.utilities.rest.RestAPI
 import com.discord.utilities.rx.appSubscribe
@@ -250,22 +250,22 @@ class WidgetSettingsFeatureFlags : AppFragment(R.layout.widget_settings_feature_
         val restore = action == BackupAction.RESTORE
         val auth = StoreStream.getAuthentication().getAuthState() ?: return
         val app = requireContext().applicationContext
-        if (restore && ManticordSettingsBackup.hasPendingRestore(app)) {
+        if (restore && AxycordSettingsBackup.hasPendingRestore(app)) {
             startActivity(Intent(requireContext(), ClientSettingsRestoreActivity::class.java)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK))
             return
         }
-        val backup = ManticordSettingsBackup(RestAPI.api) {
+        val backup = AxycordSettingsBackup(RestAPI.api) {
             FeatureFlags.cloudSettingsBackupEnabled() && StoreStream.getAuthentication().getAuthState() === auth
         }
         val operation = when (action) {
             BackupAction.SAVE -> backup.save(StoreStream.captureClientSettings(app))
             BackupAction.CLEAR -> backup.clear()
             BackupAction.RESTORE -> {
-                val owner = ManticordSettingsBackup.authFingerprint()
+                val owner = AxycordSettingsBackup.authFingerprint()
                 backup.load().map { payload ->
                     backup.checkPermitted()
-                    ManticordSettingsBackup.stageRestore(app, payload, owner)
+                    AxycordSettingsBackup.stageRestore(app, payload, owner)
                     Unit
                 }
             }
@@ -285,7 +285,7 @@ class WidgetSettingsFeatureFlags : AppFragment(R.layout.widget_settings_feature_
                         AppLog.w("CloudSettings", "action=${action.name.lowercase()} error=${error.cause.javaClass.simpleName} source=$source")
                         AppToast.show(this, when {
                             action == BackupAction.CLEAR -> R.string.cloud_settings_clear_failed
-                            error.cause is ManticordSettingsBackupCodec.UnrecognizedCloudData -> R.string.cloud_settings_existing_data
+                            error.cause is AxycordSettingsBackupCodec.UnrecognizedCloudData -> R.string.cloud_settings_existing_data
                             error.cause is IllegalArgumentException -> if (restore) R.string.cloud_settings_invalid else R.string.cloud_settings_save_invalid
                             else -> R.string.cloud_settings_conflict
                         })

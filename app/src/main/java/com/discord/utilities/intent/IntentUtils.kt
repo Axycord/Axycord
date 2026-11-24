@@ -46,7 +46,7 @@ object IntentUtils {
         getStringExtra("android.intent.extra.shortcut.ID")?.toLongOrNull()
 
     fun isDiscordAppUri(uri: Uri): Boolean =
-        uri.scheme?.lowercase(Locale.ROOT) in setOf("discord", "manticord") &&
+        uri.scheme?.lowercase(Locale.ROOT) in setOf("discord", "axycord") &&
             uri.host?.lowercase(Locale.ROOT) in setOf("app", "action") &&
             uri.userInfo == null && uri.port == -1
 

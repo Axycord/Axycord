@@ -5,7 +5,7 @@
     </com.google.android.material.appbar.AppBarLayout>
     <androidx.core.widget.NestedScrollView style="@style/UiKit.ViewGroup.NestedScrollView.AppBarScrollingViewBehavior">
         <LinearLayout style="@style/UiKit.ViewGroup.LinearLayout">
-            <com.discord.views.SearchInputView android:id="@+id/settings_search_input" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginHorizontal="12dp" android:layout_marginVertical="16dp" app:siv_hint="@string/microcord_settings_search_hint" app:siv_search_content_description="@string/microcord_settings_search_hint"/>
+            <com.discord.views.SearchInputView android:id="@+id/settings_search_input" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginHorizontal="12dp" android:layout_marginVertical="16dp" app:siv_hint="@string/axycord_settings_search_hint" app:siv_search_content_description="@string/axycord_settings_search_hint"/>
             <TextView android:id="@+id/settings_search_empty" android:layout_width="match_parent" android:layout_height="wrap_content" android:visibility="gone" style="@style/UiKit.TextView.NoResults"/>
             <LinearLayout android:id="@+id/settings_search_results" style="@style/UiKit.ViewGroup.LinearLayout"/>
         </LinearLayout>

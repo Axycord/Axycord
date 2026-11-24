@@ -14,7 +14,7 @@ import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
 
 /**
- * Manticord: the docked (tablet) layout's user area at the bottom of the channel list, like the
+ * Axycord: the docked (tablet) layout's user area at the bottom of the channel list, like the
  * desktop and React Native tablet clients. It replaces the bottom tab bar: the profile opens the
  * status sheet and the buttons open the tabs the bar would have.
  */

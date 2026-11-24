@@ -22,14 +22,14 @@ if (firebaseConfig.exists()) {
     logger.lifecycle("google-services.json missing: push notifications will be inert in this build")
 }
 
-val buildId = providers.environmentVariable("MANTICORD_BUILD_ID").orElse("local")
+val buildId = providers.environmentVariable("AXYCORD_BUILD_ID").orElse("local")
 val headCommit = providers.exec {
     workingDir(rootDir)
     commandLine("git", "rev-parse", "--verify", "HEAD")
 }.standardOutput.asText.get().trim().lowercase()
-val commitHash = providers.environmentVariable("MANTICORD_COMMIT_SHA").orElse(headCommit).get().lowercase()
+val commitHash = providers.environmentVariable("AXYCORD_COMMIT_SHA").orElse(headCommit).get().lowercase()
 require(Regex("[0-9a-f]{40}").matches(commitHash) && commitHash == headCommit) {
-    "MANTICORD_COMMIT_SHA must be the full SHA of the checked-out HEAD"
+    "AXYCORD_COMMIT_SHA must be the full SHA of the checked-out HEAD"
 }
 val commitTimestamp = providers.exec {
     workingDir(rootDir)
@@ -54,12 +54,12 @@ android {
     }
 
     defaultConfig {
-        applicationId = "dev.mantikafasi.manticord"
+        applicationId = "mmaarij.axycord"
         minSdk = 23
         targetSdk = 36
         versionCode = updateVersionCode
         versionName = "1.0"
-        resValue("string", "manticord_build_label", "Dev ${buildId.get()} ${commitHash.take(8)}")
+        resValue("string", "axycord_build_label", "Dev ${buildId.get()} ${commitHash.take(8)}")
         buildConfigField("String", "UPDATE_COMMIT_SHA", JsonOutput.toJson(commitHash))
         buildConfigField("long", "UPDATE_COMMIT_TIMESTAMP", "${commitTimestamp}L")
         buildConfigField("String", "UPDATE_BUILD_ID", JsonOutput.toJson(buildId.get()))
@@ -68,12 +68,12 @@ android {
     }
 
     signingConfigs {
-        create("manticord") {
+        create("axycord") {
             // Public development identity: consistent installs, not production trust.
-            storeFile = file("manticord-dev.keystore")
-            storePassword = "manticord"
-            keyAlias = "manticord"
-            keyPassword = "manticord"
+            storeFile = file("axycord-dev.keystore")
+            storePassword = "axycord"
+            keyAlias = "axycord"
+            keyPassword = "axycord"
         }
     }
 
@@ -89,13 +89,13 @@ android {
 
     buildTypes {
         debug {
-            signingConfig = signingConfigs.getByName("manticord")
+            signingConfig = signingConfigs.getByName("axycord")
         }
         release {
             lint {
                 checkReleaseBuilds = false
             }
-            signingConfig = signingConfigs.getByName("manticord")
+            signingConfig = signingConfigs.getByName("axycord")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -152,10 +152,10 @@ androidComponents {
     // run on a daily-use device without touching that install's data. Their package is not in
     // google-services.json, so they build as a checkout without Firebase config does.
     onVariants(selector().withBuildType("nonMinifiedRelease")) { variant ->
-        variant.applicationId.set("dev.mantikafasi.manticord.benchmark")
+        variant.applicationId.set("mmaarij.axycord.benchmark")
     }
     onVariants(selector().withBuildType("benchmarkRelease")) { variant ->
-        variant.applicationId.set("dev.mantikafasi.manticord.benchmark")
+        variant.applicationId.set("mmaarij.axycord.benchmark")
     }
     onVariants(selector().withBuildType("release")) { variant ->
         val apkDirectory = variant.artifacts.get(SingleArtifact.APK)
@@ -189,7 +189,7 @@ androidComponents {
                 require(apk.parentFile == directory && apk.name == "app-universal-release.apk" && apk.isFile) {
                     "Expected exactly one produced app-universal-release.apk"
                 }
-                require(artifacts.applicationId == "dev.mantikafasi.manticord" &&
+                require(artifacts.applicationId == "mmaarij.axycord" &&
                     output.versionCode == expectedVersionCode && !output.versionName.isNullOrBlank()) {
                     "Release APK metadata does not match this build"
                 }

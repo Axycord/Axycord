@@ -20,8 +20,8 @@ import rx.subjects.SerializedSubject
  * poll runs on a computation thread while [init] runs on whatever called it, and both write
  * [clientMinVersion].
  *
- * **The version manifest URL needs Manticord-owned configuration.** The reference polls Discord's
- * own release manifest; a Manticord build must publish and point at its own. Until
+ * **The version manifest URL needs Axycord-owned configuration.** The reference polls Discord's
+ * own release manifest; a Axycord build must publish and point at its own. Until
  * [minVersionSource] is supplied the store never polls — it still reports the last value it
  * persisted, so an already-installed gate keeps working, but nothing new is ever discovered.
  */
@@ -30,7 +30,7 @@ class StoreClientVersion(
     /**
      * Fetches the minimum acceptable client version. `null` disables polling entirely.
      *
-     * Supply a source that reads Manticord's own version manifest. The reference implementation is
+     * Supply a source that reads Axycord's own version manifest. The reference implementation is
      * `RestAPI.getClientVersion()`, a plain GET of a JSON document whose `min_version` field is
      * read as an int (absent ⇒ `0`, i.e. never outdated).
      */

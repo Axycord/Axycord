@@ -108,10 +108,10 @@ class NotificationActionReceiver : BroadcastReceiver() {
     }
 
     companion object {
-        const val ACTION_MARK_READ = "dev.mantikafasi.manticord.notification.MARK_READ"
-        const val ACTION_REPLY = "dev.mantikafasi.manticord.notification.REPLY"
-        const val ACTION_DELETE = "dev.mantikafasi.manticord.notification.DELETE"
-        const val ACTION_CANCEL = "dev.mantikafasi.manticord.notification.CANCEL"
+        const val ACTION_MARK_READ = "mmaarij.axycord.notification.MARK_READ"
+        const val ACTION_REPLY = "mmaarij.axycord.notification.REPLY"
+        const val ACTION_DELETE = "mmaarij.axycord.notification.DELETE"
+        const val ACTION_CANCEL = "mmaarij.axycord.notification.CANCEL"
         const val EXTRA_CHANNEL_ID = "notification_channel_id"
         const val EXTRA_MESSAGE_ID = "notification_message_id"
         const val EXTRA_NOTIFICATION_ID = "notification_id"

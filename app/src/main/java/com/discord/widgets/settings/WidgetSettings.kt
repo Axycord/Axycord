@@ -78,7 +78,9 @@ class WidgetSettings : AppFragment(R.layout.widget_settings) {
         binding.appInfoHeader.text = buildString {
             append(getString(R.string.app_information))
             append(" - ")
-            append(getString(R.string.manticord_build_label))
+            append(getString(R.string.axycord_build_label))
+            append("\n")
+            append(getString(R.string.axycord_maintainer))
         }
 
         for ((rowId, page) in routes) {
@@ -233,8 +235,8 @@ class WidgetSettings : AppFragment(R.layout.widget_settings) {
     }
 
     companion object {
-        private const val SUPPORT_URL = "https://support.discord.com"
-        private const val SUPPORT_SERVER_URL = "https://discord.gg/YE8deBEVyd"
+        private const val SUPPORT_URL = "https://github.com/Axycord/Axycord/issues"
+        private const val SUPPORT_SERVER_URL = "https://github.com/Axycord/Axycord/issues"
         private const val ACKNOWLEDGEMENTS_URL = "https://discord.com/acknowledgements"
 
         /** Rows that push a settings page into this tab, by row id. [WidgetSettingsSearch] indexes these pages. */

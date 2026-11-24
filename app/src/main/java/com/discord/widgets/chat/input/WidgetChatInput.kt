@@ -129,10 +129,10 @@ import com.discord.i18n.i18nRender
 import com.discord.plugins.PluginUiRegistry
 import com.discord.utilities.feature.PluginSurfaceCustomization
 import com.discord.utilities.feature.PluginSurfaceCustomization.Surface
-import dev.mantikafasi.manticord.plugins.api.pluginChannelContext
-import dev.mantikafasi.manticord.plugins.api.pluginComposerContext
-import dev.mantikafasi.manticord.plugins.api.PluginComposerZone
-import dev.mantikafasi.manticord.plugins.api.PluginRegistration
+import mmaarij.axycord.plugins.api.pluginChannelContext
+import mmaarij.axycord.plugins.api.pluginComposerContext
+import mmaarij.axycord.plugins.api.PluginComposerZone
+import mmaarij.axycord.plugins.api.PluginRegistration
 
 internal fun FlexInputWidgetBinding.renderSendPermission(ableToSendMessages: Boolean) {
     cannotSendText.visibility = if (ableToSendMessages) View.GONE else View.VISIBLE

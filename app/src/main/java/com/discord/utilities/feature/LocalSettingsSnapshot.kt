@@ -2,7 +2,7 @@ package com.discord.utilities.feature
 
 import com.discord.models.notification.NotificationSettingsV2
 import com.discord.models.phone.PhoneCountryCode
-import com.discord.utilities.feature.ManticordSettingsBackupCodec.Payload
+import com.discord.utilities.feature.AxycordSettingsBackupCodec.Payload
 import com.discord.utilities.persister.Persister
 import com.discord.widgets.chat.input.expression.ExpressionTrayTab
 import com.google.gson.Gson

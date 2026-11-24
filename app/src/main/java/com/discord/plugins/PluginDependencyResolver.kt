@@ -1,8 +1,8 @@
 package com.discord.plugins
 
-import dev.mantikafasi.manticord.plugins.api.PLUGIN_API_LEVEL
-import dev.mantikafasi.manticord.plugins.api.PluginLoadMode
-import dev.mantikafasi.manticord.plugins.api.PluginManifest
+import mmaarij.axycord.plugins.api.PLUGIN_API_LEVEL
+import mmaarij.axycord.plugins.api.PluginLoadMode
+import mmaarij.axycord.plugins.api.PluginManifest
 import java.util.PriorityQueue
 
 internal data class PluginCandidate(
@@ -23,7 +23,7 @@ internal data class PluginLoadPlan(
 internal sealed class PluginBlockReason {
     data object Disabled : PluginBlockReason()
     data object DuplicateId : PluginBlockReason()
-    data class IncompatibleManticord(val current: Int) : PluginBlockReason()
+    data class IncompatibleAxycord(val current: Int) : PluginBlockReason()
     data class MissingRequirement(val pluginId: String) : PluginBlockReason()
     data class IncompatibleRequirement(val pluginId: String, val versionCode: Int) : PluginBlockReason()
     data class RequirementBlocked(val pluginId: String) : PluginBlockReason()
@@ -36,7 +36,7 @@ internal object PluginDependencyResolver {
 
     fun resolve(
         candidates: List<PluginCandidate>,
-        manticordVersion: Int = PLUGIN_API_LEVEL,
+        axycordVersion: Int = PLUGIN_API_LEVEL,
     ): PluginLoadPlan {
         val groups = candidates.groupBy { it.manifest.id }
         val nodes = groups.mapNotNull { (id, matches) ->
@@ -48,8 +48,8 @@ internal object PluginDependencyResolver {
         nodes.forEach { (id, candidate) ->
             when {
                 !candidate.enabled -> blocked[id] = PluginBlockReason.Disabled
-                manticordVersion < candidate.manifest.manticordVersionMinimum ->
-                    blocked[id] = PluginBlockReason.IncompatibleManticord(manticordVersion)
+                axycordVersion < candidate.manifest.axycordVersionMinimum ->
+                    blocked[id] = PluginBlockReason.IncompatibleAxycord(axycordVersion)
             }
         }
 

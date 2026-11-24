@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "dev.mantikafasi.manticord.baselineprofile"
+    namespace = "mmaarij.axycord.baselineprofile"
     compileSdk {
         version = release(37)
     }
@@ -18,7 +18,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         // The profiled build has its own package (see app's androidComponents) so it never
         // replaces the installed app.
-        testInstrumentationRunnerArguments["targetAppId"] = "dev.mantikafasi.manticord.benchmark"
+        testInstrumentationRunnerArguments["targetAppId"] = "mmaarij.axycord.benchmark"
         // Optional: lets the generator log in so the profile covers the authenticated startup. Never
         // commit it; set `profileToken` in local.properties or the ORG_GRADLE_PROJECT_profileToken
         // environment variable.

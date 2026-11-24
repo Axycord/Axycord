@@ -86,9 +86,9 @@ import com.google.android.material.card.MaterialCardView
 import com.google.android.material.textfield.TextInputLayout
 import com.google.android.material.tabs.TabLayout
 import rx.subscriptions.CompositeSubscription
-import dev.mantikafasi.manticord.plugins.api.PluginProfileContext
-import dev.mantikafasi.manticord.plugins.api.PluginRegistration
-import dev.mantikafasi.manticord.plugins.api.pluginProfileContext
+import mmaarij.axycord.plugins.api.PluginProfileContext
+import mmaarij.axycord.plugins.api.PluginRegistration
+import mmaarij.axycord.plugins.api.pluginProfileContext
 import com.discord.widgets.friends.StrangerFriendRequest
 
 /**
