@@ -20,7 +20,7 @@
                 <androidx.appcompat.widget.AppCompatImageView android:id="@+id/channels_list_search" android:background="?attr/bg_pressed_highlight" android:padding="12dp" android:layout_width="48dp" android:layout_height="48dp" android:src="@drawable/ic_tab_search" android:contentDescription="@string/tabs_search_accessibility_label" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent" app:tint="?attr/colorInteractiveNormal" style="@style/UiKit.ImageView"/>
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.appcompat.widget.Toolbar>
-        <com.discord.widgets.activenow.ActiveNowSection android:layout_width="match_parent" android:layout_height="wrap_content" app:layout_scrollFlags="0"/>
+        <com.discord.widgets.activenow.ActiveNowSection android:layout_width="match_parent" android:layout_height="wrap_content" app:layout_scrollFlags="noScroll"/>
     </com.discord.views.CustomAppBarLayout>
     <com.discord.widgets.friends.EmptyFriendsStateView android:id="@+id/widget_channels_list_empty_friends_state_view" android:padding="16dp" android:layout_width="match_parent" android:layout_height="match_parent" app:ef_title_text_size="@dimen/uikit_textsize_large"/>
     <androidx.recyclerview.widget.RecyclerView android:id="@+id/channels_list" android:paddingBottom="8dp" android:visibility="gone" android:scrollbars="vertical" android:clipToPadding="false" android:layout_height="match_parent" android:overScrollMode="never" style="@style/UiKit.ViewGroup.RecyclerView.AppBarScrollingViewBehavior"/>

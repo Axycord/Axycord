@@ -175,19 +175,19 @@ opening global search. The full search field and group-invite button are removed
 Bottom navigation and its customization list omit Search, including restored
 visibility masks and old saved layout entries. Navigation enum ordinals remain
 stable. The sidebar uses generated view binding and guards deferred scrolling
-against view destruction. These layout/navigation edits have source-only checks;
-compilation and on-device layout verification remain open under the no-build request.
+against view destruction. App compilation, resource linking and compatibility lint
+pass. AAPT requires the named `noScroll` flag instead of literal `0` on the channel
+header. On-device layout verification remains open.
 
 Source checks pass: Kotlin syntax parsing for 23 changed/new files, XML parsing,
 new string and binding references, flag registration/UI wiring, sidebar placement,
 source-port comparison and original license/notice preservation. This is not type
-checking or runtime verification. Verification remains source-only at the
-maintainer's request: no Gradle build,
-compilation, JVM/instrumentation execution or APK generation for this change.
+checking or runtime verification. The maintainer subsequently authorized the 1.0
+release build; current compiler and JVM evidence is recorded below.
 Ported regression fixtures cover repair identity, attachment/snapshot boundaries,
 interaction slots, compact width, owned animation cleanup, friend selection and
-voice visibility/permissions; they require a future authorized test run. Compilation,
-compatibility lint and dedicated-device UI/voice checks remain open.
+voice visibility/permissions. Their JVM suites pass, as do app compilation and
+compatibility lint. Dedicated-device UI/voice checks remain open.
 
 ### Invite onboarding
 
@@ -229,8 +229,7 @@ coverage and passing builds do not establish complete behavioral parity.
   tracked XML files without XML errors. This is a static inventory, not a claim
   that every path has been exercised. The Kotlin parser has known grammar gaps;
   changed code is checked against the existing baseline rather than treated as
-  compiler-verified. All 38 update-worker Node tests pass. New Android/Kotlin
-  regression fixtures are not executed under the maintainer's no-build request.
+  compiler-verified by that parser. All 38 update-worker Node tests pass.
 - Audit fixes include exact HTTPS-origin matching for embedded Activity navigation,
   request-generation-safe APNG cancellation and single-owner nameplate disposal,
   exact quest playback checkpoints with recovery after rejected jumps, and native
@@ -239,12 +238,24 @@ coverage and passing builds do not establish complete behavioral parity.
   directory predicate, the obsolete bottom-search callback and plugin-era section
   disposal hook are removed. Persisted worker classes and public protocol/JNI
   contracts remain represented. Compact V2 cards retain one measurement cache per
-  owned view instead of a map keyed by that same view. Compile, compatibility lint
-  and dedicated-device verification of these changes remain open.
+  owned view instead of a map keyed by that same view. App compilation and
+  compatibility lint pass; dedicated-device verification remains open.
 - Instrumentation fixtures now use the current embedded-WebView constructor and
   media-engine parameters. The unused full-session WebView smoke fixture is removed;
   the test still checks hardened settings offline. This is a source correction,
   not a successful instrumentation compile or device run.
+- The 1.0 release checks compile app Kotlin/Java, link resources, and pass app/SDK
+  `NewApi` lint and all four SDK JVM tests. The full app run executes 2,443 tests:
+  2,414 pass, 28 fail and one is skipped. Shop, Quest, Active Now, Components V2,
+  invite onboarding, HTTPS-origin and updater suites pass. The registry fixture's
+  old 34-flag count is updated to 38 for the four built-in features; the focused
+  release set then passes all 85 JVM tests. The remaining
+  full-suite failures need reconciliation; a successful release build does not
+  establish a green full regression boundary. Instrumentation compilation remains
+  blocked by stale `ProfileThemeLayoutTest` note bindings and theme signatures;
+  no device tests are run. Firebase configuration is absent, so push notifications
+  are unavailable in this build. Release builds display `Release 1.0` rather than
+  the development label.
 
 - Historical structural checkpoints recorded 1,228 retained layout variants,
   76/76 first-party custom-view classes and 83/83 typed reference Gateway events.
@@ -353,8 +364,11 @@ Publishing requirements are documented in README.md under Publishing app updates
    fonts, tablet/landscape layouts, accessibility and dynamic profile palettes.
    Custom themes are checked on Android 16 only; icon tints, wallpapers, fonts
    and sounds still need a device pass, and Android 11-13 is unverified.
-6. **Release checks:** reconcile the known channel-list MFA-row test expectation
-   with the existing events separator before declaring that entire suite green.
+6. **Release checks:** reconcile the full-suite failures in Gateway, store fixtures,
+   premium slots, missing compiled-theme XML fixtures, application directory/launcher,
+   channel-list MFA separator, expression/voice payload contracts and Home UI delivery.
+   Update `ProfileThemeLayoutTest` for current note bindings and theme signatures.
+   The full regression boundary remains open.
 7. **Minimum Android version:** resolve the historical API 21 contract against the
    current API 23 build; do not silently claim support for devices the APK excludes.
 8. **Backend drift:** use sanitized runtime traffic to resolve uncertain HTTP and

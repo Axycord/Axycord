@@ -92,6 +92,7 @@ android {
             signingConfig = signingConfigs.getByName("axycord")
         }
         release {
+            resValue("string", "axycord_build_label", "Release ${buildId.get()} ${commitHash.take(8)}")
             lint {
                 checkReleaseBuilds = false
             }
