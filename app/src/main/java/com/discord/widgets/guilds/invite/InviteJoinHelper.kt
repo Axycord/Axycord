@@ -70,6 +70,11 @@ object InviteJoinHelper {
 
         val instantInvites = StoreStream.getInstantInvites()
         val receivedInstallationId = instantInvites.getReceivedInstallationId(code)
+        val wasAlreadyMember = invite.guild?.id?.let { guildId ->
+            val guilds = StoreStream.getGuilds()
+            (guilds.getGuild(guildId) != null || guildId in guilds.getUnavailableGuilds()) &&
+                !StoreStream.getLurking().isLurking(guildId)
+        } == true
 
         RestAPI.api
             .postInviteCode(
@@ -95,7 +100,7 @@ object InviteJoinHelper {
                 if (receivedInstallationId != null) instantInvites.clearReceivedInstallationId(code)
                 StoreStream.getGuildJoinRequests().handleInviteAccepted(joinedInvite)
                 onInvitePostSuccess(joinedInvite)
-                completeJoin(fragment, joinedInvite, location, onInviteFlowFinished)
+                completeJoin(fragment, joinedInvite, location, wasAlreadyMember, onInviteFlowFinished)
             }
     }
 
@@ -121,6 +126,7 @@ object InviteJoinHelper {
         fragment: AppFragment,
         invite: ModelInvite,
         location: String,
+        wasAlreadyMember: Boolean,
         onInviteFlowFinished: (ModelInvite) -> Unit,
     ) {
         // Checked before anything that navigates: there is no guild to navigate to, and no channel
@@ -136,7 +142,7 @@ object InviteJoinHelper {
         val channel = invite.channel
         if (channel == null) {
             navigateToGuild(invite)
-            invite.guild?.takeIf { GuildFeature.GUILD_ONBOARDING in it.features }?.let {
+            invite.guild?.takeIf { needsOnboarding(it.id, GuildFeature.GUILD_ONBOARDING in it.features, wasAlreadyMember) }?.let {
                 WidgetGuildOnboarding.launch(fragment.requireContext(), it.id)
             }
             onInviteFlowFinished(invite)
@@ -148,7 +154,7 @@ object InviteJoinHelper {
         // already returned above, and the cases that get past that check — an existing membership,
         // or an invite that bypasses screening — produce no application to wait for.
         val joinRequests = if (
-            guild != null &&
+            !wasAlreadyMember && guild != null &&
             GuildFeature.MEMBER_VERIFICATION_GATE_ENABLED in guild.features &&
             GuildFeature.COMMUNITY in guild.features
         ) {
@@ -167,16 +173,17 @@ object InviteJoinHelper {
                 errorClass = InviteJoinHelper::class.java,
                 errorHandler = { onInviteFlowFinished(invite) },
             ) { (resolvedChannel, joinRequest) ->
-                if (guild != null && GuildFeature.GUILD_ONBOARDING in guild.features) {
-                    resolvedChannel?.let { invite.channel = it }
-                    navigateToGuild(invite)
-                    resolvedChannel?.let { navigateToChannel(invite) }
-                    WidgetGuildOnboarding.launch(fragment.requireContext(), guild.id)
-                    onInviteFlowFinished(invite)
-                    return@appSubscribe
-                }
                 if (joinRequest != null && guild != null) {
                     WidgetMemberVerification.create(fragment.requireContext(), guild.id, location, invite)
+                    return@appSubscribe
+                }
+                if (guild != null && resolvedChannel != null &&
+                    needsOnboarding(guild.id, GuildFeature.GUILD_ONBOARDING in guild.features, wasAlreadyMember)) {
+                    invite.channel = resolvedChannel
+                    navigateToGuild(invite)
+                    navigateToChannel(invite)
+                    WidgetGuildOnboarding.launch(fragment.requireContext(), guild.id)
+                    onInviteFlowFinished(invite)
                     return@appSubscribe
                 }
                 if (resolvedChannel == null) {
@@ -187,6 +194,11 @@ object InviteJoinHelper {
                 navigateToJoinedChannel(fragment, invite, onInviteFlowFinished)
             }
     }
+
+    private fun needsOnboarding(guildId: Long, enabled: Boolean, wasAlreadyMember: Boolean) =
+        shouldShowInviteOnboarding(enabled, wasAlreadyMember,
+            StoreStream.getGuilds().getMember(guildId, StoreStream.getUsers().getMe().id)?.flags,
+            StoreStream.getGuildOnboarding().get(guildId).completed)
 
     internal fun raceJoinOutcome(
         channels: Observable<Channel?>,
