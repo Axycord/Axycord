@@ -89,8 +89,11 @@ Asynchronous plugins do not gate first UI; explicitly blocking dependency chains
 have bounded startup waits. The master loading switch gates discovery and loading.
 External plugins execute in-process and are not sandboxed.
 
-Browse Plugins reads only Axycord's `Axycord-Plugins` catalog. The inherited
-Last.fm Rich Presence, Message Logger, ReviewDB and Translate listings are excluded.
+Browse Plugins reads only Axycord's `Axycord-Plugins` catalog. Message Logger,
+ReviewDB, Translate and Last.fm now have separately maintained Axycord ports under
+`mmaarij123`, replacing the previously removed inherited listings by explicit
+maintainer request. Each has source, documentation, preserved licensing and a
+signed 1.0.0 release. Their package/action/SDK identifiers use `mmaarij.axycord`.
 An unpublished catalog (HTTP 404) displays the existing empty-list state.
 
 Catalog entries can name a `variant` while retaining the same plugin ID, package,
@@ -100,13 +103,22 @@ downgrade. Downloads allow up to 200 MiB and stream through a bounded buffer whi
 checking size and SHA-256. Partial or mismatched files are discarded. This supports
 both Full and Compressed Emoji Replace listings; published v1.0 retains its old
 50 MiB cap and requires a client update to show Full.
-The published catalog contains APlatformIndicators, Emoji Replace (Compressed and
-Full), and Permissions Viewer, using the original maintainer release APKs and
-signers. Six focused client JVM tests and app compatibility lint pass for variant
-selection and bounded, verified downloads. Catalog CI verifies all four APKs,
-builds/lints all three source modules and runs the emoji regression tests before
-publishing. The live CDN index is verified; no new client release or device test
-has been performed for variant support.
+The catalog contains eight listings across seven source modules: the four new
+ports, APlatformIndicators, Emoji Replace (Compressed and Full), and Permissions
+Viewer. Existing release bytes/signers are preserved. Catalog CI verifies all
+eight APKs and builds/lints/tests the source modules before publishing; the live
+CDN index is verified. The four new ports fit published v1.0's size limit.
+Six focused client JVM tests and app compatibility lint pass for variant selection
+and bounded downloads; no new client release or device test has been performed.
+
+Message Logger history and all ReviewDB text descendants explicitly resolve host
+Discord normal/bold/semibold fonts, falling back to bundled Whitney faces rather
+than system fonts. This includes dynamic rows and nested editors. ReviewDB vote
+feedback is inline; Translate and Last.fm reuse native host text/settings/dialog
+and presence views. Eight port regression tests and all four standalone source
+CIs pass. History snapshots, translation subscriptions, ReviewDB executor shutdown
+and Last.fm polling generations/text padding are hardened in the ports. Device
+rendering, live account operations and third-party service behavior remain unverified.
 
 See [docs/plugin-api.md](docs/plugin-api.md) for the current API, signer approval,
 resource loading and contribution surfaces.
