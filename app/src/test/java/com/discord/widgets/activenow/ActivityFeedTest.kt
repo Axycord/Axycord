@@ -131,6 +131,15 @@ class ActivityFeedTest {
         assertEquals("Playing Minecraft", describeActivity(Presence(ClientStatus.IDLE, null, listOf(custom, playing))))
     }
 
+    @Test
+    fun blankNicknamesAndGlobalNamesFallBackToReadableUsernames() {
+        val user = CoreUser(1L, username = "friend", globalName = " ")
+        val entries = collectActivities(mapOf(1L to ModelUserRelationship.TYPE_FRIEND), emptySet(),
+            mapOf(1L to ""), mapOf(1L to user),
+            mapOf(1L to Presence(ClientStatus.ONLINE, null, emptyList())), emptyMap()) { _, _ -> null }
+        assertEquals("friend", entries.single().name)
+    }
+
     private fun activity(type: ActivityType, name: String, details: String? = null) = Activity(
         name, type, null, 0, null, null, details, null, null, null,
         null, null, null, null, null, null, null, null,

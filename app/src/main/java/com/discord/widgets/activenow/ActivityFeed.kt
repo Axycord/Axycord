@@ -11,6 +11,7 @@ import com.discord.stores.StoreGuildSelected
 import com.discord.stores.StoreGuilds
 import com.discord.stores.StoreStream
 import com.discord.stores.updates.ObservationDeckProvider
+import com.discord.utilities.user.UserUtils.getDisplayName
 import rx.Observable
 
 internal data class FriendActivity(
@@ -80,7 +81,7 @@ internal fun collectActivities(
         val status = presence?.status.visibleStatus()
         if (voice == null && status == null) return@mapNotNull null
         val activity = describeActivity(presence)
-        val name = nicknames[userId] ?: user.globalName ?: user.username
+        val name = user.getDisplayName(nicknames[userId])
         FriendActivity(user, name, voice, activity, status)
     }.sortedWith(compareBy<FriendActivity> { it.voice == null }
         .thenBy { it.activity == null }
