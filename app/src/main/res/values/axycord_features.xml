@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="axycord_orbs_shop">Orbs Shop</string>
+    <string name="axycord_quests">Quests</string>
+    <string name="axycord_orbs_shop_description">Browse collectibles, preview cosmetics, and redeem your Discord Orbs.</string>
+    <string name="axycord_quests_description">Browse Discord quests, watch supported videos, and claim completed rewards.</string>
+    <string name="axycord_open_orbs_shop">Open Orbs Shop</string>
+    <string name="axycord_open_quests">Open Quests</string>
+    <string name="axycord_feature_disabled">Enable this feature in Feature Flags to open it.</string>
+    <string name="axycord_feature_account_required">Sign in to a Discord account to use this feature.</string>
+    <string name="axycord_feature_session_ended">Your account changed. Reopen this feature from Settings.</string>
+    <string name="axycord_quest_video">Video quest</string>
+    <string name="axycord_quest_video_unavailable">This video quest is unavailable. Reopen it from Quests.</string>
+    <item name="menu_axycord_orbs_shop" type="id" />
+    <item name="menu_axycord_quests" type="id" />
+</resources>

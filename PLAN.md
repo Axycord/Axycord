@@ -96,6 +96,34 @@ An unpublished catalog (HTTP 404) displays the existing empty-list state.
 See [docs/plugin-api.md](docs/plugin-api.md) for the current API, signer approval,
 resource loading and contribution surfaces.
 
+### Built-in Orbs Shop and Quests
+
+Maarij's MIT-licensed Orbs Shop and Quests sources are integrated as native
+features, independently of plugin discovery/loading. Separate registered Boolean
+flags start disabled and participate in client settings backup. Enabled features
+are accessible from Feature Flags and the Settings toolbar menu.
+
+Restorable native screens and session-bound calls gate both features on their
+flags, Discord backend and original account credentials. Closing a screen,
+disabling its flag or switching accounts cancels its pending feature calls;
+detaching video releases playback. All REST endpoints extend `RestAPIInterface`
+and use the default client transport. ExoPlayer's matching 2.19.1 HLS module is
+added for quest videos. Catalog caches omit balances/purchases/credentials, and
+redemption rechecks the current price, collection and balance after confirmation.
+Quest progress records observed playback; desktop/console tasks remain tracked
+on their supported platforms. Import revisions and licenses live in
+[third_party/axycord-features](third_party/axycord-features/README.md).
+
+Verification: 24 focused JVM tests passed for catalog/prices, cache round trips,
+effect layout, theme contrast, quest parsing/actions, saved video validation,
+playback accounting, session gates and all 12 inherited endpoint request shapes.
+Feature sources and native host passed an isolated Kotlin/Java type check against
+cached Android/dependency/host API classes, with generated resource/binding and
+transport seams supplied for that check. Default-client metadata and flag registry
+tests are also included for the app suite. No Gradle/APK build or device/live
+redemption/quest test was run, per the maintainer's no-build instruction; complete
+app compilation, shrinking and runtime behavior remain unverified in this mirror.
+
 ## Feature Status
 
 These are delivery statuses, not percentage-complete estimates. Structural

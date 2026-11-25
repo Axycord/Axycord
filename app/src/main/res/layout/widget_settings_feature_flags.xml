@@ -5,6 +5,10 @@
     </com.google.android.material.appbar.AppBarLayout>
     <androidx.core.widget.NestedScrollView style="@style/UiKit.ViewGroup.NestedScrollView.AppBarScrollingViewBehavior">
         <LinearLayout android:paddingBottom="@dimen/list_bottom_padding" style="@style/UiKit.ViewGroup.LinearLayout">
+            <com.discord.views.CheckedSetting android:id="@+id/settings_feature_orbs_shop" app:cs_text="@string/axycord_orbs_shop" app:cs_subtext="@string/axycord_orbs_shop_description" app:cs_view_type="switchview" style="@style/UiKit.CheckedSetting.Themed"/>
+            <TextView android:id="@+id/settings_open_orbs_shop" android:text="@string/axycord_open_orbs_shop" android:drawableEnd="@drawable/ic_chevron_right_grey_12dp" style="@style/UiKit.Settings.Item.Icon"/>
+            <com.discord.views.CheckedSetting android:id="@+id/settings_feature_quests" app:cs_text="@string/axycord_quests" app:cs_subtext="@string/axycord_quests_description" app:cs_view_type="switchview" style="@style/UiKit.CheckedSetting.Themed"/>
+            <TextView android:id="@+id/settings_open_quests" android:text="@string/axycord_open_quests" android:drawableEnd="@drawable/ic_chevron_right_grey_12dp" style="@style/UiKit.Settings.Item.Icon"/>
             <com.discord.views.CheckedSetting android:id="@+id/settings_feature_cloud_backup" app:cs_text="@string/cloud_settings_title" app:cs_subtext="@string/cloud_settings_description" app:cs_view_type="switchview" style="@style/UiKit.CheckedSetting.Themed"/>
             <TextView android:id="@+id/settings_cloud_save" android:visibility="gone" android:text="@string/cloud_settings_save" style="@style/UiKit.Settings.Item.Icon"/>
             <TextView android:id="@+id/settings_cloud_restore" android:visibility="gone" android:text="@string/cloud_settings_restore" style="@style/UiKit.Settings.Item.Icon"/>

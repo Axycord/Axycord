@@ -14,6 +14,7 @@ import com.discord.databinding.WidgetSettingsFeatureFlagsBinding
 import com.discord.stores.StoreStream
 import com.discord.utilities.display.setMaximumRefreshRate
 import com.discord.utilities.feature.FeatureFlags
+import com.discord.utilities.feature.NativeFeature
 import com.discord.utilities.feature.AxycordSettingsBackup
 import com.discord.utilities.feature.AxycordSettingsBackupCodec
 import com.discord.utilities.feature.PluginSurfaceCustomization.Surface
@@ -42,6 +43,24 @@ class WidgetSettingsFeatureFlags : AppFragment(R.layout.widget_settings_feature_
         setActionBarTitle(R.string.feature_flags)
         setActionBarDisplayHomeAsUpEnabled()
         val binding = WidgetSettingsFeatureFlagsBinding.bind(view).also { this.binding = it }
+        binding.settingsOpenOrbsShop.isVisible = FeatureFlags.orbsShopEnabled()
+        binding.settingsOpenQuests.isVisible = FeatureFlags.questsEnabled()
+        binding.settingsFeatureOrbsShop.apply {
+            isChecked = FeatureFlags.orbsShopEnabled()
+            setOnCheckedListener { enabled ->
+                FeatureFlags.setOrbsShopEnabled(enabled)
+                binding.settingsOpenOrbsShop.isVisible = enabled
+            }
+        }
+        binding.settingsFeatureQuests.apply {
+            isChecked = FeatureFlags.questsEnabled()
+            setOnCheckedListener { enabled ->
+                FeatureFlags.setQuestsEnabled(enabled)
+                binding.settingsOpenQuests.isVisible = enabled
+            }
+        }
+        binding.settingsOpenOrbsShop.setOnClickListener { WidgetAxycordFeature.open(requireContext(), NativeFeature.ORBS_SHOP) }
+        binding.settingsOpenQuests.setOnClickListener { WidgetAxycordFeature.open(requireContext(), NativeFeature.QUESTS) }
         binding.settingsFeatureCloudBackup.apply {
             isChecked = FeatureFlags.cloudSettingsBackupEnabled()
             setOnCheckedListener { enabled ->

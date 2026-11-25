@@ -47,6 +47,14 @@ size, SHA-256, package, version and signing identity.
 - Voice, video, screen sharing and embedded Activities.
 - Polls, bot components and application commands.
 - Custom themes, local settings and installed APK plugins.
+- Built-in Orbs Shop and Quests, each controlled separately in Feature Flags.
+
+Enable **Orbs Shop** or **Quests** under Settings → Feature Flags, then use the
+Open row there or the Settings toolbar menu. Both start disabled and work
+independently of APK plugin loading. Orbs Shop previews collectibles and asks
+before spending Orbs. Quests supports browsing, enrollment, completed reward
+claims and actual mobile video playback; platform-specific tasks remain tracked
+by Discord on their supported platforms. These features require a Discord account.
 
 ## Build
 

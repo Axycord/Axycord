@@ -177,7 +177,7 @@ import rx.Observable
 /**
  * The Discord v9 REST surface.
  */
-interface RestAPIInterface {
+interface RestAPIInterface : AxycordFeatureRoutes {
 
     // -- Authentication -------------------------------------------------------------------------
 

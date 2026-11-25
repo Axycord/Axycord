@@ -26,6 +26,13 @@
 }
 
 # Gson's snake_case policy derives wire names from these Kotlin/JVM field names.
+-keepclassmembers,allowoptimization class com.discord.widgets.orbsshop.CatalogKey { <fields>; }
+-keepclassmembers,allowoptimization class com.discord.widgets.orbsshop.CachedCatalog { <fields>; }
+-keepclassmembers,allowoptimization class com.discord.widgets.orbsshop.ProductFamily { <fields>; }
+-keepclassmembers,allowoptimization class com.discord.widgets.orbsshop.Offer { <fields>; }
+-keepclassmembers,allowoptimization class com.discord.widgets.quests.QuestTask { <fields>; }
+-keepclassmembers,allowoptimization class com.discord.widgets.quests.QuestVideo { <fields>; }
+-keep enum com.discord.widgets.orbsshop.CosmeticKind { *; }
 -keepclassmembers,allowoptimization class com.discord.api.** { <fields>; }
 -keepclassmembers,allowoptimization class com.discord.models.** { <fields>; }
 -keepclassmembers,allowoptimization class com.discord.analytics.generated.** { <fields>; }

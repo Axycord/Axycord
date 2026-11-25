@@ -124,6 +124,7 @@ class WidgetSettings : AppFragment(R.layout.widget_settings) {
 
     override fun onViewBoundOrOnResume() {
         super.onViewBoundOrOnResume()
+        configureToolbar()
         // Reference registers itself as the settings tab's `OnTabSelectedListener` and refreshes
         // here. `widgets/tabs` has no listener registry yet, so the refresh runs on every resume.
         viewModel.refreshSubscriptions()
@@ -144,10 +145,22 @@ class WidgetSettings : AppFragment(R.layout.widget_settings) {
             R.menu.menu_settings,
             onSelected = { item ->
                 when (item.itemId) {
+                    R.id.menu_axycord_orbs_shop -> WidgetAxycordFeature.open(requireContext(), com.discord.utilities.feature.NativeFeature.ORBS_SHOP)
+                    R.id.menu_axycord_quests -> WidgetAxycordFeature.open(requireContext(), com.discord.utilities.feature.NativeFeature.QUESTS)
                     R.id.menu_settings_search -> SettingsNavigation.push(this, WidgetSettingsSearch())
                     R.id.menu_settings_debugging -> WidgetDebugging.launch(requireContext())
                     R.id.menu_settings_switch_accounts -> WidgetSwitchAccounts.show(parentFragmentManager)
                     R.id.menu_settings_log_out -> showLogoutDialog(requireContext())
+                }
+            },
+            onConfigured = { menu ->
+                if (com.discord.utilities.feature.FeatureFlags.orbsShopEnabled()) {
+                    menu.add(android.view.Menu.NONE, R.id.menu_axycord_orbs_shop, android.view.Menu.NONE, R.string.axycord_orbs_shop)
+                        .setIcon(R.drawable.ic_axycord_shop).setShowAsAction(android.view.MenuItem.SHOW_AS_ACTION_IF_ROOM)
+                }
+                if (com.discord.utilities.feature.FeatureFlags.questsEnabled()) {
+                    menu.add(android.view.Menu.NONE, R.id.menu_axycord_quests, android.view.Menu.NONE, R.string.axycord_quests)
+                        .setIcon(R.drawable.ic_axycord_quests).setShowAsAction(android.view.MenuItem.SHOW_AS_ACTION_IF_ROOM)
                 }
             },
         )

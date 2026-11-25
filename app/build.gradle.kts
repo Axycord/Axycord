@@ -246,6 +246,7 @@ dependencies {
     implementation(libs.androidx.profileinstaller)
     implementation(libs.exoplayer.core)
     implementation(libs.exoplayer.ui)
+    implementation(libs.exoplayer.hls)
     implementation(libs.camerakit)
     implementation(libs.cameraview)
     implementation(libs.colorpicker)

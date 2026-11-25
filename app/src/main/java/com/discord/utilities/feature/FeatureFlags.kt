@@ -3,6 +3,10 @@ package com.discord.utilities.feature
 import com.discord.utilities.cache.SharedPreferencesProvider
 
 object FeatureFlags {
+    fun orbsShopEnabled() = enabled(ClientSettings.orbsShop)
+    fun setOrbsShopEnabled(enabled: Boolean) = setEnabled(ClientSettings.orbsShop, enabled)
+    fun questsEnabled() = enabled(ClientSettings.quests)
+    fun setQuestsEnabled(enabled: Boolean) = setEnabled(ClientSettings.quests, enabled)
     fun voiceMessagesEnabled() = enabled(ClientSettings.voiceMessages)
     fun setVoiceMessagesEnabled(enabled: Boolean) = setEnabled(ClientSettings.voiceMessages, enabled)
     fun tapTapEnabled() = enabled(ClientSettings.tapTap)
