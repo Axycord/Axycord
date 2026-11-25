@@ -49,12 +49,14 @@ size, SHA-256, package, version and signing identity.
 - Custom themes, local settings and installed APK plugins.
 - Built-in Orbs Shop and Quests, each controlled separately in Feature Flags.
 
-Enable **Orbs Shop** or **Quests** under Settings → Feature Flags, then use the
-Open row there or the Settings toolbar menu. Both start disabled and work
+Enable **Orbs Shop** or **Quests** under Settings → Feature Flags, then open them
+in **Billing Settings**, below User Settings. Disabled features disappear from
+that section. Server Boosts remains marked **Coming soon**. Both features start disabled and work
 independently of APK plugin loading. Orbs Shop previews collectibles and asks
 before spending Orbs. Quests supports browsing, enrollment, completed reward
 claims and actual mobile video playback; platform-specific tasks remain tracked
 by Discord on their supported platforms. These features require a Discord account.
+Their controls use the client theme; cosmetic previews are static.
 
 ## Build
 
@@ -65,6 +67,7 @@ Android SDK Platform 37, Build Tools 36.0.0 and Bash. Set `ANDROID_HOME` or
 This source checkout omits recovered resources, native libraries and the signing
 key. Those inputs must be restored before a complete APK can be built. Optional
 `app/google-services.json` enables push notifications and must match the app ID.
+Restore missing inputs without replacing the tracked Axycord resources.
 
 Run builds through the repository's coordinating script.
 

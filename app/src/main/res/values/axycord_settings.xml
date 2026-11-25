@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="axycord_billing_settings">BILLING SETTINGS</string>
+    <string name="axycord_quest_setting">Quest</string>
+    <string name="axycord_server_boosts">Server Boosts</string>
+    <string name="axycord_coming_soon">Coming soon</string>
+    <string name="axycord_server_boosts_coming_soon">Server Boosts are coming soon.</string>
+</resources>

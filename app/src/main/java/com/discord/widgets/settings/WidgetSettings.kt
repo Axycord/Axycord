@@ -1,11 +1,10 @@
 package com.discord.widgets.settings
 
 import android.content.Context
-import android.content.res.ColorStateList
+import android.content.SharedPreferences
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
 import com.discord.R
@@ -18,7 +17,10 @@ import com.discord.utilities.presence.PresenceUtils
 import com.discord.utilities.rx.ui
 import com.discord.utilities.uri.UriHandler
 import com.discord.utilities.user.UserUtils.displayName
-import com.discord.widgets.debugging.WidgetDebugging
+import com.discord.utilities.cache.SharedPreferencesProvider
+import com.discord.utilities.feature.ClientSettings
+import com.discord.utilities.feature.FeatureFlags
+import com.discord.utilities.feature.NativeFeature
 import com.discord.widgets.media.WidgetQRScanner
 import com.discord.widgets.multiaccount.WidgetSwitchAccounts
 import com.discord.widgets.settings.account.WidgetSettingsAccount
@@ -28,8 +30,6 @@ import com.discord.widgets.user.Badge
 import com.discord.widgets.user.WidgetUserStatusSheet
 import com.discord.widgets.settings.profile.WidgetEditUserOrGuildMemberProfile
 import com.discord.widgets.user.profile.UserProfileHeaderViewModel
-import com.google.android.material.shape.MaterialShapeDrawable
-import com.google.android.material.shape.ShapeAppearanceModel
 
 /**
  * The user-settings root screen, hosted by the settings tab.
@@ -55,12 +55,30 @@ class WidgetSettings : AppFragment(R.layout.widget_settings) {
     private val viewModel: SettingsViewModel by appViewModels { SettingsViewModel() }
     private var _binding: WidgetSettingsBinding? = null
     private val binding get() = requireNotNull(_binding)
+    private val featureListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+        if (key == null || key == ClientSettings.orbsShop.key || key == ClientSettings.quests.key) {
+            view?.post { configureBilling() }
+        }
+    }
 
     override fun onViewBound(view: View) {
         super.onViewBound(view)
         _binding = WidgetSettingsBinding.bind(view)
         configureToolbar()
         hideUnavailableRows()
+        SharedPreferencesProvider.get().registerOnSharedPreferenceChangeListener(featureListener)
+        configureBilling()
+        binding.settingsSwitchAccounts.setOnClickListener { WidgetSwitchAccounts.show(parentFragmentManager) }
+        binding.settingsLogout.setOnClickListener { showLogoutDialog(requireContext()) }
+        binding.settingsBillingQuests.setOnClickListener { WidgetAxycordFeature.open(requireContext(), NativeFeature.QUESTS) }
+        binding.settingsBillingOrbsShop.setOnClickListener { WidgetAxycordFeature.open(requireContext(), NativeFeature.ORBS_SHOP) }
+        binding.settingsBillingServerBoosts.setOnClickListener {
+            WidgetNoticeDialog.Builder(requireContext())
+                .setTitle(R.string.axycord_server_boosts)
+                .setMessage(R.string.axycord_server_boosts_coming_soon)
+                .setPositiveButton(R.string.okay)
+                .show(parentFragmentManager)
+        }
 
         binding.setStatusContainer.apply {
             contentDescription = getString(R.string.set_status)
@@ -83,8 +101,12 @@ class WidgetSettings : AppFragment(R.layout.widget_settings) {
             append(getString(R.string.axycord_maintainer))
         }
 
-        for ((rowId, page) in routes) {
-            view.findViewById<View>(rowId).setOnClickListener { SettingsNavigation.push(this, page()) }
+        for (row in listOf(binding.account, binding.privacy, binding.authorizedApps, binding.sessions,
+            binding.voice, binding.notifications, binding.textImagesSettings, binding.appearance,
+            binding.accessibility, binding.behavior, binding.language, binding.activityStatus,
+            binding.backend, binding.proxy, binding.featureFlags, binding.plugins,
+            binding.developerOptions, binding.updates)) {
+            row.setOnClickListener { SettingsNavigation.push(this, routes.getValue(row.id)()) }
         }
         binding.profile.setOnClickListener { WidgetEditUserOrGuildMemberProfile.launch(requireContext()) }
 
@@ -110,7 +132,7 @@ class WidgetSettings : AppFragment(R.layout.widget_settings) {
 
         listOf(
             binding.userSettingsHeader,
-            binding.nitroHeader,
+            binding.billingSettingsHeader,
             binding.appSettingsHeader,
             binding.developerOptionsHeader,
             binding.appInfoHeader,
@@ -118,6 +140,7 @@ class WidgetSettings : AppFragment(R.layout.widget_settings) {
     }
 
     override fun onDestroyView() {
+        SharedPreferencesProvider.get().unregisterOnSharedPreferenceChangeListener(featureListener)
         _binding = null
         super.onDestroyView()
     }
@@ -125,6 +148,7 @@ class WidgetSettings : AppFragment(R.layout.widget_settings) {
     override fun onViewBoundOrOnResume() {
         super.onViewBoundOrOnResume()
         configureToolbar()
+        configureBilling()
         // Reference registers itself as the settings tab's `OnTabSelectedListener` and refreshes
         // here. `widgets/tabs` has no listener registry yet, so the refresh runs on every resume.
         viewModel.refreshSubscriptions()
@@ -145,25 +169,16 @@ class WidgetSettings : AppFragment(R.layout.widget_settings) {
             R.menu.menu_settings,
             onSelected = { item ->
                 when (item.itemId) {
-                    R.id.menu_axycord_orbs_shop -> WidgetAxycordFeature.open(requireContext(), com.discord.utilities.feature.NativeFeature.ORBS_SHOP)
-                    R.id.menu_axycord_quests -> WidgetAxycordFeature.open(requireContext(), com.discord.utilities.feature.NativeFeature.QUESTS)
                     R.id.menu_settings_search -> SettingsNavigation.push(this, WidgetSettingsSearch())
-                    R.id.menu_settings_debugging -> WidgetDebugging.launch(requireContext())
-                    R.id.menu_settings_switch_accounts -> WidgetSwitchAccounts.show(parentFragmentManager)
-                    R.id.menu_settings_log_out -> showLogoutDialog(requireContext())
-                }
-            },
-            onConfigured = { menu ->
-                if (com.discord.utilities.feature.FeatureFlags.orbsShopEnabled()) {
-                    menu.add(android.view.Menu.NONE, R.id.menu_axycord_orbs_shop, android.view.Menu.NONE, R.string.axycord_orbs_shop)
-                        .setIcon(R.drawable.ic_axycord_shop).setShowAsAction(android.view.MenuItem.SHOW_AS_ACTION_IF_ROOM)
-                }
-                if (com.discord.utilities.feature.FeatureFlags.questsEnabled()) {
-                    menu.add(android.view.Menu.NONE, R.id.menu_axycord_quests, android.view.Menu.NONE, R.string.axycord_quests)
-                        .setIcon(R.drawable.ic_axycord_quests).setShowAsAction(android.view.MenuItem.SHOW_AS_ACTION_IF_ROOM)
                 }
             },
         )
+    }
+
+    private fun configureBilling() {
+        val bound = _binding ?: return
+        bound.settingsBillingQuests.visibility = if (FeatureFlags.questsEnabled()) View.VISIBLE else View.GONE
+        bound.settingsBillingOrbsShop.visibility = if (FeatureFlags.orbsShopEnabled()) View.VISIBLE else View.GONE
     }
 
     private fun configureUI(viewState: SettingsViewModel.ViewState) {
@@ -182,25 +197,6 @@ class WidgetSettings : AppFragment(R.layout.widget_settings) {
         binding.developerOptionsDivider.visibility = View.VISIBLE
         binding.developerOptionsHeader.visibility = View.VISIBLE
         binding.developerOptions.visibility = View.VISIBLE
-
-        binding.roleSubscriptions.visibility =
-            if (model.showRoleSubscriptionsButton) View.VISIBLE else View.GONE
-
-        // The recovered layout names this view `nitroGiftingBadge`, not `nitro_gifting_badge`.
-        val badge = binding.nitroGiftingBadge
-        if (model.promoCount > 0) {
-            badge.text = model.promoCount.toString()
-            badge.background = MaterialShapeDrawable(
-                ShapeAppearanceModel.Builder().setAllCornerSizes(ShapeAppearanceModel.PILL).build(),
-            ).apply {
-                fillColor = ColorStateList.valueOf(
-                    ContextCompat.getColor(requireContext(), R.color.status_red_500),
-                )
-            }
-            badge.visibility = View.VISIBLE
-        } else {
-            badge.visibility = View.GONE
-        }
 
         val notificationsBlocked = !NotificationManagerCompat.from(requireContext()).areNotificationsEnabled()
         binding.notificationUpsell.visibility =
@@ -232,6 +228,15 @@ class WidgetSettings : AppFragment(R.layout.widget_settings) {
             R.id.user_settings_header,
             R.id.set_status_container,
             R.id.app_settings_header,
+            R.id.app_settings_divider,
+            R.id.billing_settings_header,
+            R.id.billing_settings_divider,
+            R.id.settings_billing_quests,
+            R.id.settings_billing_orbs_shop,
+            R.id.settings_billing_server_boosts,
+            R.id.settings_server_boosts_status,
+            R.id.settings_switch_accounts,
+            R.id.settings_logout,
             R.id.developer_options_divider,
             R.id.developer_options_header,
             R.id.app_info_header,

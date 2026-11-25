@@ -37,7 +37,7 @@ internal class ShopStyle(context: Context) {
     )
     val text = context.themeColour(HostR.attr.colorHeaderPrimary, if (dark) Color.WHITE else 0xFF202127.toInt())
     val muted = context.themeColour(HostR.attr.colorHeaderSecondary, blend(ink, text, 0.68f))
-    val panel = blend(ink, text, 0.045f)
+    val panel = context.themeColour(HostR.attr.colorBackgroundSecondary, blend(ink, text, 0.045f))
     val line = blend(ink, text, 0.17f)
     val accent = context.themeColour(HostR.attr.colorTextLink, if (dark) 0xFF65A8FF.toInt() else 0xFF2147A5.toInt())
     val action = context.themeColour(HostR.attr.color_brand, 0xFF5263DA.toInt()).let { colour ->
@@ -113,21 +113,19 @@ internal fun Context.label(value: String, size: Int, colour: Int, bold: Boolean 
     }
 
 internal fun Context.button(label: String, style: ShopStyle, primary: Boolean = false, click: () -> Unit) =
-    (LayoutInflater.from(this).inflate(R.layout.view_axycord_feature_button, null) as com.google.android.material.button.MaterialButton).apply {
+    (LayoutInflater.from(this).inflate(if (primary) R.layout.view_axycord_feature_primary_button else R.layout.view_axycord_feature_button, null) as com.google.android.material.button.MaterialButton).apply {
         text = label
         isAllCaps = false
         textSize = 14f
         typeface = shopTypeface(true)
         gravity = Gravity.CENTER
-        setTextColor(if (primary) style.onAction else style.text)
+        if (!primary) setTextColor(style.text)
         minHeight = dp(48)
         minimumHeight = dp(48)
         minWidth = 0
         minimumWidth = 0
         setPadding(dp(12), dp(6), dp(12), dp(6))
-        backgroundTintList = ColorStateList.valueOf(if (primary) style.action else style.panel)
-        strokeColor = ColorStateList.valueOf(style.line)
-        strokeWidth = if (primary) 0 else dp(1)
+        stateListAnimator = null
         setOnClickListener { click() }
     }
 

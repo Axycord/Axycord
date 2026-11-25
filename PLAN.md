@@ -101,7 +101,13 @@ resource loading and contribution surfaces.
 Maarij's MIT-licensed Orbs Shop and Quests sources are integrated as native
 features, independently of plugin discovery/loading. Separate registered Boolean
 flags start disabled and participate in client settings backup. Enabled features
-are accessible from Feature Flags and the Settings toolbar menu.
+are accessible from Feature Flags and Billing Settings below User Settings.
+Disabled feature rows are hidden immediately. Server Boosts remains an explicit
+Coming soon destination. The settings toolbar contains Search only; Switch Account
+sits below My Account, Debug ends Accessibility, and red Logout ends App Information.
+Quest/Shop use native button styles and theme fonts, content balance labels and
+static cosmetic previews; the plugin's custom APNG playback/replay implementation
+has been removed.
 
 Restorable native screens and session-bound calls gate both features on their
 flags, Discord backend and original account credentials. Closing a screen,
@@ -114,15 +120,26 @@ Quest progress records observed playback; desktop/console tasks remain tracked
 on their supported platforms. Import revisions and licenses live in
 [third_party/axycord-features](third_party/axycord-features/README.md).
 
-Verification: 24 focused JVM tests passed for catalog/prices, cache round trips,
+Verification: 40 focused app JVM tests passed for settings section/menu order, Logout
+icon/text tint, invite onboarding gates, catalog/prices, cache round trips,
 effect layout, theme contrast, quest parsing/actions, saved video validation,
 playback accounting, session gates and all 12 inherited endpoint request shapes.
-Feature sources and native host passed an isolated Kotlin/Java type check against
-cached Android/dependency/host API classes, with generated resource/binding and
-transport seams supplied for that check. Default-client metadata and flag registry
-tests are also included for the app suite. No Gradle/APK build or device/live
-redemption/quest test was run, per the maintainer's no-build instruction; complete
-app compilation, shrinking and runtime behavior remain unverified in this mirror.
+Default-client metadata, flag registry, onboarding-store and invite-race tests
+also passed. Full debug Kotlin/Java compilation and compatibility lint for both
+the app and Plugin SDK passed. Missing recovered resources/assets/native libraries
+were restored locally from the maintainer's November 24 checkout for the authorized
+private debug build. Public source still omits those recovered inputs. No device
+or live redemption/quest verification was performed; runtime checks remain open.
+
+### Invite onboarding
+
+Invite acceptance captures membership before the POST so subsequent guild
+hydration cannot turn a fresh join into an apparent existing membership. Repeat
+invites honor member completion flags and local completed state; established
+members with missing member-cache data are not forced through onboarding again.
+An explicitly started, unfinished flow can resume. Fresh joins, including rejoin
+after leaving with stale local completion, still receive required onboarding.
+Join-request verification retains priority over onboarding.
 
 ## Feature Status
 

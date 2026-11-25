@@ -3,7 +3,7 @@
     <string name="axycord_member_group_count" translatable="false">%1$s — %2$d</string>
     <color name="loading_background">#2B2E31</color>
     <string name="axycord_app_name">Axycord</string>
-    <string name="axycord_maintainer">Maintained by mmaarij</string>
+    <string name="axycord_maintainer">Maintained by Maarij</string>
     <string name="axycord_stranger_request_title">Accept friend request?</string>
     <string name="axycord_stranger_request_body">This may be someone you don\'t know. You don\'t share any mutual friends or small mutual servers with them.</string>
     <string name="axycord_save_to_file">Save to file</string>

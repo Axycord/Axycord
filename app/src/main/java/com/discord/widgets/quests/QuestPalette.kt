@@ -1,11 +1,9 @@
 package com.discord.widgets.quests
 
 import android.content.Context
-import android.content.res.ColorStateList
 import android.content.res.Configuration
-import android.graphics.Color
 import android.graphics.Typeface
-import android.os.Build
+import androidx.core.content.res.ResourcesCompat
 import android.util.TypedValue
 import android.widget.Button
 import android.view.LayoutInflater
@@ -41,26 +39,21 @@ internal class QuestPalette(context: Context) {
     val pageInk = accessibleColor(text, page)
     val border = blend(surface, ink, 0.18)
     val progress = accessibleColor(context.themeColor(HostR.attr.colorTextLink), surface)
-    val regular = context.questFont(HostR.font.whitney_medium, Typeface.NORMAL)
-    val bold = context.questFont(HostR.font.whitney_bold, Typeface.BOLD)
+    val regular = context.questFont(HostR.attr.font_primary_normal, Typeface.NORMAL)
+    val bold = context.questFont(HostR.attr.font_primary_semibold, Typeface.BOLD)
 
     fun button(context: Context, label: String, primary: Boolean = false): Button =
-        (LayoutInflater.from(context).inflate(R.layout.view_axycord_feature_button, null) as com.google.android.material.button.MaterialButton).apply {
+        (LayoutInflater.from(context).inflate(if (primary) R.layout.view_axycord_feature_primary_button else R.layout.view_axycord_feature_button, null) as com.google.android.material.button.MaterialButton).apply {
         text = label
         isAllCaps = false
         typeface = bold
-        setTextColor(if (primary) Color.WHITE else ink)
+        if (!primary) setTextColor(ink)
         minimumHeight = dp(48)
         minHeight = dp(48)
         minimumWidth = 0
         minWidth = 0
         setPadding(dp(6), 0, dp(6), 0)
         stateListAnimator = null
-        val fill = if (primary) 0xFF4752C4.toInt() else surface
-        backgroundTintList = ColorStateList.valueOf(fill)
-        strokeColor = ColorStateList.valueOf(border)
-        strokeWidth = if (primary) 0 else dp(1)
-        cornerRadius = dp(8)
     }
 }
 
@@ -75,7 +68,10 @@ private fun Context.themeColor(attribute: Int): Int? {
     return color
 }
 
-private fun Context.questFont(id: Int, style: Int): Typeface =
-    if (Build.VERSION.SDK_INT >= 26) runCatching { resources.getFont(id) }.getOrNull()
-        ?: Typeface.create("sans-serif", style)
-    else Typeface.create("sans-serif", style)
+private fun Context.questFont(attribute: Int, style: Int): Typeface {
+    val value = TypedValue()
+    if (theme.resolveAttribute(attribute, value, true) && value.resourceId != 0) {
+        runCatching { ResourcesCompat.getFont(this, value.resourceId) }.getOrNull()?.let { return it }
+    }
+    return Typeface.create("sans-serif", style)
+}

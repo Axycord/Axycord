@@ -1,14 +1,14 @@
 package com.discord.widgets.settings
 
 import android.view.View
-import android.widget.TextView
 import androidx.core.view.ViewCompat
 import com.discord.R
 import com.discord.app.AppFragment
+import com.discord.databinding.WidgetSettingsAccessibilityBinding
+import com.discord.widgets.debugging.WidgetDebugging
 import com.discord.models.domain.ModelUserSettings
 import com.discord.stores.StoreStream
 import com.discord.utilities.rx.ui
-import com.discord.utilities.view.text.LinkifiedTextView
 import com.discord.utilities.feature.FeatureFlags
 import com.discord.views.CheckedSetting
 import com.discord.views.RadioManager
@@ -58,10 +58,18 @@ class WidgetSettingsAccessibility : AppFragment(R.layout.widget_settings_accessi
     }
 
     private var stickersAnimationRadioManager: RadioManager? = null
+    private var _binding: WidgetSettingsAccessibilityBinding? = null
+    private val binding get() = requireNotNull(_binding)
+
+    override fun onViewBound(view: View) {
+        super.onViewBound(view)
+        _binding = WidgetSettingsAccessibilityBinding.bind(view)
+        binding.settingsAccessibilityDebug.setOnClickListener { WidgetDebugging.launch(requireContext()) }
+    }
 
     /** Collectibles keep their [FeatureFlags] storage; only where they are surfaced has moved. */
-    private fun bindCollectible(root: View, id: Int, get: () -> Boolean, set: (Boolean) -> Unit) {
-        root.findViewById<CheckedSetting>(id).apply {
+    private fun bindCollectible(view: CheckedSetting, get: () -> Boolean, set: (Boolean) -> Unit) {
+        view.apply {
             setChecked(get(), false)
             setOnCheckedListener(Action1 { set(it) })
         }
@@ -74,19 +82,19 @@ class WidgetSettingsAccessibility : AppFragment(R.layout.widget_settings_accessi
         setActionBarDisplayHomeAsUpEnabled()
         SettingsNavigation.bindBack(this)
 
-        val root = view ?: return
+        if (_binding == null) return
         val accessibility = StoreStream.getAccessibility()
         val settings = StoreStream.getUserSettings()
 
-        root.findViewById<CheckedSetting>(R.id.settings_accessibility_reduced_motion_switch)
+        binding.settingsAccessibilityReducedMotionSwitch
             .setOnCheckedListener(Action1 { accessibility.setReducedMotionEnabled(it) })
-        root.findViewById<CheckedSetting>(R.id.settings_accessibility_display_name_styles_switch)
+        binding.settingsAccessibilityDisplayNameStylesSwitch
             .setOnCheckedListener(Action1 { accessibility.setDisplayNameStylesEnabled(it) })
-        bindCollectible(root, R.id.settings_feature_avatar_decorations, FeatureFlags::avatarDecorationsEnabled, FeatureFlags::setAvatarDecorationsEnabled)
-        bindCollectible(root, R.id.settings_feature_nameplates, FeatureFlags::nameplatesEnabled, FeatureFlags::setNameplatesEnabled)
-        bindCollectible(root, R.id.settings_feature_profile_effects, FeatureFlags::profileEffectsEnabled, FeatureFlags::setProfileEffectsEnabled)
-        bindCollectible(root, R.id.settings_feature_profile_frames, FeatureFlags::profileFramesEnabled, FeatureFlags::setProfileFramesEnabled)
-        root.findViewById<LinkifiedTextView>(R.id.settings_accessibility_reduced_motion_description).apply {
+        bindCollectible(binding.settingsFeatureAvatarDecorations, FeatureFlags::avatarDecorationsEnabled, FeatureFlags::setAvatarDecorationsEnabled)
+        bindCollectible(binding.settingsFeatureNameplates, FeatureFlags::nameplatesEnabled, FeatureFlags::setNameplatesEnabled)
+        bindCollectible(binding.settingsFeatureProfileEffects, FeatureFlags::profileEffectsEnabled, FeatureFlags::setProfileEffectsEnabled)
+        bindCollectible(binding.settingsFeatureProfileFrames, FeatureFlags::profileFramesEnabled, FeatureFlags::setProfileFramesEnabled)
+        binding.settingsAccessibilityReducedMotionDescription.apply {
             text = SettingsStrings.render(
                 context,
                 R.string.accessibility_prefers_reduced_motion_description,
@@ -94,36 +102,37 @@ class WidgetSettingsAccessibility : AppFragment(R.layout.widget_settings_accessi
             )
             movementMethod = android.text.method.LinkMovementMethod.getInstance()
         }
-        root.findViewById<CheckedSetting>(R.id.settings_accessibility_allow_animate_emoji_switch)
+        binding.settingsAccessibilityAllowAnimateEmojiSwitch
             .setOnCheckedListener(Action1 { settings.setIsAnimatedEmojisEnabled(it) })
-        root.findViewById<CheckedSetting>(R.id.settings_accessibility_allow_autoplay_gif_switch)
+        binding.settingsAccessibilityAllowAutoplayGifSwitch
             .setOnCheckedListener(Action1 { settings.setIsAutoPlayGifsEnabled(it) })
 
-        stickersAnimationRadioManager = RadioManager(stickerRadios(root))
+        stickersAnimationRadioManager = RadioManager(stickerRadios())
 
         listOf(
-            R.id.settings_accessibility_reduced_motion_header,
-            R.id.settings_accessibility_images_header,
-            R.id.settings_accessibility_stickers_header,
-        ).forEach { id -> ViewCompat.setAccessibilityHeading(root.findViewById<TextView>(id), true) }
+            binding.settingsAccessibilityReducedMotionHeader,
+            binding.settingsAccessibilityImagesHeader,
+            binding.settingsAccessibilityStickersHeader,
+        ).forEach { ViewCompat.setAccessibilityHeading(it, true) }
 
         Model.get().ui(this).subscribe(::configureUI)
     }
 
     override fun onDestroyView() {
         stickersAnimationRadioManager = null
+        _binding = null
         super.onDestroyView()
     }
 
     private fun configureUI(model: Model) {
-        val root = view ?: return
-        val emoji = root.findViewById<CheckedSetting>(R.id.settings_accessibility_allow_animate_emoji_switch)
-        val gifs = root.findViewById<CheckedSetting>(R.id.settings_accessibility_allow_autoplay_gif_switch)
-        val radios = stickerRadios(root)
+        if (_binding == null) return
+        val emoji = binding.settingsAccessibilityAllowAnimateEmojiSwitch
+        val gifs = binding.settingsAccessibilityAllowAutoplayGifSwitch
+        val radios = stickerRadios()
 
-        root.findViewById<CheckedSetting>(R.id.settings_accessibility_reduced_motion_switch)
+        binding.settingsAccessibilityReducedMotionSwitch
             .setChecked(model.reducedMotionEnabled, false)
-        root.findViewById<CheckedSetting>(R.id.settings_accessibility_display_name_styles_switch)
+        binding.settingsAccessibilityDisplayNameStylesSwitch
             .setChecked(model.displayNameStylesEnabled, false)
 
         if (model.reducedMotionEnabled) {
@@ -132,9 +141,9 @@ class WidgetSettingsAccessibility : AppFragment(R.layout.widget_settings_accessi
             radios.forEach { it.setDisabledTooltip(R.string.stickers_auto_play_help_disabled) }
             stickersAnimationRadioManager?.setChecked(
                 if (model.currentStickerAnimationSettings != ModelUserSettings.STICKER_ANIMATION_NEVER_ANIMATE) {
-                    root.findViewById(R.id.stickers_animate_on_interaction)
+                    binding.stickersAnimateOnInteraction
                 } else {
-                    root.findViewById(R.id.stickers_never_animate)
+                    binding.stickersNeverAnimate
                 },
             )
             gifs.setChecked(false, false)
@@ -143,17 +152,17 @@ class WidgetSettingsAccessibility : AppFragment(R.layout.widget_settings_accessi
             emoji.setChecked(model.allowAnimatedEmoji, false)
             configureStickerAnimationRadio(
                 model.currentStickerAnimationSettings,
-                root.findViewById(R.id.stickers_always_animate),
+                binding.stickersAlwaysAnimate,
                 ModelUserSettings.STICKER_ANIMATION_ALWAYS_ANIMATE,
             )
             configureStickerAnimationRadio(
                 model.currentStickerAnimationSettings,
-                root.findViewById(R.id.stickers_animate_on_interaction),
+                binding.stickersAnimateOnInteraction,
                 ModelUserSettings.STICKER_ANIMATION_ANIMATE_ON_INTERACTION,
             )
             configureStickerAnimationRadio(
                 model.currentStickerAnimationSettings,
-                root.findViewById(R.id.stickers_never_animate),
+                binding.stickersNeverAnimate,
                 ModelUserSettings.STICKER_ANIMATION_NEVER_ANIMATE,
             )
             gifs.setChecked(model.autoPlayGifs, false)
@@ -175,10 +184,10 @@ class WidgetSettingsAccessibility : AppFragment(R.layout.widget_settings_accessi
         }
     }
 
-    private fun stickerRadios(root: View): List<CheckedSetting> = listOf(
-        root.findViewById(R.id.stickers_always_animate),
-        root.findViewById(R.id.stickers_animate_on_interaction),
-        root.findViewById(R.id.stickers_never_animate),
+    private fun stickerRadios(): List<CheckedSetting> = listOf(
+        binding.stickersAlwaysAnimate,
+        binding.stickersAnimateOnInteraction,
+        binding.stickersNeverAnimate,
     )
 
     private companion object {

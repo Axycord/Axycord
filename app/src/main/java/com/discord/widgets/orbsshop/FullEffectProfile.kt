@@ -25,10 +25,10 @@ internal class FullEffectProfile(
     private val offer: Offer,
 ) : FrameLayout(ui) {
     private val spec = EffectSpec.fromProduct(offer.product)
-    private val effectArtwork = EffectOverlay(ui, spec, StoreStream.getAccessibility().isReducedMotionEnabled())
+    private val effectArtwork = ui.artwork(spec.still)
     private val body = ui.column()
     private val card = FrameLayout(ui).apply {
-        background = ui.shape(style.ink, 16, style.line)
+        background = ui.shape(style.ink, 4, style.line)
         clipToOutline = true
         place(ScrollView(ui).apply {
             isFillViewport = true
@@ -40,7 +40,7 @@ internal class FullEffectProfile(
     private var profileUpdates: Subscription? = null
 
     init {
-        background = ui.artBackground(style, offer, 18)
+        background = ui.artBackground(style, offer, 4)
         place(card, -1, -1, Gravity.CENTER)
         render(null)
     }
@@ -68,8 +68,6 @@ internal class FullEffectProfile(
         card.layoutParams.height = size.height
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
     }
-
-    fun replay() = effectArtwork.replay()
 
     private fun render(profile: UserProfile?) {
         val metadata = profile?.userProfile

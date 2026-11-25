@@ -3,22 +3,17 @@ package com.discord.widgets.orbsshop
 import com.discord.R
 
 import android.content.Context
-import android.content.ContextWrapper
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.text.TextUtils
 import android.view.Gravity
-import android.view.Menu
-import android.view.MenuItem
 import android.view.View
 import com.google.android.material.button.MaterialButton
 import com.discord.views.SearchInputView
 import com.google.android.material.textfield.TextInputEditText
 import android.widget.HorizontalScrollView
 import android.widget.LinearLayout
-import androidx.appcompat.widget.Toolbar
 import androidx.core.widget.doAfterTextChanged
-import com.discord.app.AppActivity
 import com.discord.stores.StoreStream
 import androidx.fragment.app.FragmentManager
 import rx.subscriptions.CompositeSubscription
@@ -31,18 +26,14 @@ internal class ShopView(
 ) : LinearLayout(context) {
     private val ui = context
     private val style = ShopStyle(ui)
-    private val walletId = generateViewId()
     private val fallbackWallet = ui.row().apply {
-        gravity = Gravity.END or Gravity.CENTER_VERTICAL
-        visibility = GONE
+        gravity = Gravity.START or Gravity.CENTER_VERTICAL
     }
     private val wallet = ui.label("Orbs —", 14, style.text, true).apply {
-        gravity = Gravity.CENTER
-        pad(12, 8)
-        background = ui.shape(style.ink, 20, style.line)
+        gravity = Gravity.START
+        pad(0, 8)
         maxLines = 1
     }
-    private var toolbar: Toolbar? = null
     private val refresh = icons.button(ui, R.drawable.ic_axycord_shop_refresh, "Refresh the shop", style.muted) {
         session.load(userId(), force = true)
     }
@@ -60,6 +51,7 @@ internal class ShopView(
 
     init {
         orientation = VERTICAL
+        fallbackWallet.addView(wallet)
         addLine(fallbackWallet)
         addLine(searchRow())
         addLine(filterRail(), 10)
@@ -73,8 +65,6 @@ internal class ShopView(
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
-        // The host binds the page toolbar during creation. Post until the page is attached.
-        post { if (isAttachedToWindow) bindWallet() }
         subscription = CompositeSubscription()
         subscription.add(session.states.subscribe(::render))
         subscription.add(StoreStream.getUsers().observeMeId().distinctUntilChanged().subscribe {
@@ -84,26 +74,9 @@ internal class ShopView(
     }
 
     override fun onDetachedFromWindow() {
-        toolbar?.menu?.removeItem(walletId)
-        toolbar = null
-        fallbackWallet.removeAllViews()
         detail?.dismiss()
         subscription.unsubscribe()
         super.onDetachedFromWindow()
-    }
-
-    private fun bindWallet() {
-        val bar = ui.hostActivity()?.toolbar
-        if (bar == null) {
-            fallbackWallet.addView(wallet, LayoutParams(-2, -2))
-            fallbackWallet.visibility = VISIBLE
-            return
-        }
-        fallbackWallet.visibility = GONE
-        toolbar = bar
-        bar.menu.add(Menu.NONE, walletId, Menu.NONE, "Orbs balance")
-            .setActionView(wallet)
-            .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
     }
 
     private fun searchRow() = ui.row().apply {
@@ -235,7 +208,7 @@ internal class ShopView(
         val offer = family.variants.first()
         return ui.row().apply {
             gravity = Gravity.CENTER_VERTICAL
-            background = ui.pressable(blend(style.ink, offer.tint(style.accent), 0.13f), 19, style.line)
+            background = ui.pressable(style.panel, 4, style.line)
             pad(14, 12)
             val details = ui.column().apply {
                 addLine(ui.label(offer.kind.singular, 12, style.muted, true))
@@ -253,7 +226,7 @@ internal class ShopView(
 
     private fun tile(family: ProductFamily): View = ui.column().apply {
         val first = family.variants.first()
-        background = ui.pressable(style.panel, 15, style.line)
+        background = ui.pressable(style.panel, 4, style.line)
         clipToOutline = true
         isFocusable = true
         addLine(productArt(ui, style, first), height = 104)
@@ -308,10 +281,4 @@ internal class ShopView(
     private companion object {
         const val PAGE_SIZE = 24
     }
-}
-
-private tailrec fun Context.hostActivity(): AppActivity? = when (this) {
-    is AppActivity -> this
-    is ContextWrapper -> baseContext.hostActivity()
-    else -> null
 }

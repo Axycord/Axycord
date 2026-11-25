@@ -5,20 +5,14 @@ import com.discord.R
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import android.content.ContextWrapper
 import android.content.res.ColorStateList
 import android.graphics.drawable.GradientDrawable
 import android.view.Gravity
-import android.view.Menu
-import android.view.MenuItem
 import android.view.View
-import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.widget.Toolbar
-import com.discord.app.AppActivity
 import com.discord.stores.StoreStream
 import com.google.gson.JsonObject
 import androidx.fragment.app.FragmentManager
@@ -52,23 +46,16 @@ internal class QuestsScreen(
         setTextColor(palette.pageInk)
         typeface = palette.regular
     }
-    private val orbsItemId = View.generateViewId()
-    private var orbsToolbar: Toolbar? = null
     private val orbsBalance = TextView(context).apply {
         typeface = palette.bold
         textSize = 14f
-        gravity = Gravity.CENTER
-        setTextColor(palette.ink)
-        setPadding(dp(12), dp(5), dp(12), dp(5))
-        background = GradientDrawable().apply {
-            setColor(palette.surface)
-            setStroke(dp(1), palette.border)
-            cornerRadius = dp(20).toFloat()
-        }
+        gravity = Gravity.START
+        setTextColor(palette.pageInk)
+        setPadding(0, dp(8), 0, dp(12))
         accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
     }
     private val balanceRow = LinearLayout(context).apply {
-        gravity = Gravity.END
+        gravity = Gravity.START
         addView(orbsBalance)
     }
     private val cards = LinearLayout(context).apply { orientation = VERTICAL }
@@ -99,7 +86,6 @@ internal class QuestsScreen(
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
-        attachOrbsToToolbar()
         load()
     }
 
@@ -110,8 +96,6 @@ internal class QuestsScreen(
         receiptRequest.cancel()
         retryReceipt?.let(::removeCallbacks)
         retryReceipt = null
-        orbsToolbar?.menu?.removeItem(orbsItemId)
-        orbsToolbar = null
         super.onDetachedFromWindow()
     }
 
@@ -149,25 +133,6 @@ internal class QuestsScreen(
             list = readQuests(json, history)
             render()
         }
-    }
-
-    private fun attachOrbsToToolbar() {
-        var host: Context = context
-        while (host is ContextWrapper && host !is AppActivity && host.baseContext !== host) {
-            host = host.baseContext
-        }
-        (orbsBalance.parent as? ViewGroup)?.removeView(orbsBalance)
-        val toolbar = (host as? AppActivity)?.toolbar
-        if (toolbar == null) {
-            balanceRow.addView(orbsBalance)
-            balanceRow.visibility = View.VISIBLE
-            return
-        }
-        balanceRow.visibility = View.GONE
-        orbsToolbar = toolbar
-        toolbar.menu.add(Menu.NONE, orbsItemId, Menu.NONE, "Orbs balance")
-            .setActionView(orbsBalance)
-            .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
     }
 
     private fun refreshOrbs() {
@@ -262,7 +227,7 @@ internal class QuestsScreen(
             orientation = VERTICAL
             setPadding(dp(14), dp(14), dp(14), dp(14))
             background = GradientDrawable().apply {
-                cornerRadius = dp(14).toFloat()
+                cornerRadius = dp(4).toFloat()
                 setColor(palette.surface)
                 setStroke(dp(1), palette.border)
             }

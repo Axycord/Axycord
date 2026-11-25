@@ -46,7 +46,6 @@ internal class ShopDetail(
     private val heading = ui.label(family.name, 24, style.text, bold = true)
     private val summary = ui.label("", 14, style.muted)
     private val stage = FrameLayout(ui)
-    private var effectPreview: FullEffectProfile? = null
     private val feedback = ui.label("", 13, style.muted).apply {
         accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
     }
@@ -61,10 +60,6 @@ internal class ShopDetail(
                 gravity = Gravity.CENTER_VERTICAL
                 addView(ui.label("Preview on your profile", 13, style.muted, true),
                     LinearLayout.LayoutParams(0, -2, 1f))
-                if (family.kind == CosmeticKind.EFFECT && !StoreStream.getAccessibility().isReducedMotionEnabled()) {
-                    addView(ui.button("Replay", style) { effectPreview?.replay() },
-                        LinearLayout.LayoutParams(-2, -2))
-                }
             }, 8)
             val previewHeight = if (family.kind == CosmeticKind.EFFECT) {
                 (ui.resources.configuration.screenHeightDp - 248).coerceIn(240, 570)
@@ -78,7 +73,7 @@ internal class ShopDetail(
             setPadding(ui.dp(16), 0, ui.dp(16), ui.dp(12))
         }
         dialog.setContentView(ui.column().apply {
-            background = ui.shape(style.ink, 24, style.line)
+            background = ui.shape(style.ink, 4, style.line)
             clipToOutline = true
             addLine(ui.row().apply {
                 gravity = Gravity.CENTER_VERTICAL
@@ -97,7 +92,7 @@ internal class ShopDetail(
             }, LinearLayout.LayoutParams(-1, 0, 1f))
             addLine(ui.column().apply {
                 pad(16, 12)
-                background = ui.shape(style.panel, 18)
+                background = ui.shape(style.panel, 4)
                 addLine(confirm)
                 addLine(feedback, 8)
             })
@@ -187,7 +182,7 @@ internal class ShopDetail(
         }
         stage.removeAllViews()
         val preview = if (family.kind == CosmeticKind.EFFECT) {
-            FullEffectProfile(ui, style, me, selected).also { effectPreview = it }
+            FullEffectProfile(ui, style, me, selected)
         } else {
             profilePreview(ui, style, me, selected) { requiredHeight ->
                 val height = stage.layoutParams
@@ -318,7 +313,7 @@ private fun Offer.model() = runCatching {
 internal fun Context.artwork(url: String?) = VitoImageView(this).apply {
     importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
     scaleType = android.widget.ImageView.ScaleType.FIT_CENTER
-    if (url != null && isDiscordArtwork(url)) setImageURI(url)
+    if (url != null && isDiscordArtwork(url)) show(listOf(url), autoPlay = false)
 }
 
 internal fun isDiscordArtwork(value: String): Boolean {
@@ -355,7 +350,7 @@ internal fun avatarShowcase(ui: Context, style: ShopStyle, me: MeUser, offer: Of
 internal fun cosmeticAvatar(ui: Context, style: ShopStyle, me: MeUser, art: String?, size: Int): View =
     FrameLayout(ui).apply {
         val avatar = ui.artwork(null).apply {
-            setImageURI(IconUtils.getForUser(me, size = 128))
+            show(listOfNotNull(IconUtils.getForUser(me, size = 128)), autoPlay = false)
             background = ui.shape(style.panel, size)
             clipToOutline = true
             scaleType = android.widget.ImageView.ScaleType.CENTER_CROP
