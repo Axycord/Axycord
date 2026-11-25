@@ -6,6 +6,7 @@
     <androidx.core.widget.NestedScrollView style="@style/UiKit.ViewGroup.NestedScrollView.AppBarScrollingViewBehavior">
         <LinearLayout android:paddingBottom="@dimen/list_bottom_padding" style="@style/UiKit.ViewGroup.LinearLayout">
             <com.discord.views.CheckedSetting android:id="@+id/settings_feature_components_v2_fix" app:cs_text="@string/axycord_components_v2_fix" app:cs_subtext="@string/axycord_components_v2_fix_description" app:cs_view_type="switchview" style="@style/UiKit.CheckedSetting.Themed"/>
+            <com.discord.views.CheckedSetting android:id="@+id/settings_feature_active_now" app:cs_text="@string/axycord_active_now" app:cs_subtext="@string/axycord_active_now_description" app:cs_view_type="switchview" style="@style/UiKit.CheckedSetting.Themed"/>
             <com.discord.views.CheckedSetting android:id="@+id/settings_feature_orbs_shop" app:cs_text="@string/axycord_orbs_shop" app:cs_subtext="@string/axycord_orbs_shop_description" app:cs_view_type="switchview" style="@style/UiKit.CheckedSetting.Themed"/>
             <TextView android:id="@+id/settings_open_orbs_shop" android:text="@string/axycord_open_orbs_shop" android:drawableEnd="@drawable/ic_chevron_right_grey_12dp" style="@style/UiKit.Settings.Item.Icon"/>
             <com.discord.views.CheckedSetting android:id="@+id/settings_feature_quests" app:cs_text="@string/axycord_quests" app:cs_subtext="@string/axycord_quests_description" app:cs_view_type="switchview" style="@style/UiKit.CheckedSetting.Themed"/>

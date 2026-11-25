@@ -1,10 +1,31 @@
 package com.discord.utilities.feature
 
 import com.discord.utilities.cache.SharedPreferencesProvider
+import android.content.SharedPreferences
+import rx.Observable
+import rx.subscriptions.Subscriptions
 
 object FeatureFlags {
     fun componentsV2FixEnabled() = enabled(ClientSettings.componentsV2Fix)
     fun setComponentsV2FixEnabled(enabled: Boolean) = setEnabled(ClientSettings.componentsV2Fix, enabled)
+    fun activeNowEnabled() = enabled(ClientSettings.activeNow)
+    fun setActiveNowEnabled(enabled: Boolean) = setEnabled(ClientSettings.activeNow, enabled)
+
+    internal fun observeActiveNowEnabled(): Observable<Boolean> = Observable.defer {
+        val preferences = SharedPreferencesProvider.getOrNull()
+        if (preferences == null) Observable.just(ClientSettings.activeNow.default)
+        else Observable.create<Boolean> { subscriber ->
+            val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+                if (!subscriber.isUnsubscribed && (key == null || key == ClientSettings.activeNow.key)) {
+                    subscriber.onNext(ClientSettings.activeNow.get(preferences))
+                }
+            }
+            preferences.registerOnSharedPreferenceChangeListener(listener)
+            subscriber.add(Subscriptions.create { preferences.unregisterOnSharedPreferenceChangeListener(listener) })
+            if (!subscriber.isUnsubscribed) subscriber.onNext(ClientSettings.activeNow.get(preferences))
+        }
+    }.distinctUntilChanged()
+
     fun orbsShopEnabled() = enabled(ClientSettings.orbsShop)
     fun setOrbsShopEnabled(enabled: Boolean) = setEnabled(ClientSettings.orbsShop, enabled)
     fun questsEnabled() = enabled(ClientSettings.quests)

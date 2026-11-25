@@ -52,6 +52,10 @@ class WidgetSettingsFeatureFlags : AppFragment(R.layout.widget_settings_feature_
                     .show()
             }
         }
+        binding.settingsFeatureActiveNow.apply {
+            isChecked = FeatureFlags.activeNowEnabled()
+            setOnCheckedListener(FeatureFlags::setActiveNowEnabled)
+        }
         binding.settingsOpenOrbsShop.isVisible = FeatureFlags.orbsShopEnabled()
         binding.settingsOpenQuests.isVisible = FeatureFlags.questsEnabled()
         binding.settingsFeatureOrbsShop.apply {

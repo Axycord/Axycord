@@ -143,6 +143,7 @@ class WidgetUserSheet : AppBottomSheet() {
     private var defaultTextColors = emptyMap<TextView, ColorStateList>()
     private var defaultNoteTheme: UserSheetNoteTheme? = null
     private var profileThemeColors: ProfileThemeColors? = null
+    private var activeNowVoiceCard: com.discord.widgets.activenow.ProfileVoiceCard? = null
     private var profileFrames: Map<Long, ProfileFrameItem> = emptyMap()
     private var equippedFrameSkuId: Long? = null
     private var frameViews: FrameViews? = null
@@ -237,6 +238,8 @@ class WidgetUserSheet : AppBottomSheet() {
     }
 
     override fun onDestroyView() {
+        activeNowVoiceCard?.dispose()
+        activeNowVoiceCard = null
         // The frame lives in the dialog, not in this fragment's view, so it outlives the binding.
         frameViews?.let { views ->
             (views.front.parent as? ViewGroup)?.let { decor ->
@@ -312,6 +315,7 @@ class WidgetUserSheet : AppBottomSheet() {
         configureConnectionsSection(loaded)
         configureNote(loaded)
         configureWidgets(loaded)
+        configureActiveNowVoice(loaded)
         configurePluginProfile(loaded)
         configurePluginProfileTabs(loaded)
 
@@ -326,6 +330,33 @@ class WidgetUserSheet : AppBottomSheet() {
             )
             viewModel.openPopoutLogged = true
         }
+    }
+
+    private fun configureActiveNowVoice(state: WidgetUserSheetViewModel.ViewState.Loaded) {
+        if (state.user.isBot) {
+            activeNowVoiceCard?.dispose()
+            activeNowVoiceCard = null
+            return
+        }
+        val card = activeNowVoiceCard ?: com.discord.widgets.activenow.ProfileVoiceCard(requireContext()).also {
+            activeNowVoiceCard = it
+            binding.userSheetMainTabContent.addView(it, 0)
+        }
+        val colors = profileThemeColors
+        card.bind(com.discord.widgets.activenow.ProfileVoiceContext(
+            userId = state.user.id,
+            guildId = state.currentGuildId,
+            surfaceColor = colors?.sectionOverlay
+                ?: ColorCompat.getThemedColor(requireContext(), R.attr.colorBackgroundSecondary),
+            borderColor = colors?.borderOverlay
+                ?: ColorCompat.getThemedColor(requireContext(), R.attr.colorBackgroundModifierAccent),
+            primaryTextColor = colors?.textDefault
+                ?: ColorCompat.getThemedColor(requireContext(), R.attr.colorHeaderPrimary),
+            secondaryTextColor = colors?.textMuted
+                ?: ColorCompat.getThemedColor(requireContext(), R.attr.colorTextMuted),
+            interactiveColor = colors?.button
+                ?: ColorCompat.getThemedColor(requireContext(), R.attr.colorInteractiveNormal),
+        ))
     }
 
     private fun configurePluginProfile(state: WidgetUserSheetViewModel.ViewState.Loaded) {

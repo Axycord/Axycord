@@ -146,6 +146,40 @@ mismatches in EmbeddedActivityWebViewSmokeTest and NativeEngineLifecycleTest.
 No device or live redemption/quest verification was performed; runtime checks
 remain open, including selected-preview animation and rendering on test hardware.
 
+### Built-in Components V2 Fix and Active Now
+
+Maarij's MIT-licensed plugins are integrated behind separate Boolean flags, both
+disabled by default and included in client settings backup. Source revisions and
+original notices are recorded under `third_party/axycord-features/`.
+
+Components V2 repairs project attachment metadata and incomplete Sections before
+native component mapping for chat, search and forwarded snapshots. Stored messages
+remain unchanged; wrapper and child order preserve interaction indices. Native
+container views fit supported short text/single-media cards to content; other cards
+retain their existing width. Visible thumbnail/gallery GIFs use the existing image
+pipeline and GIF-autoplay preference. Spoilers, focus loss, hidden windows and detach
+stop owned playback. Widths restore when the flag is off or a card is detached.
+Changing this flag requires the offered app restart to refresh cached render models.
+
+Active Now is mounted below DM search with the native sidebar layout. Presence,
+friend/ignored lists and permission-filtered voice states drive its carousel;
+selecting a card opens the native user sheet. Non-bot profiles have a palette-aware
+voice card with permission-rechecked joining through the existing microphone,
+verification, spoiler, age, stage and capacity gates. View detachment disposes
+subscriptions; turning the flag off disconnects voice/feed observation and hides
+the feature. No plugin discovery, activity injector or extra network client is used.
+
+Source checks pass: Kotlin syntax parsing for 23 changed/new files, XML parsing,
+new string and binding references, flag registration/UI wiring, sidebar placement,
+source-port comparison and original license/notice preservation. This is not type
+checking or runtime verification. Verification remains source-only at the
+maintainer's request: no Gradle build,
+compilation, JVM/instrumentation execution or APK generation for this change.
+Ported regression fixtures cover repair identity, attachment/snapshot boundaries,
+interaction slots, compact width, owned animation cleanup, friend selection and
+voice visibility/permissions; they require a future authorized test run. Compilation,
+compatibility lint and dedicated-device UI/voice checks remain open.
+
 ### Invite onboarding
 
 Invite acceptance captures membership before the POST so subsequent guild

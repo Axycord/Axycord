@@ -61,6 +61,20 @@ decoration, nameplate or profile effect opens its animated preview with Pause an
 Replay controls. Avatar/nameplate previews show their own surface, while profile
 effects use a full-width, vertically scrollable profile card.
 
+Two more built-in features are available in **Settings → Feature Flags**:
+
+- **Components V2 Fix:** fits short cards to their content, plays visible GIF/WebP
+  media when GIF autoplay is enabled, and repairs attachment-backed media and
+  incomplete Sections in chat, search and forwarded messages. Restart after
+  toggling this flag so existing rendered message models are refreshed.
+- **Active Now:** shows active friends below DM search and a live voice card on
+  user profiles. Cards open profiles; permitted voice channels can be joined
+  through the client's existing permission, verification and age gates.
+
+Both flags start disabled and are included in settings backup. No plugin APK is
+needed. Imported sources retain their MIT notices under
+[`third_party/axycord-features`](third_party/axycord-features/README.md).
+
 ## Build
 
 The app uses Kotlin, Android Views/XML and Gradle. Requirements are JDK 21,

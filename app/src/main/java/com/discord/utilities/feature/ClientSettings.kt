@@ -121,6 +121,7 @@ object ClientSettings {
     val orbsShop = register(BooleanSetting("feature_orbs_shop"))
     val quests = register(BooleanSetting("feature_quests"))
     val componentsV2Fix = register(BooleanSetting("feature_components_v2_fix"))
+    val activeNow = register(BooleanSetting("feature_active_now"))
     val cloudSettingsBackup = register(BooleanSetting("feature_cloud_settings_backup", backupPolicy = BackupPolicy.EXCLUDE))
 
     const val CHAT_INPUT_LAYOUT_KEY = "feature_chatbox_customizations_layout"
