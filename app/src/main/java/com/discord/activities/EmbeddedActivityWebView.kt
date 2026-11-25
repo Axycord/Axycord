@@ -25,8 +25,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.webkit.WebViewAssetLoader
 import com.discord.api.embeddedactivities.EmbeddedActivityDiscordConfig
-import com.discord.api.embeddedactivities.EmbeddedActivityOAuthAuthorization
-import com.discord.api.embeddedactivities.EmbeddedActivityOAuthUser
 import com.discord.BuildConfig
 import com.discord.app.AppLog
 import com.discord.rpc.RpcCloseCodes
@@ -520,30 +518,6 @@ class EmbeddedActivityWebView(
         )
     }
 
-    private fun authorizationJson(authorization: EmbeddedActivityOAuthAuthorization): JSONObject = JSONObject()
-        .put(
-            "application",
-            JSONObject()
-                .put("id", authorization.application.id.toString())
-                .put("name", authorization.application.name)
-                .put("description", authorization.application.description)
-                .put("icon", authorization.application.icon ?: JSONObject.NULL)
-                .apply {
-                    authorization.application.rpcOrigins?.let { put("rpc_origins", JSONArray(it)) }
-                },
-        )
-        .put("scopes", JSONArray(authorization.scopes))
-        .put("expires", authorization.expires)
-        .put("user", authorization.user?.let(::oauthUserJson) ?: JSONObject.NULL)
-
-    private fun oauthUserJson(user: EmbeddedActivityOAuthUser) = JSONObject()
-        .put("id", user.id.toString())
-        .put("username", user.username)
-        .put("discriminator", user.discriminator)
-        .put("avatar", user.avatar ?: JSONObject.NULL)
-        .put("global_name", user.globalName ?: JSONObject.NULL)
-        .put("public_flags", user.publicFlags)
-
     private inner class ActivityClient : WebViewClient() {
         override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? =
             assetLoader.shouldInterceptRequest(request.url)
@@ -551,7 +525,7 @@ class EmbeddedActivityWebView(
         override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
             if (!request.isForMainFrame) return false
             val url = request.url.toString()
-            if (url.startsWith(activityOrigin)) return false
+            if (isActivityNavigation(url, applicationId)) return false
             onExternalUrl(url) {}
             return true
         }
