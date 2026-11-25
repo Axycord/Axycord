@@ -1,0 +1,2 @@
+# Maven digests cover exact bytes, including metadata line endings.
+mmaarij/** -text
