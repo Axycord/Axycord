@@ -186,6 +186,27 @@ class ThumbnailComponentView @JvmOverloads constructor(
     defStyleAttr: Int = 0,
 ) : FrameLayout(context, attrs, defStyleAttr), ComponentView<ThumbnailMessageComponent> {
     override fun type() = ComponentType.THUMBNAIL
+    private val mediaPlayback by lazy { ComponentMediaPlayback(this) }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        mediaPlayback.start()
+    }
+
+    override fun onDetachedFromWindow() {
+        mediaPlayback.stop()
+        super.onDetachedFromWindow()
+    }
+
+    override fun onWindowVisibilityChanged(visibility: Int) {
+        super.onWindowVisibilityChanged(visibility)
+        if (isAttachedToWindow && visibility != View.VISIBLE) mediaPlayback.stopPlayback()
+    }
+
+    override fun onWindowFocusChanged(hasWindowFocus: Boolean) {
+        super.onWindowFocusChanged(hasWindowFocus)
+        if (isAttachedToWindow && !hasWindowFocus) mediaPlayback.stopPlayback()
+    }
 
     override fun configure(
         component: ThumbnailMessageComponent,
@@ -469,6 +490,17 @@ class ContainerComponentView @JvmOverloads constructor(
     defStyleAttr: Int = 0,
 ) : FrameLayout(context, attrs, defStyleAttr), ComponentView<ContainerMessageComponent> {
     override fun type() = ComponentType.CONTAINER
+    private val compactLayout by lazy { CompactComponentCard(this) }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        compactLayout.start()
+    }
+
+    override fun onDetachedFromWindow() {
+        compactLayout.stop()
+        super.onDetachedFromWindow()
+    }
 
     override fun configure(
         component: ContainerMessageComponent,
@@ -477,6 +509,7 @@ class ContainerComponentView @JvmOverloads constructor(
     ) {
         val entry = componentActionListener.componentEntry ?: return
         val binding = WidgetBotUiContainerComponentBinding.bind(this)
+        compactLayout.bind(component)
         binding.accent.visibility = if (component.accentColor == null) View.GONE else View.VISIBLE
         binding.accent.setBackgroundColor(component.accentColor?.let { ColorUtils.setAlphaComponent(it, 255) } ?: Color.TRANSPARENT)
         binding.components.replaceViews(component.children.mapIndexedNotNull { index, child ->

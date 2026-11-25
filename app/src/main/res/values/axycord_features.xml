@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="axycord_components_v2_fix">Components V2 Fix</string>
+    <string name="axycord_components_v2_fix_description">Fit short cards to content, animate visible GIFs, and repair attachment media and incomplete sections. Restart after changing this setting.</string>
     <string name="axycord_orbs_shop">Orbs Shop</string>
     <string name="axycord_quests">Quests</string>
     <string name="axycord_orbs_shop_description">Browse collectibles, preview cosmetics, and redeem your Discord Orbs.</string>

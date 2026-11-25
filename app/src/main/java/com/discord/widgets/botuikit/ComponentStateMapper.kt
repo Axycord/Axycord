@@ -8,6 +8,20 @@ import com.discord.stores.StoreApplicationInteractions
 import com.discord.widgets.botuikit.ComponentChatListState.ComponentStoreState
 
 object ComponentStateMapper {
+    /** Project repairs while rendering, so history and forwarded snapshots keep their stored data. */
+    fun processMessageComponents(
+        message: com.discord.models.message.Message,
+        componentStoreState: ComponentStoreState?,
+        componentExperiments: ComponentExperiments,
+        animateEmojis: Boolean,
+    ): List<MessageComponent> {
+        val rendered = if (com.discord.utilities.feature.FeatureFlags.componentsV2FixEnabled()) {
+            message.repairComponentsV2()
+        } else message
+        return processComponentsToMessageComponents(rendered.components.orEmpty(), componentStoreState,
+            componentExperiments, animateEmojis)
+    }
+
     fun createActionMessageComponent(
         component: ActionComponent,
         index: Int,

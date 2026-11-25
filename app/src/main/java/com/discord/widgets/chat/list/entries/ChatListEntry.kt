@@ -491,8 +491,8 @@ abstract class ChatListEntry : MGRecyclerDataPayload {
         ): Collection<ChatListEntry> {
             val components = message.components
             if (components.isNullOrEmpty()) return emptyList()
-            val mapped = ComponentStateMapper.processComponentsToMessageComponents(
-                components,
+            val mapped = ComponentStateMapper.processMessageComponents(
+                message,
                 componentStoreState,
                 BotComponentExperiments,
                 animateEmojis,

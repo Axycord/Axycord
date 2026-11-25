@@ -7,7 +7,7 @@ import org.junit.Test
 
 class NativeFeatureFlagsTest {
     @Test fun featuresStartDisabledAndParticipateInSettingsBackup() {
-        listOf(ClientSettings.orbsShop, ClientSettings.quests).forEach { flag ->
+        listOf(ClientSettings.orbsShop, ClientSettings.quests, ClientSettings.componentsV2Fix).forEach { flag ->
             assertFalse(flag.default)
             assertEquals(ClientSettings.Type.BOOLEAN, flag.type)
             assertEquals(ClientSettings.BackupPolicy.INCLUDE, flag.backupPolicy)

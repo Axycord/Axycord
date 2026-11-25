@@ -43,6 +43,15 @@ class WidgetSettingsFeatureFlags : AppFragment(R.layout.widget_settings_feature_
         setActionBarTitle(R.string.feature_flags)
         setActionBarDisplayHomeAsUpEnabled()
         val binding = WidgetSettingsFeatureFlagsBinding.bind(view).also { this.binding = it }
+        binding.settingsFeatureComponentsV2Fix.apply {
+            isChecked = FeatureFlags.componentsV2FixEnabled()
+            setOnCheckedListener { enabled ->
+                FeatureFlags.setComponentsV2FixEnabled(enabled)
+                Snackbar.make(binding.root, R.string.user_settings_restart_app_mobile, Snackbar.LENGTH_INDEFINITE)
+                    .setAction(R.string.bundle_ready_restart) { restartApp(requireContext()) }
+                    .show()
+            }
+        }
         binding.settingsOpenOrbsShop.isVisible = FeatureFlags.orbsShopEnabled()
         binding.settingsOpenQuests.isVisible = FeatureFlags.questsEnabled()
         binding.settingsFeatureOrbsShop.apply {

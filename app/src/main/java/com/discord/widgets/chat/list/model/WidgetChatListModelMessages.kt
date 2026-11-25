@@ -394,8 +394,8 @@ data class WidgetChatListModelMessages(
                     ChatListEntry.createBotComponentEntries(
                         message,
                         channel.guildId,
-                        ComponentStateMapper.processComponentsToMessageComponents(
-                            message.components.orEmpty(),
+                        ComponentStateMapper.processMessageComponents(
+                            message,
                             componentStoreState[message.id],
                             BotComponentExperiments,
                             animateEmojis,

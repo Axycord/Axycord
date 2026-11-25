@@ -3,6 +3,8 @@ package com.discord.utilities.feature
 import com.discord.utilities.cache.SharedPreferencesProvider
 
 object FeatureFlags {
+    fun componentsV2FixEnabled() = enabled(ClientSettings.componentsV2Fix)
+    fun setComponentsV2FixEnabled(enabled: Boolean) = setEnabled(ClientSettings.componentsV2Fix, enabled)
     fun orbsShopEnabled() = enabled(ClientSettings.orbsShop)
     fun setOrbsShopEnabled(enabled: Boolean) = setEnabled(ClientSettings.orbsShop, enabled)
     fun questsEnabled() = enabled(ClientSettings.quests)
