@@ -48,7 +48,7 @@ class TabsHostBottomNavigationView @JvmOverloads constructor(
     private val userAvatarPresenceViewController: UserAvatarPresenceViewController
 
     private var selectedTab = NavigationTab.HOME
-    private var visibleTabs: Set<NavigationTab> = NavigationTab.entries.toSet()
+    private var visibleTabs: Set<NavigationTab> = NavigationTab.entries.toSet() - NavigationTab.SEARCH
     private var homeNotificationsCount = 0
     private var friendsNotificationsCount = 0
 
@@ -60,11 +60,9 @@ class TabsHostBottomNavigationView @JvmOverloads constructor(
         avatar = binding.tabsHostBottomNavUserAvatarPresenceView
         val homeIcon = binding.tabsHostBottomNavHomeIcon
         val friendsIcon = binding.tabsHostBottomNavFriendsIcon
-        val searchIcon = binding.tabsHostBottomNavSearchIcon
         val mentionsIcon = binding.tabsHostBottomNavMentionsIcon
         val homeItem = binding.tabsHostBottomNavHomeItem
         val friendsItem = binding.tabsHostBottomNavFriendsItem
-        val searchItem = binding.tabsHostBottomNavSearchItem
         val mentionsItem = binding.tabsHostBottomNavMentionsItem
         val settingsItem = binding.tabsHostBottomNavUserSettingsItem
         val displaySize = if (resources.configuration.orientation == 1) {
@@ -76,14 +74,12 @@ class TabsHostBottomNavigationView @JvmOverloads constructor(
         tintableIconToNavigationTabMap = mapOf(
             homeIcon to NavigationTab.HOME,
             friendsIcon to NavigationTab.FRIENDS,
-            searchIcon to NavigationTab.SEARCH,
             mentionsIcon to NavigationTab.MENTIONS,
         )
         iconToNavigationTabMap = tintableIconToNavigationTabMap + (avatar to NavigationTab.SETTINGS)
         navigationTabToViewMap = mapOf(
             NavigationTab.HOME to homeItem,
             NavigationTab.FRIENDS to friendsItem,
-            NavigationTab.SEARCH to searchItem,
             NavigationTab.MENTIONS to mentionsItem,
             NavigationTab.SETTINGS to settingsItem,
         )
@@ -104,7 +100,7 @@ class TabsHostBottomNavigationView @JvmOverloads constructor(
         onMentionsLongPress: () -> Unit,
     ) {
         this.selectedTab = selectedTab
-        this.visibleTabs = visibleTabs.toSet()
+        this.visibleTabs = visibleTabs.toSet() - NavigationTab.SEARCH
         this.homeNotificationsCount = homeNotificationsCount
         this.friendsNotificationsCount = friendsNotificationsCount
         applyVisualState()
@@ -117,9 +113,6 @@ class TabsHostBottomNavigationView @JvmOverloads constructor(
         )
         navigationTabToViewMap[NavigationTab.FRIENDS]!!.setOnClickListener(
             if (buttonsEnabled) View.OnClickListener { onTabSelected(NavigationTab.FRIENDS) } else View.OnClickListener(noClick),
-        )
-        navigationTabToViewMap[NavigationTab.SEARCH]!!.setOnClickListener(
-            if (buttonsEnabled) View.OnClickListener { onSearchClick() } else View.OnClickListener(noClick),
         )
         navigationTabToViewMap[NavigationTab.MENTIONS]!!.setOnClickListener(
             if (buttonsEnabled) View.OnClickListener { onTabSelected(NavigationTab.MENTIONS) } else View.OnClickListener(noClick),
@@ -241,7 +234,7 @@ class TabsHostBottomNavigationView @JvmOverloads constructor(
         }
         super.onRestoreInstanceState(state.superState)
         selectedTab = NavigationTab.entries[state.selectedTab]
-        visibleTabs = NavigationTab.entries.filterTo(linkedSetOf()) { state.visibleTabs and (1 shl it.ordinal) != 0 }
+        visibleTabs = NavigationTab.entries.filterTo(linkedSetOf()) { it != NavigationTab.SEARCH && state.visibleTabs and (1 shl it.ordinal) != 0 }
         homeNotificationsCount = state.homeNotificationsCount
         friendsNotificationsCount = state.friendsNotificationsCount
         applyVisualState()

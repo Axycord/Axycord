@@ -161,13 +161,21 @@ pipeline and GIF-autoplay preference. Spoilers, focus loss, hidden windows and d
 stop owned playback. Widths restore when the flag is off or a card is detached.
 Changing this flag requires the offered app restart to refresh cached render models.
 
-Active Now is mounted below DM search with the native sidebar layout. Presence,
+Active Now is a heading-free, swipeable carousel below the native DM header. Presence,
 friend/ignored lists and permission-filtered voice states drive its carousel;
 selecting a card opens the native user sheet. Non-bot profiles have a palette-aware
 voice card with permission-rechecked joining through the existing microphone,
 verification, spoiler, age, stage and capacity gates. View detachment disposes
 subscriptions; turning the flag off disconnects voice/feed observation and hides
 the feature. No plugin discovery, activity injector or extra network client is used.
+
+The DM header uses the former bottom-tab search vector as one 48dp search action,
+opening global search. The full search field and group-invite button are removed.
+Bottom navigation and its customization list omit Search, including restored
+visibility masks and old saved layout entries. Navigation enum ordinals remain
+stable. The sidebar uses generated view binding and guards deferred scrolling
+against view destruction. These layout/navigation edits have source-only checks;
+compilation and on-device layout verification remain open under the no-build request.
 
 Source checks pass: Kotlin syntax parsing for 23 changed/new files, XML parsing,
 new string and binding references, flag registration/UI wiring, sidebar placement,

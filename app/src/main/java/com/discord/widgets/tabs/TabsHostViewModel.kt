@@ -25,8 +25,8 @@ import rx.subjects.PublishSubject
  * Three inputs that are easy to miss:
  *
  * * **The tab set depends on guild membership.** A user in no guild gets
- *   [NO_GUILD_TABS] — home, friends, settings — because search and mentions have nothing to
- *   operate on. The moment they join one they get [AT_LEAST_ONE_GUILD_TABS].
+ *   [NO_GUILD_TABS] — home, friends, settings. Joining a guild also enables mentions
+ *   through [AT_LEAST_ONE_GUILD_TABS]. Search lives in the DM header.
  * * **The bar hides itself on the home tab** unless the left panel is open or opening. On home the
  *   chat surface is full bleed and the bar would cover the composer; the guild/channel list is the
  *   only home state that has room for it.
@@ -175,7 +175,6 @@ class TabsHostViewModel(
         val AT_LEAST_ONE_GUILD_TABS: Set<NavigationTab> = setOf(
             NavigationTab.HOME,
             NavigationTab.FRIENDS,
-            NavigationTab.SEARCH,
             NavigationTab.MENTIONS,
             NavigationTab.SETTINGS,
         )
@@ -191,7 +190,7 @@ class TabsHostViewModel(
                         (leftPanelState == PanelState.Open || leftPanelState == PanelState.Opening)
                     )
 
-        /** Search and mentions have nothing to operate on until the user is in at least one guild. */
+        /** Mentions are shown once the user is in at least one guild. */
         fun visibleTabsFor(guildCount: Int): Set<NavigationTab> =
             if (guildCount > 0) AT_LEAST_ONE_GUILD_TABS else NO_GUILD_TABS
 

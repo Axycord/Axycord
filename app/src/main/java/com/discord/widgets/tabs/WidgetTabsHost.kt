@@ -67,7 +67,7 @@ import mmaarij.axycord.plugins.api.PluginRegistration
  * positions. That is also why [OnTabSelectedListener] exists — a hidden-then-shown fragment gets no
  * lifecycle callback of its own.
  *
- * Search is deliberately not a fragment destination: tapping the search tab — or long-pressing the
+ * Search is deliberately not a fragment destination: tapping the DM header icon or long-pressing the
  * mentions tab — opens [WidgetGlobalSearchDialog] over whichever tab is showing, which is what the
  * reference does. `R.id.widget_tabs_host_search` exists in the recovered layout but the reference
  * never populates it.

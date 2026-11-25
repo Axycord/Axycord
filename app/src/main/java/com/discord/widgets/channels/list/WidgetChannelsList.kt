@@ -6,16 +6,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityManager
-import android.widget.FrameLayout
-import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
-import androidx.appcompat.widget.Toolbar
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.view.ViewCompat
-import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.discord.R
 import com.discord.panels.PanelState
@@ -44,21 +39,15 @@ import com.discord.utilities.rx.restSubscribeOn
 import com.discord.widgets.notice.WidgetNoticeDialog
 import com.discord.utilities.rx.bindToComponentLifecycle
 import com.discord.utilities.rx.ui
-import com.discord.utilities.view.rounded.RoundedCoordinatorLayout
-import com.discord.views.CustomAppBarLayout
 import com.discord.views.ThemedColor
-import com.discord.widgets.channels.invite.GroupInviteFriendsSheet
 import com.discord.widgets.channels.list.items.ChannelListItemPrivate
-import com.discord.widgets.friends.EmptyFriendsStateView
 import com.discord.widgets.hubs.events.WidgetHubEventsPage
 import com.discord.widgets.guilds.onboarding.WidgetChannelsAndRoles
 import com.discord.widgets.message_requests.WidgetMessageRequests
 import com.discord.widgets.search.WidgetSearch
 import com.discord.widgets.user.search.WidgetGlobalSearchDialog
 import com.discord.widgets.user.usersheet.WidgetUserSheet
-import com.discord.views.VitoImageView
 import com.google.android.material.appbar.AppBarLayout
-import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.discord.widgets.servers.member_verification.MemberVerificationPendingDialog
 import com.discord.widgets.servers.member_verification.MemberVerificationPendingViewModel
 
@@ -74,21 +63,8 @@ class WidgetChannelsList : AppFragment(R.layout.widget_channels_list) {
     private lateinit var adapter: WidgetChannelsListAdapter
     private var channelListUnreads: WidgetChannelListUnreads? = null
 
-    private lateinit var container: RoundedCoordinatorLayout
-    private lateinit var appBarLayout: CustomAppBarLayout
-    private lateinit var collapsingToolbar: CollapsingToolbarLayout
-    private lateinit var banner: VitoImageView
-    private lateinit var bannerForeground: FrameLayout
-    private lateinit var header: TextView
-    private lateinit var privateChannelsHeader: Toolbar
-    private lateinit var directMessagesTitle: TextView
-    private lateinit var search: TextView
-    private lateinit var startGroup: View
-    private lateinit var messageRequests: View
-    private lateinit var messageRequestsCount: TextView
-    private lateinit var recycler: RecyclerView
-    private lateinit var emptyFriendsState: EmptyFriendsStateView
-    private lateinit var premiumGuildHint: ConstraintLayout
+    private var _binding: com.discord.databinding.WidgetChannelsListBinding? = null
+    private val binding get() = checkNotNull(_binding)
 
     /** Tracks the collapsing-toolbar state so the header only restyles when it actually flips. */
     private var isCollapsed: Boolean = false
@@ -106,38 +82,35 @@ class WidgetChannelsList : AppFragment(R.layout.widget_channels_list) {
 
     override fun onViewBound(view: View) {
         super.onViewBound(view)
-        bindViews(view)
-        emptyFriendsState.updateView(ANALYTICS_SOURCE)
+        _binding = com.discord.databinding.WidgetChannelsListBinding.bind(view)
+        binding.widgetChannelsListEmptyFriendsStateView.updateView(ANALYTICS_SOURCE)
 
-        adapter = MGRecyclerAdapter.configure(WidgetChannelsListAdapter(recycler))
+        adapter = MGRecyclerAdapter.configure(WidgetChannelsListAdapter(binding.channelsList))
         wireAdapter()
 
         // The rows have wildly different heights (banner spacer, event card, plain channel), so
         // the fixed-size optimisation the shared configure() applies has to be undone here, and
         // the default change animation would cross-fade every rebind of a selected row.
-        recycler.setHasFixedSize(false)
-        recycler.itemAnimator = null
+        binding.channelsList.setHasFixedSize(false)
+        binding.channelsList.itemAnimator = null
 
         channelListUnreads = WidgetChannelListUnreads(
-            unreadsStub = view.findViewById(R.id.channels_list_unreads_stub),
-            recycler = recycler,
-            appBarLayout = appBarLayout,
+            unreadsStub = binding.channelsListUnreadsStub,
+            recycler = binding.channelsList,
+            appBarLayout = binding.appBarLayout,
             getItemCount = { adapter.itemCount },
         )
         adapter.setOnUpdated { _, newData -> channelListUnreads?.onDatasetChanged(newData) }
 
-        search.setOnClickListener {
-            WidgetGlobalSearchDialog.show(parentFragmentManager, "@")
+        binding.channelsListSearch.setOnClickListener {
+            WidgetGlobalSearchDialog.show(parentFragmentManager)
         }
-        startGroup.setOnClickListener {
-            GroupInviteFriendsSheet.show(parentFragmentManager, source = ANALYTICS_SOURCE)
-        }
-        messageRequests.setOnClickListener { WidgetMessageRequests.show(requireContext()) }
-        view.findViewById<View>(R.id.channels_list_premium_guild_hint_button)
+        binding.channelsListMessageRequests.setOnClickListener { WidgetMessageRequests.show(requireContext()) }
+        binding.channelsListPremiumGuildHintButton
             .setOnClickListener { ackPremiumGuildHint() }
 
-        ViewCompat.setAccessibilityHeading(header, true)
-        ViewCompat.setAccessibilityHeading(directMessagesTitle, true)
+        ViewCompat.setAccessibilityHeading(binding.channelsListHeader, true)
+        ViewCompat.setAccessibilityHeading(binding.channelsListDirectMessagesTitle, true)
 
         // The real subscription below only delivers its first value after a scheduler hop (the
         // model's combineLatest chain runs on the computation scheduler), so a freshly (re)created
@@ -182,8 +155,8 @@ class WidgetChannelsList : AppFragment(R.layout.widget_channels_list) {
             .bindToComponentLifecycle(this)
             .appSubscribe(WidgetChannelsList::class.java) { isCustomBackground ->
                 val radius = if (isCustomBackground) 0f else dpToPx(PANEL_CORNER_RADIUS_DP)
-                container.updateTopLeftRadius(radius)
-                container.updateTopRightRadius(radius)
+                binding.root.updateTopLeftRadius(radius)
+                binding.root.updateTopRightRadius(radius)
             }
 
         ChannelListNavigation.bottomNavHeight()
@@ -202,22 +175,11 @@ class WidgetChannelsList : AppFragment(R.layout.widget_channels_list) {
             }
     }
 
-    private fun bindViews(view: View) {
-        container = view.findViewById(R.id.widget_channels_list_container)
-        appBarLayout = view.findViewById(R.id.app_bar_layout)
-        collapsingToolbar = view.findViewById(R.id.collapsing_toolbar)
-        banner = view.findViewById(R.id.channels_list_banner)
-        bannerForeground = view.findViewById(R.id.channels_list_banner_foreground)
-        header = view.findViewById(R.id.channels_list_header)
-        privateChannelsHeader = view.findViewById(R.id.channels_list_private_channels_header)
-        directMessagesTitle = view.findViewById(R.id.channels_list_direct_messages_title)
-        search = view.findViewById(R.id.channels_list_search)
-        startGroup = view.findViewById(R.id.channels_list_start_group)
-        messageRequests = view.findViewById(R.id.channels_list_message_requests)
-        messageRequestsCount = view.findViewById(R.id.channels_list_message_requests_count)
-        recycler = view.findViewById(R.id.channels_list)
-        emptyFriendsState = view.findViewById(R.id.widget_channels_list_empty_friends_state_view)
-        premiumGuildHint = view.findViewById(R.id.channels_list_premium_guild_hint)
+    override fun onDestroyView() {
+        _binding?.appBarLayout?.setOnPercentCollapsedCallback { }
+        super.onDestroyView()
+        _binding = null
+        channelListUnreads = null
     }
 
     private fun wireAdapter() {
@@ -376,7 +338,7 @@ class WidgetChannelsList : AppFragment(R.layout.widget_channels_list) {
     }
 
     private fun ackPremiumGuildHint() {
-        premiumGuildHint.visibility = View.GONE
+        binding.channelsListPremiumGuildHint.visibility = View.GONE
         ChannelListNavigation.ackPremiumGuildHint()
     }
 
@@ -410,15 +372,15 @@ class WidgetChannelsList : AppFragment(R.layout.widget_channels_list) {
         guild?.let { StoreStream.getVoiceChannelInfo().fetchChannelInfo(it.id) }
         val hasBanner = guild?.banner != null
 
-        emptyFriendsState.visibility = if (model.showEmptyState) View.VISIBLE else View.GONE
+        binding.widgetChannelsListEmptyFriendsStateView.visibility = if (model.showEmptyState) View.VISIBLE else View.GONE
         // INVISIBLE rather than GONE: the recycler keeps its measured size, so the first DM to
         // arrive does not trigger a relayout of the whole panel.
-        recycler.visibility = if (model.showEmptyState) View.INVISIBLE else View.VISIBLE
+        binding.channelsList.visibility = if (model.showEmptyState) View.INVISIBLE else View.VISIBLE
 
         if (selectedGuildId != guild?.id) {
             if (hasBanner) {
-                recycler.scrollToPosition(0)
-                appBarLayout.setExpanded(true)
+                binding.channelsList.scrollToPosition(0)
+                binding.appBarLayout.setExpanded(true)
                 configureHeaderColors(guild, hasBanner = true)
             }
             selectedGuildId = guild?.id
@@ -429,8 +391,8 @@ class WidgetChannelsList : AppFragment(R.layout.widget_channels_list) {
         adapter.setData(model.items)
         restorePrivateChannelAnchor(privateChannelAnchor)
 
-        collapsingToolbar.visibility = if (model.isGuildSelected) View.VISIBLE else View.GONE
-        (collapsingToolbar.layoutParams as? AppBarLayout.LayoutParams)?.scrollFlags =
+        binding.collapsingToolbar.visibility = if (model.isGuildSelected) View.VISIBLE else View.GONE
+        (binding.collapsingToolbar.layoutParams as? AppBarLayout.LayoutParams)?.scrollFlags =
             if (model.isGuildSelected && hasBanner) {
                 AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or
                     AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED
@@ -438,33 +400,33 @@ class WidgetChannelsList : AppFragment(R.layout.widget_channels_list) {
                 0
             }
 
-        privateChannelsHeader.visibility =
+        binding.channelsListPrivateChannelsHeader.visibility =
             if (!model.isGuildSelected && !model.showEmptyState) View.VISIBLE else View.GONE
-        messageRequests.visibility = if (model.messageRequestCount > 0) View.VISIBLE else View.GONE
-        messageRequestsCount.text = model.messageRequestCount.coerceAtMost(99).toString()
-        search.visibility = if (model.isGuildSelected) View.GONE else View.VISIBLE
+        binding.channelsListMessageRequests.visibility = if (model.messageRequestCount > 0) View.VISIBLE else View.GONE
+        binding.channelsListMessageRequestsCount.text = model.messageRequestCount.coerceAtMost(99).toString()
+        binding.channelsListSearch.visibility = if (model.isGuildSelected) View.GONE else View.VISIBLE
 
-        header.text = guild?.name
-        header.setOnClickListener {
+        binding.channelsListHeader.text = guild?.name
+        binding.channelsListHeader.setOnClickListener {
             ackPremiumGuildHint()
             ChannelListNavigation.showGuildProfile(this, guild?.id ?: 0L)
         }
         configureHeaderIcons(guild, isCollapsed = false)
 
-        banner.visibility = if (hasBanner) View.VISIBLE else View.GONE
-        bannerForeground.visibility = if (hasBanner && !isCollapsed) View.VISIBLE else View.GONE
+        binding.channelsListBanner.visibility = if (hasBanner) View.VISIBLE else View.GONE
+        binding.channelsListBannerForeground.visibility = if (hasBanner && !isCollapsed) View.VISIBLE else View.GONE
         if (hasBanner) configureBanner(guild, model.startsWithPaddedElement)
 
-        appBarLayout.setOnPercentCollapsedCallback { percentCollapsed ->
-            banner.alpha = 1f - percentCollapsed
-            if (isCollapsed != appBarLayout.isCollapsed) {
-                isCollapsed = appBarLayout.isCollapsed
+        binding.appBarLayout.setOnPercentCollapsedCallback { percentCollapsed ->
+            binding.channelsListBanner.alpha = 1f - percentCollapsed
+            if (isCollapsed != binding.appBarLayout.isCollapsed) {
+                isCollapsed = binding.appBarLayout.isCollapsed
                 configureHeaderIcons(guild, isCollapsed)
                 configureHeaderColors(guild, hasBanner)
             }
         }
 
-        premiumGuildHint.visibility = if (model.showPremiumGuildHint) View.VISIBLE else View.GONE
+        binding.channelsListPremiumGuildHint.visibility = if (model.showPremiumGuildHint) View.VISIBLE else View.GONE
     }
 
     private fun capturePrivateChannelAnchor(model: WidgetChannelListModel): Pair<Int, Int>? {
@@ -480,7 +442,7 @@ class WidgetChannelsList : AppFragment(R.layout.widget_channels_list) {
             (adapter.getItem(index) as? ChannelListItemPrivate)?.channel?.id == channelId
         }
         if (focusedPrivateChannelId == channelId && oldIndex == newIndex) return null
-        val oldTop = oldIndex?.let { index -> recycler.layoutManager?.findViewByPosition(index)?.top } ?: 0
+        val oldTop = oldIndex?.let { index -> binding.channelsList.layoutManager?.findViewByPosition(index)?.top } ?: 0
         focusedPrivateChannelId = channelId
         return newIndex to oldTop
     }
@@ -494,24 +456,26 @@ class WidgetChannelsList : AppFragment(R.layout.widget_channels_list) {
         if (!isStartPanelOpen) return
         val (index, top) = pendingPrivateChannelAnchor ?: return
         pendingPrivateChannelAnchor = null
-        recycler.post {
-            (recycler.layoutManager as? LinearLayoutManager)?.scrollToPositionWithOffset(index, top)
-                ?: recycler.scrollToPosition(index)
+        val currentBinding = binding
+        currentBinding.channelsList.post {
+            if (_binding !== currentBinding) return@post
+            (binding.channelsList.layoutManager as? LinearLayoutManager)?.scrollToPositionWithOffset(index, top)
+                ?: binding.channelsList.scrollToPosition(index)
         }
     }
 
     private fun configureBanner(guild: Guild?, startsWithPaddedElement: Boolean) {
         // Rows that draw their own leading space would otherwise sit a gap below the banner.
-        (banner.layoutParams as? ViewGroup.MarginLayoutParams)?.let { params ->
+        (binding.channelsListBanner.layoutParams as? ViewGroup.MarginLayoutParams)?.let { params ->
             params.bottomMargin =
                 if (startsWithPaddedElement) 0 else dpToPx(BANNER_BOTTOM_GAP_DP).toInt()
-            banner.layoutParams = params
+            binding.channelsListBanner.layoutParams = params
         }
         MGImages.setImage(
-            view = banner,
+            view = binding.channelsListBanner,
             url = IconUtils.getBannerForGuild(
                 guild,
-                banner.resources.getDimensionPixelSize(R.dimen.nav_panel_width),
+                binding.channelsListBanner.resources.getDimensionPixelSize(R.dimen.nav_panel_width),
                 guild?.canHaveAnimatedBanner() ?: false,
             ),
             changeDetector = bannerChangeDetector,
@@ -523,8 +487,8 @@ class WidgetChannelsList : AppFragment(R.layout.widget_channels_list) {
      * solid background it reverts to the theme's interactive colour and the scrim is hidden.
      */
     private fun configureHeaderColors(guild: Guild?, hasBanner: Boolean) {
-        header.setTextColor(tintColor(requireContext(), guild, isCollapsed))
-        header.setShadowLayer(
+        binding.channelsListHeader.setTextColor(tintColor(requireContext(), guild, isCollapsed))
+        binding.channelsListHeader.setShadowLayer(
             BANNER_TEXT_SHADOW_RADIUS,
             BANNER_TEXT_SHADOW_DX,
             BANNER_TEXT_SHADOW_DY,
@@ -534,12 +498,12 @@ class WidgetChannelsList : AppFragment(R.layout.widget_channels_list) {
                 ThemedColor.resolve(requireContext(), R.attr.colorBackgroundSecondary, Color.WHITE)
             },
         )
-        bannerForeground.visibility = if (hasBanner && !isCollapsed) View.VISIBLE else View.GONE
+        binding.channelsListBannerForeground.visibility = if (hasBanner && !isCollapsed) View.VISIBLE else View.GONE
     }
 
     /** The guild badge sits before the name, the overflow chevron after it. */
     private fun configureHeaderIcons(guild: Guild?, isCollapsed: Boolean) {
-        val badge = guildBadge(guild, appBarLayout.isCollapsed)
+        val badge = guildBadge(guild, binding.appBarLayout.isCollapsed)
         val badgeDrawable =
             if (badge == 0) null else ContextCompat.getDrawable(requireContext(), badge)
         val moreRes = requireContext().getThemedDrawableRes(R.attr.ic_more)
@@ -552,7 +516,7 @@ class WidgetChannelsList : AppFragment(R.layout.widget_channels_list) {
                     DrawableCompat.setTint(it, tintColor(requireContext(), guild, isCollapsed))
                 }
         }
-        header.setCompoundDrawablesWithIntrinsicBounds(badgeDrawable, null, moreDrawable, null)
+        binding.channelsListHeader.setCompoundDrawablesWithIntrinsicBounds(badgeDrawable, null, moreDrawable, null)
     }
 
     @DrawableRes

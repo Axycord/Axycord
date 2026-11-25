@@ -19,7 +19,7 @@ class WidgetTabsHostTest {
     }
 
     /**
-     * The tab strip is driven by guild membership, not fixed at five: search and mentions only
+     * The tab strip is driven by guild membership: mentions only
      * appear once the user is in at least one guild.
      */
     @Test
@@ -32,7 +32,6 @@ class WidgetTabsHostTest {
             setOf(
                 NavigationTab.HOME,
                 NavigationTab.FRIENDS,
-                NavigationTab.SEARCH,
                 NavigationTab.MENTIONS,
                 NavigationTab.SETTINGS,
             ),

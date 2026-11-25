@@ -67,7 +67,7 @@ Two more built-in features are available in **Settings → Feature Flags**:
   media when GIF autoplay is enabled, and repairs attachment-backed media and
   incomplete Sections in chat, search and forwarded messages. Restart after
   toggling this flag so existing rendered message models are refreshed.
-- **Active Now:** shows active friends below DM search and a live voice card on
+- **Active Now:** shows a heading-free friend carousel below the DM header and a live voice card on
   user profiles. Cards open profiles; permitted voice channels can be joined
   through the client's existing permission, verification and age gates.
 

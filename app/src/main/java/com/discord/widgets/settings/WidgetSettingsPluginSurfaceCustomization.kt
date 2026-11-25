@@ -461,7 +461,6 @@ class WidgetSettingsPluginSurfaceCustomization :
         private val BUILTIN_TABS = listOf(
             BuiltinTab(NavigationTab.HOME.name, R.string.home, R.drawable.ic_tab_home),
             BuiltinTab(NavigationTab.FRIENDS.name, R.string.friends, R.drawable.ic_tab_friends),
-            BuiltinTab(NavigationTab.SEARCH.name, R.string.search, R.drawable.ic_tab_search),
             BuiltinTab(NavigationTab.MENTIONS.name, R.string.mentions, R.drawable.ic_tab_mentions),
             BuiltinTab(NavigationTab.SETTINGS.name, R.string.settings, R.drawable.ic_profile_24dp),
         )

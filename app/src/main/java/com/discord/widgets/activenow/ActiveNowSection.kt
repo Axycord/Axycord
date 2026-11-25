@@ -16,12 +16,10 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.graphics.ColorUtils
-import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
@@ -51,37 +49,14 @@ class ActiveNowSection @JvmOverloads constructor(
         itemAnimator = null
         adapter = cards
     }
-    private val previous = navigationButton("Previous active friend") { moveBy(-1) }
-    private val next = navigationButton("Next active friend") { moveBy(1) }
 
     init {
         orientation = VERTICAL
         visibility = GONE
         setPaddingRelative(0, 0, 0, context.dp(14))
 
-        addView(LinearLayout(context).apply {
-            gravity = Gravity.CENTER_VERTICAL
-            minimumHeight = context.dp(40)
-            setPaddingRelative(context.dp(16), 0, context.dp(16), context.dp(6))
-            addView(TextView(context).apply {
-                text = "Active Now"
-                textSize = 17f
-                setTextColor(context.themeColor(R.attr.colorTextNormal))
-                typeface = context.discordTypeface(R.attr.font_display_bold, R.font.ginto_bold)
-                ViewCompat.setAccessibilityHeading(this, true)
-            }, LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f))
-            addView(previous, LayoutParams(context.dp(40), context.dp(40)))
-            addView(next, LayoutParams(context.dp(40), context.dp(40)).apply { marginStart = context.dp(4) })
-        }, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT))
         addView(carousel, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT))
         snap.attachToRecyclerView(carousel)
-        carousel.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ -> updateNavigation() }
-        carousel.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                if (newState == RecyclerView.SCROLL_STATE_IDLE) updateNavigation()
-            }
-        })
-        updateNavigation()
     }
 
     override fun onAttachedToWindow() {
@@ -115,41 +90,7 @@ class ActiveNowSection @JvmOverloads constructor(
 
     private fun render(entries: List<FriendActivity>) {
         visibility = if (entries.isEmpty()) GONE else VISIBLE
-        cards.submitList(entries) { carousel.post { updateNavigation() } }
-    }
-
-    private fun currentPosition(): Int = snap.findSnapView(layout)?.let(layout::getPosition)
-        ?.takeIf { it in 0 until cards.itemCount } ?: 0
-
-    private fun moveBy(offset: Int) {
-        val target = currentPosition() + offset
-        if (target in 0 until cards.itemCount) carousel.smoothScrollToPosition(target)
-    }
-
-    private fun updateNavigation() {
-        val position = currentPosition()
-        val show = cards.itemCount > 1
-        val rtl = layoutDirection == View.LAYOUT_DIRECTION_RTL
-        previous.update(show, position > 0, rtl)
-        next.update(show, position + 1 < cards.itemCount, !rtl)
-    }
-
-    private fun ImageButton.update(show: Boolean, canMove: Boolean, pointRight: Boolean) {
-        visibility = if (show) VISIBLE else GONE
-        isEnabled = canMove
-        alpha = if (canMove) 1f else 0.35f
-        scaleX = if (pointRight) -1f else 1f
-    }
-
-    private fun navigationButton(label: String, onClick: () -> Unit) = ImageButton(context).apply {
-        visibility = GONE
-        contentDescription = label
-        setImageResource(R.drawable.ic_chevron_left_24dp)
-        drawable?.isAutoMirrored = false
-        imageTintList = ColorStateList.valueOf(context.themeColor(R.attr.colorInteractiveNormal))
-        scaleType = ImageView.ScaleType.CENTER
-        background = context.pressableSurface(10, context.sidebarSurface(0.06f), null)
-        setOnClickListener { onClick() }
+        cards.submitList(entries)
     }
 
     fun dispose() {
