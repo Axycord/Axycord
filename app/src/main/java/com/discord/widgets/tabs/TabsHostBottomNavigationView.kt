@@ -95,7 +95,6 @@ class TabsHostBottomNavigationView @JvmOverloads constructor(
         visibleTabs: Set<NavigationTab>,
         homeNotificationsCount: Int,
         friendsNotificationsCount: Int,
-        onSearchClick: () -> Unit,
         onSettingsLongPress: () -> Unit,
         onMentionsLongPress: () -> Unit,
     ) {

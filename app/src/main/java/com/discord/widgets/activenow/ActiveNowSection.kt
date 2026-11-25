@@ -93,11 +93,6 @@ class ActiveNowSection @JvmOverloads constructor(
         cards.submitList(entries)
     }
 
-    fun dispose() {
-        subscription?.unsubscribe()
-        subscription = null
-        (parent as? ViewGroup)?.removeView(this)
-    }
 }
 
 private class ActiveNowCarousel(context: Context) : RecyclerView(context) {

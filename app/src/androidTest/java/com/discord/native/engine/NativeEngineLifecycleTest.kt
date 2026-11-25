@@ -29,7 +29,6 @@ class NativeEngineLifecycleTest {
                     override fun onNewConnection(connection: MediaEngineConnection) = Unit
                 },
                 mediaEngineThreadExecutor = executor,
-                openSLESConfig = MediaEngine.OpenSLESConfig.DEFAULT,
                 echoCancellation = EchoCancellationConfig(),
                 echoCancellationCallback = MediaEngine.EchoCancellationCallback { _ -> },
             )

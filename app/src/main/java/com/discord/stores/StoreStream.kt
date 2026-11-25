@@ -153,7 +153,6 @@ import com.discord.models.domain.ModelCustomStatusSetting
 import com.discord.api.presence.ClientStatus
 import com.discord.utilities.error.RestApiError
 import com.discord.utilities.icon.IconUtils
-import com.discord.workers.MessageAckWorker
 import com.discord.widgets.chat.list.actions.MessageActionCoordinator
 import com.discord.utilities.messagesend.NonceGenerator
 import com.discord.utilities.attachments.UploadAttachment
@@ -2767,46 +2766,6 @@ class StoreStream private constructor(
         applicationInteractions.handleLocalMessageDelete(message)
     }
 
-    private fun handleMessageSendUpdate(update: MessageSendCoordinator.Update) = dispatcher.schedule {
-        when (update) {
-            is MessageSendCoordinator.Update.Optimistic -> {
-                if (update.requestId.startsWith("edit:")) {
-                    messages.handleMessageUpdate(update.message.channelId, update.message.id) { update.message }
-                } else {
-                    messages.handleLocalMessageCreate(update.message.channelId, update.requestId, update.message)
-                    messageReplies.handleMessageCreate(update.message)
-                    scheduleBackgroundMessageSend(update.message.localAttachments.orEmpty().all { attachment ->
-                        runCatching { android.net.Uri.parse(attachment.uriString) }.isSuccess
-                    })
-                }
-            }
-            is MessageSendCoordinator.Update.Reconciled -> {
-                messages.handleLocalMessageDelete(update.message.channelId, update.requestId)
-                messages.handleMessageCreate(update.message)
-                messagesMostRecent.handleMessageCreate(update.message)
-                messageUploads.onSuccess(update.requestId)
-            }
-            is MessageSendCoordinator.Update.Failed -> {
-                if (update.requestId.startsWith("edit:")) {
-                    messages.handleMessageUpdate(update.message.channelId, update.message.id) { update.message }
-                    chatInputEditing.start(update.message)
-                } else {
-                    messages.localMessagesHolder.deleteMessage(update.message.channelId, update.requestId)
-                    messages.handleLocalMessageCreate(update.message.channelId, update.requestId, update.message)
-                }
-                messageUploads.onFailure(update.requestId)
-            }
-            is MessageSendCoordinator.Update.Cancelled -> {
-                messages.localMessagesHolder.getAll().forEach { (channelId, channelMessages) ->
-                    if (channelMessages.any { it.nonce == update.requestId }) {
-                        messages.handleLocalMessageDelete(channelId, update.requestId)
-                    }
-                }
-                messageUploads.onCancel(update.requestId)
-            }
-        }
-    }
-
     private fun configureSocialUi() {
         // The friends list and the add-friend screens own their own state and REST calls now
         // (`FriendsListViewModel`, `WidgetFriendsAddById`), so nothing is installed for them here.
@@ -2969,22 +2928,6 @@ class StoreStream private constructor(
             .build()
         WorkManager.getInstance(applicationContext).enqueueUniqueWork(
             "BACKGROUND_MESSAGE_SENDING", ExistingWorkPolicy.REPLACE, request,
-        )
-    }
-
-    private fun scheduleAckWorker(channelId: Long, messageId: Long) {
-        if (!::applicationContext.isInitialized) return
-        val request = OneTimeWorkRequest.Builder(MessageAckWorker::class.java)
-            .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
-            .setInputData(androidx.work.Data.Builder()
-                .putLong(MessageAckWorker.KEY_CHANNEL_ID, channelId)
-                .putLong(MessageAckWorker.KEY_MESSAGE_ID, messageId)
-                .putInt(MessageAckWorker.KEY_AUTH_GENERATION, authGeneration)
-                .build())
-            .addTag("MESSAGE_ACK")
-            .build()
-        WorkManager.getInstance(applicationContext).enqueueUniqueWork(
-            "MESSAGE_ACK_$channelId", ExistingWorkPolicy.REPLACE, request,
         )
     }
 

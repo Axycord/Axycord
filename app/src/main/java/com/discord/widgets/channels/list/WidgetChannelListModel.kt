@@ -1412,11 +1412,6 @@ data class WidgetChannelListModel(
         )
         private const val MAX_DIRECTORY_UNREADS = 5
 
-        /** Discord's own seeded directory channel, which never gets the events row. */
-        private const val HQ_DIRECTORY_CHANNEL_ID = 883060064561299456L
-
-        private fun Channel.isHqDirectoryChannel() = id == HQ_DIRECTORY_CHANNEL_ID
-
         /** The MFA notice occupies index 0 when present, so inserts go after it. */
         private fun Boolean.toIndex() = if (this) 1 else 0
     }

@@ -211,9 +211,9 @@ internal class ShopDetail(
             CosmeticKind.NAMEPLATE -> ShopNameplatePreview(ui, style, me, selected)
             CosmeticKind.EFFECT, CosmeticKind.FRAME -> FullEffectProfile(ui, style, me, selected)
         }
-        activePreview = preview as? AnimatedShopPreview
+        activePreview = preview
         animationEnabled = true
-        animationControls.visibility = if (activePreview != null && family.kind != CosmeticKind.FRAME) View.VISIBLE else View.GONE
+        animationControls.visibility = if (family.kind != CosmeticKind.FRAME) View.VISIBLE else View.GONE
         updateAnimationButton()
         stage.addView(preview, FrameLayout.LayoutParams(-1,
             if (family.kind == CosmeticKind.EFFECT || family.kind == CosmeticKind.FRAME) FrameLayout.LayoutParams.WRAP_CONTENT else -1))

@@ -178,7 +178,6 @@ class WidgetTabsHost : AppFragment(R.layout.widget_tabs_host) {
             viewState.visibleTabs,
             viewState.numHomeNotifications,
             viewState.numFriendsNotifications,
-            ::onSearchClick,
             ::onSettingsLongPress,
             // Long-pressing mentions opens the quick switcher, same as tapping search.
             ::onSearchClick,

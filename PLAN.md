@@ -141,8 +141,9 @@ shop-preview regression set passes 22 JVM tests covering catalog defaults, varia
 assets, timing metadata, full-width effect geometry and nameplate rows. App
 compatibility lint passed. The new native effect-loop/cleanup instrumentation
 fixture compiles separately against the app classes; it has not run on a device.
-The full instrumentation source set remains blocked by existing constructor/API
-mismatches in EmbeddedActivityWebViewSmokeTest and NativeEngineLifecycleTest.
+The previous instrumentation compile reported outdated constructor/API calls in
+EmbeddedActivityWebViewSmokeTest and NativeEngineLifecycleTest. Those fixtures now
+match the current source signatures; their recompilation remains unverified.
 No device or live redemption/quest verification was performed; runtime checks
 remain open, including selected-preview animation and rendering on test hardware.
 
@@ -223,6 +224,27 @@ coverage and passing builds do not establish complete behavioral parity.
 | 15 | Generated view bindings | IN PROGRESS | Remaining static view lookups and justified dynamic-lookup exceptions |
 
 ### Recorded evidence
+
+- The source audit inventories a baseline of 3,133 tracked Kotlin files and parses all 475
+  tracked XML files without XML errors. This is a static inventory, not a claim
+  that every path has been exercised. The Kotlin parser has known grammar gaps;
+  changed code is checked against the existing baseline rather than treated as
+  compiler-verified. All 38 update-worker Node tests pass. New Android/Kotlin
+  regression fixtures are not executed under the maintainer's no-build request.
+- Audit fixes include exact HTTPS-origin matching for embedded Activity navigation,
+  request-generation-safe APNG cancellation and single-owner nameplate disposal,
+  exact quest playback checkpoints with recovery after rejected jumps, and native
+  display-name fallback for blank Active Now nicknames. Unreachable legacy OAuth
+  serializers, duplicate send-update handling, an unused ack-work factory and HQ
+  directory predicate, the obsolete bottom-search callback and plugin-era section
+  disposal hook are removed. Persisted worker classes and public protocol/JNI
+  contracts remain represented. Compact V2 cards retain one measurement cache per
+  owned view instead of a map keyed by that same view. Compile, compatibility lint
+  and dedicated-device verification of these changes remain open.
+- Instrumentation fixtures now use the current embedded-WebView constructor and
+  media-engine parameters. The unused full-session WebView smoke fixture is removed;
+  the test still checks hardened settings offline. This is a source correction,
+  not a successful instrumentation compile or device run.
 
 - Historical structural checkpoints recorded 1,228 retained layout variants,
   76/76 first-party custom-view classes and 83/83 typed reference Gateway events.

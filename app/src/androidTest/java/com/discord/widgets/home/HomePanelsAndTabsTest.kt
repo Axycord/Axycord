@@ -66,7 +66,6 @@ class HomePanelsAndTabsTest {
                 0,
                 {},
                 {},
-                {},
             )
             tabs.measure(exactly(1080), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED))
             tabs.layout(0, 0, 1080, tabs.measuredHeight)

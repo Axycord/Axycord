@@ -19,12 +19,12 @@ import kotlin.math.roundToInt
 /** Native card-scoped port of Maarij's compact V2 layout; no activity-wide view scanning. */
 internal class CompactComponentCard(private val card: ContainerComponentView) : ViewTreeObserver.OnPreDrawListener {
     private val originalWidths = WeakHashMap<View, Int>()
-    private val measurements = WeakHashMap<ContainerComponentView, CardMeasurement>()
+    private var measurement: CardMeasurement? = null
     private var model: ContainerMessageComponent? = null
     private var observer: ViewTreeObserver? = null
 
     fun bind(model: ContainerMessageComponent) {
-        if (this.model !== model) measurements.clear()
+        if (this.model !== model) measurement = null
         this.model = model
     }
 
@@ -37,7 +37,7 @@ internal class CompactComponentCard(private val card: ContainerComponentView) : 
         observer?.takeIf { it.isAlive }?.removeOnPreDrawListener(this)
         observer = null
         restoreAll()
-        measurements.clear()
+        measurement = null
     }
 
     private fun restoreAll(): Boolean {
@@ -51,19 +51,19 @@ internal class CompactComponentCard(private val card: ContainerComponentView) : 
         if (!FeatureFlags.componentsV2FixEnabled()) return !restoreAll()
         val parent = card.parent as? ViewGroup ?: return true
         val bound = model ?: return true
-        return !fitCard(card, parent, bound)
+        return !fitCard(parent, bound)
     }
-    private fun fitCard(card: ContainerComponentView, parent: ViewGroup, model: ContainerMessageComponent): Boolean {
+    private fun fitCard(parent: ViewGroup, model: ContainerMessageComponent): Boolean {
         val available = parent.width - parent.paddingLeft - parent.paddingRight - card.horizontalMargins()
         if (available <= 0) return false
         val binding = WidgetBotUiContainerComponentBinding.bind(card)
         val content = binding.components
-        val cached = measurements[card]
-        val fit = if (cached?.model === model && cached.available == available) cached else {
+        val cached = measurement
+        val fit = if (cached != null && cached.available == available) cached else {
             val accent = if (binding.accent.visibility == View.GONE) 0 else binding.accent.layoutParams.width
             val chrome = card.horizontalPadding() + content.horizontalPadding() + accent
             val width = measureCard(model.children, content, available, chrome)
-            CardMeasurement(model, available, width, chrome).also { measurements[card] = it }
+            CardMeasurement(available, width, chrome).also { measurement = it }
         }
         var changed = if (fit.width == null) restoreWidth(card) else constrainWidth(card, fit.width)
         for (index in 0 until content.childCount) {
@@ -102,7 +102,6 @@ internal class CompactComponentCard(private val card: ContainerComponentView) : 
     }
 
     private data class CardMeasurement(
-        val model: ContainerMessageComponent,
         val available: Int,
         val width: Int?,
         val chrome: Int,
