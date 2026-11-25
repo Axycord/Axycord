@@ -9,6 +9,7 @@ import android.os.Build
 import androidx.core.content.pm.PackageInfoCompat
 import com.google.gson.Gson
 import java.io.File
+import java.io.InputStream
 import java.security.MessageDigest
 import java.util.concurrent.TimeUnit
 import okhttp3.OkHttpClient
@@ -38,13 +39,22 @@ data class PluginIndex(val version: Int = 0, val plugins: List<Entry>? = null) {
         val size: Long = 0,
         val signerSha256: String? = null,
         val sourceUrl: String? = null,
+        val variant: String? = null,
     ) {
+        val catalogKey: String get() = "${id.orEmpty()}#${variant.orEmpty()}"
+
+        fun matchesInstalled(installedVersion: Long?, installedSize: Long?): Boolean =
+            installedVersion != null && (installedVersion > versionCode ||
+                installedVersion == versionCode &&
+                (variant.isNullOrEmpty() || installedSize == null || installedSize == size))
+
         /** Throws unless every field the install path relies on is present and well formed. */
         fun validate(): Entry = also {
             require(PACKAGE.matches(packageName.orEmpty()) && !id.isNullOrBlank() && !name.isNullOrBlank())
             require(apkUrl.orEmpty().startsWith("https://"))
             require(HEX_SHA256.matches(sha256.orEmpty()) && size in 1..MAX_APK_BYTES)
             require(HEX_SHA256.matches(normalizedSigner()) && versionCode > 0)
+            require(variant == null || Regex("[a-z0-9_-]{1,32}").matches(variant))
         }
 
         /** The signer as hex without separators, the form both the index and the app compare in. */
@@ -54,7 +64,7 @@ data class PluginIndex(val version: Int = 0, val plugins: List<Entry>? = null) {
     companion object {
         const val INDEX_URL = "https://cdn.jsdelivr.net/gh/Axycord/Axycord-Plugins@builds/plugins.json"
         private const val MAX_INDEX_BYTES = 256L * 1024
-        private const val MAX_APK_BYTES = 50L * 1024 * 1024
+        private const val MAX_APK_BYTES = 200L * 1024 * 1024
         private val PACKAGE = Regex("[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+")
         private val HEX_SHA256 = Regex("[0-9a-f]{64}")
 
@@ -80,9 +90,11 @@ data class PluginIndex(val version: Int = 0, val plugins: List<Entry>? = null) {
             val dir = File(context.filesDir, INSTALL_DIR).apply { deleteRecursively(); mkdirs() }
             val file = File(dir, "${entry.sha256}.apk")
             http.newCall(Request.Builder().url(requireNotNull(entry.apkUrl)).build()).execute().use { response ->
-                file.writeBytes(read(response, entry.size))
+                check(response.isSuccessful)
+                requireNotNull(response.body).byteStream().use { input ->
+                    writeVerifiedApk(input, file, entry.size, requireNotNull(entry.sha256))
+                }
             }
-            require(file.length() == entry.size && sha256(file.readBytes()) == entry.sha256)
             val archive = requireNotNull(context.packageManager.getPackageArchiveInfo(file.path, SIGNER_FLAGS))
             require(archive.packageName == entry.packageName)
             val signer = signers(archive).single()
@@ -99,6 +111,10 @@ data class PluginIndex(val version: Int = 0, val plugins: List<Entry>? = null) {
         /** The installed version code of [packageName], or null when it is not installed. */
         fun installedVersion(context: Context, packageName: String): Long? = runCatching {
             PackageInfoCompat.getLongVersionCode(context.packageManager.getPackageInfo(packageName, 0))
+        }.getOrNull()
+
+        fun installedSize(context: Context, packageName: String): Long? = runCatching {
+            File(context.packageManager.getApplicationInfo(packageName, 0).sourceDir).length().takeIf { it > 0 }
         }.getOrNull()
 
         /**
@@ -136,5 +152,29 @@ data class PluginIndex(val version: Int = 0, val plugins: List<Entry>? = null) {
         /** The colon-separated upper-case form `PluginSources` records for installed packages. */
         private fun fingerprint(signer: ByteArray) =
             MessageDigest.getInstance("SHA-256").digest(signer).joinToString(":") { "%02X".format(it.toInt() and 0xff) }
+    }
+}
+
+/** Keep large packs out of the app heap and discard incomplete or untrusted downloads. */
+internal fun writeVerifiedApk(input: InputStream, file: File, size: Long, expectedSha256: String) {
+    try {
+        val digest = MessageDigest.getInstance("SHA-256")
+        var total = 0L
+        file.outputStream().use { output ->
+            val buffer = ByteArray(64 * 1024)
+            while (true) {
+                val count = input.read(buffer)
+                if (count == -1) break
+                total += count
+                require(total <= size) { "Plugin APK exceeds its catalog size" }
+                output.write(buffer, 0, count)
+                digest.update(buffer, 0, count)
+            }
+        }
+        val sha256 = digest.digest().joinToString("") { "%02x".format(it.toInt() and 0xff) }
+        require(total == size && sha256 == expectedSha256) { "Plugin APK does not match its catalog digest" }
+    } catch (error: Exception) {
+        file.delete()
+        throw error
     }
 }

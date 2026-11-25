@@ -93,6 +93,21 @@ Browse Plugins reads only Axycord's `Axycord-Plugins` catalog. The inherited
 Last.fm Rich Presence, Message Logger, ReviewDB and Translate listings are excluded.
 An unpublished catalog (HTTP 404) displays the existing empty-list state.
 
+Catalog entries can name a `variant` while retaining the same plugin ID, package,
+version and signer. The browser distinguishes installed variants by APK size and
+offers a same-version replacement for the other variant; it never offers a version
+downgrade. Downloads allow up to 200 MiB and stream through a bounded buffer while
+checking size and SHA-256. Partial or mismatched files are discarded. This supports
+both Full and Compressed Emoji Replace listings; published v1.0 retains its old
+50 MiB cap and requires a client update to show Full.
+The published catalog contains APlatformIndicators, Emoji Replace (Compressed and
+Full), and Permissions Viewer, using the original maintainer release APKs and
+signers. Six focused client JVM tests and app compatibility lint pass for variant
+selection and bounded, verified downloads. Catalog CI verifies all four APKs,
+builds/lints all three source modules and runs the emoji regression tests before
+publishing. The live CDN index is verified; no new client release or device test
+has been performed for variant support.
+
 See [docs/plugin-api.md](docs/plugin-api.md) for the current API, signer approval,
 resource loading and contribution surfaces.
 

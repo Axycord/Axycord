@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="plugin_browser_switch_variant">Install this variant</string>
     <string name="axycord_member_group_count" translatable="false">%1$s — %2$d</string>
     <color name="loading_background">#2B2E31</color>
     <string name="axycord_app_name">Axycord</string>

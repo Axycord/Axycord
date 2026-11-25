@@ -81,7 +81,7 @@ class WidgetSettingsPluginBrowser : AppFragment(R.layout.widget_settings_plugin_
             startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:${context.packageName}")))
             return
         }
-        installing = entry.packageName
+        installing = entry.catalogKey
         adapter.setData(entries)
         PluginIndex.download(context.applicationContext, entry).ui(this).subscribe({ file ->
             installing = null
@@ -126,11 +126,15 @@ class WidgetSettingsPluginBrowser : AppFragment(R.layout.widget_settings_plugin_
 
             val compatible = data.pluginApiMinimum <= PLUGIN_API_LEVEL
             val action = item.pluginBrowserItemAction
-            val upToDate = installed != null && (foreign || installed >= data.versionCode)
+            val installedSize = if (data.variant != null && installed == data.versionCode) {
+                PluginIndex.installedSize(itemView.context, requireNotNull(data.packageName))
+            } else null
+            val upToDate = foreign || data.matchesInstalled(installed, installedSize)
             val label = when {
                 upToDate -> R.string.plugin_browser_uninstall
                 !compatible -> R.string.plugin_browser_incompatible
                 installed == null -> R.string.plugin_browser_install
+                installed == data.versionCode && data.variant != null -> R.string.plugin_browser_switch_variant
                 else -> R.string.plugin_browser_update
             }
             action.setText(itemView.context.getString(label))
@@ -138,7 +142,7 @@ class WidgetSettingsPluginBrowser : AppFragment(R.layout.widget_settings_plugin_
                 ColorCompat.getColor(itemView.context, if (upToDate) R.color.status_red_500 else R.color.brand_500),
             )
             action.isEnabled = (upToDate || compatible) && installing == null
-            action.setIsLoading(installing == data.packageName)
+            action.setIsLoading(installing == data.catalogKey)
             action.setOnClickListener {
                 if (upToDate) PluginIndex.uninstall(itemView.context, data.packageName) else install(data)
             }
