@@ -210,7 +210,7 @@ internal class QuestVideoView(
         val item = MediaItem.fromUri(video.url)
         val media = if (video.hls) HlsMediaSource.Factory(http).createMediaSource(item)
         else ProgressiveMediaSource.Factory(http).createMediaSource(item)
-        active.setMediaSource(media, watched.seconds * 1_000L)
+        active.setMediaSource(media, watched.positionMillis)
         active.prepare()
         if (wantsPlayback && hasWindowFocus()) startPlayback()
     }
@@ -288,7 +288,7 @@ internal class QuestVideoView(
         if (ended) return
         val current = player
         if (current != null && wantsPlayback && firstFrame && isShown && hasWindowFocus()) {
-            capturePosition(current.currentPosition)
+            if (!capturePosition(current.currentPosition)) return
         }
         ended = true
         pausePlayback()
@@ -297,10 +297,15 @@ internal class QuestVideoView(
         if (!request.busy) showFinished()
     }
 
-    private fun capturePosition(positionMillis: Long) {
+    private fun capturePosition(positionMillis: Long): Boolean {
         val time = SystemClock.elapsedRealtime()
-        watched.observe(positionMillis.coerceAtMost(Int.MAX_VALUE.toLong()).toInt(), time - lastSample)
+        val accepted = watched.observe(positionMillis.coerceAtMost(Int.MAX_VALUE.toLong()).toInt(), time - lastSample)
+        if (!accepted) {
+            // An unverified jump must not leave every future sample permanently ahead of credit.
+            player?.seekTo(watched.positionMillis)
+        }
         lastSample = time
+        return accepted
     }
 
     private fun reportProgress(force: Boolean) {

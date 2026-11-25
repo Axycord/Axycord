@@ -218,6 +218,18 @@ class QuestTest {
         assertEquals(17, progress.seconds)
     }
 
+    @Test
+    fun stalledPlaybackCanResumeFromTheExactVerifiedPosition() {
+        val progress = PlaybackProgress(resumeSeconds = 15)
+        assertTrue(progress.observe(15_750, elapsedMillis = 750))
+        assertFalse(progress.observe(21_750, elapsedMillis = 6_000))
+        assertEquals(15_750L, progress.positionMillis)
+        // The player rewinds to this checkpoint; subsequent measured playback is accepted again.
+        assertTrue(progress.observe(16_250, elapsedMillis = 500))
+        assertEquals(16_250L, progress.positionMillis)
+        assertEquals(16, progress.seconds)
+    }
+
     private companion object {
         val FIXTURE: JsonObject = JsonParser.parseString(
             """
