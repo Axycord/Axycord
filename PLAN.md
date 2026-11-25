@@ -89,6 +89,10 @@ Asynchronous plugins do not gate first UI; explicitly blocking dependency chains
 have bounded startup waits. The master loading switch gates discovery and loading.
 External plugins execute in-process and are not sandboxed.
 
+Browse Plugins reads only Axycord's `Axycord-Plugins` catalog. The inherited
+Last.fm Rich Presence, Message Logger, ReviewDB and Translate listings are excluded.
+An unpublished catalog (HTTP 404) displays the existing empty-list state.
+
 See [docs/plugin-api.md](docs/plugin-api.md) for the current API, signer approval,
 resource loading and contribution surfaces.
 

@@ -62,9 +62,10 @@ data class PluginIndex(val version: Int = 0, val plugins: List<Entry>? = null) {
             OkHttpClient.Builder().connectTimeout(15, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build()
         }
 
-        /** The index's valid entries; a malformed entry is dropped rather than failing the list. */
+        /** Missing catalogs have no listings; malformed entries are dropped individually. */
         fun fetch(): Observable<List<Entry>> = Observable.fromCallable {
             http.newCall(Request.Builder().url(INDEX_URL).build()).execute().use { response ->
+                if (response.code == 404) return@fromCallable emptyList<Entry>()
                 val index = Gson().fromJson(read(response, MAX_INDEX_BYTES).toString(Charsets.UTF_8), PluginIndex::class.java)
                 index.plugins.orEmpty().mapNotNull { runCatching { it.validate() }.getOrNull() }
             }
