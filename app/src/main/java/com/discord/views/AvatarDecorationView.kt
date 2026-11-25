@@ -24,6 +24,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.ensureActive
 import okhttp3.Call
 import okhttp3.Request
+import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.coroutines.coroutineContext
 
 /**
@@ -54,8 +55,7 @@ class AvatarDecorationView @JvmOverloads constructor(
 
     private val animationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private var animationJob: Job? = null
-    @Volatile
-    private var animationCall: Call? = null
+    private val animationCalls = CopyOnWriteArrayList<Call>()
     private var animatedDrawable: ApngDrawable? = null
     private var animationKey: String? = null
 
@@ -190,10 +190,9 @@ class AvatarDecorationView @JvmOverloads constructor(
                 withContext(Dispatchers.IO) {
                     for (url in urls) {
                         coroutineContext.ensureActive()
-                        val call = CollectibleAssets.client.newCall(Request.Builder().url(url).build())
-                        animationCall = call
-                        val cancellation = coroutineContext[Job]?.invokeOnCompletion { call.cancel() }
+                        val call = CollectibleAssets.client.newCall(Request.Builder().url(url).build()).also(animationCalls::add)
                         try {
+                            coroutineContext.ensureActive()
                             decoded = call.execute().use { response ->
                                 check(response.isSuccessful)
                                 coroutineContext.ensureActive()
@@ -202,8 +201,7 @@ class AvatarDecorationView @JvmOverloads constructor(
                         } catch (error: Exception) {
                             if (error is CancellationException) throw error
                         } finally {
-                            cancellation?.dispose()
-                            if (animationCall === call) animationCall = null
+                            animationCalls.remove(call)
                         }
                         if (decoded != null) break
                     }
@@ -231,10 +229,10 @@ class AvatarDecorationView @JvmOverloads constructor(
 
     private fun clearDecorationAnimation() {
         animationKey = null
-        animationCall?.cancel()
-        animationCall = null
         animationJob?.cancel()
         animationJob = null
+        animationCalls.forEach(Call::cancel)
+        animationCalls.clear()
         animatedImage?.let {
             it.visibility = INVISIBLE
             it.setImageDrawable(null)

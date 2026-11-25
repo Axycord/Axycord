@@ -24,6 +24,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.Call
@@ -111,9 +112,9 @@ class ProfileEffectView @JvmOverloads constructor(
         boundEffect = null
         boundReducedMotion = null
         handler.removeCallbacksAndMessages(null)
+        scope.cancel()
         calls.forEach(Call::cancel)
         calls.clear()
-        scope.cancel()
         scope = newScope()
         children().filterIsInstance<VitoImageView>().forEach(MGImages::cancelImageRequests)
         children().filterIsInstance<ImageView>().filterNot { it is VitoImageView }
@@ -144,6 +145,7 @@ class ProfileEffectView @JvmOverloads constructor(
                     val bytes = withContext(Dispatchers.IO) {
                         val call = CollectibleAssets.client.newCall(Request.Builder().url(layer.src).build()).also(calls::add)
                         try {
+                            kotlin.coroutines.coroutineContext.ensureActive()
                             call.execute().use { response ->
                                 check(response.isSuccessful)
                                 checkNotNull(response.body).bytes()

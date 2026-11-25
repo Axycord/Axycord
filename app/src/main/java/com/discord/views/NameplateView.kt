@@ -32,8 +32,10 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.ensureActive
 import okhttp3.Call
 import okhttp3.Request
+import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.coroutines.coroutineContext
 
 class NameplateView @JvmOverloads constructor(
@@ -57,8 +59,7 @@ class NameplateView @JvmOverloads constructor(
     private var preview = false
     private val animationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private var animationJob: Job? = null
-    @Volatile
-    private var animationCall: Call? = null
+    private val animationCalls = CopyOnWriteArrayList<Call>()
     private var animatedDrawable: ApngDrawable? = null
     private var animationRequest: AnimationRequest? = null
     private var animationAttempted = false
@@ -213,6 +214,7 @@ class NameplateView @JvmOverloads constructor(
 
     internal fun currentAnimationRequest(): AnimationRequest? = animationRequest
 
+    /** Takes ownership, including recycling a drawable rejected after a rebind or detach. */
     internal fun bindDecodedAnimation(drawable: ApngDrawable, request: AnimationRequest): Boolean {
         if (request != animationRequest || !isSelected || placement != Placement.CHANNEL) {
             recycle(drawable)
@@ -248,21 +250,20 @@ class NameplateView @JvmOverloads constructor(
             var decoded: ApngDrawable? = null
             try {
                 withContext(Dispatchers.IO) {
-                    val call = CollectibleAssets.client.newCall(Request.Builder().url(request.key).build())
-                    animationCall = call
-                    val cancellation = coroutineContext[Job]?.invokeOnCompletion { call.cancel() }
+                    val call = CollectibleAssets.client.newCall(Request.Builder().url(request.key).build()).also(animationCalls::add)
                     try {
+                        coroutineContext.ensureActive()
                         call.execute().use { response ->
                             check(response.isSuccessful)
                             decoded = ApngDrawable.decode(ByteArrayInputStream(checkNotNull(response.body).bytes()))
                         }
                     } finally {
-                        cancellation?.dispose()
-                        if (animationCall === call) animationCall = null
+                        animationCalls.remove(call)
                     }
                 }
                 val drawable = decoded ?: return@launch
-                if (bindDecodedAnimation(drawable, request)) decoded = null
+                decoded = null
+                bindDecodedAnimation(drawable, request)
             } catch (error: Exception) {
                 if (error is CancellationException) throw error
             } finally {
@@ -276,10 +277,10 @@ class NameplateView @JvmOverloads constructor(
         animationGeneration++
         animationRequest = null
         animationAttempted = false
-        animationCall?.cancel()
-        animationCall = null
         animationJob?.cancel()
         animationJob = null
+        animationCalls.forEach(Call::cancel)
+        animationCalls.clear()
         animatedImage.visibility = INVISIBLE
         animatedImage.setImageDrawable(null)
         animatedDrawable?.let(::recycle)
