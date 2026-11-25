@@ -21,6 +21,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.ensureActive
 import okhttp3.Call
 import okhttp3.Request
 import kotlin.coroutines.coroutineContext
@@ -49,6 +50,7 @@ class AvatarDecorationView @JvmOverloads constructor(
     private var targetView: View? = null
     private var decoration: AvatarDecorationData? = null
     private var animate = false
+    private var preview = false
 
     private val animationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private var animationJob: Job? = null
@@ -84,7 +86,19 @@ class AvatarDecorationView @JvmOverloads constructor(
 
     @JvmOverloads
     fun bind(decoration: AvatarDecorationData?, animate: Boolean = false) {
+        preview = false
         this.decoration = decoration?.takeIf { FeatureFlags.avatarDecorationsEnabled() }
+        this.animate = animate
+        updateVisuals()
+    }
+
+    /** An explicit shop preview does not equip the item or change the user's display settings. */
+    fun bindPreview(decoration: AvatarDecorationData?, target: View, animate: Boolean) {
+        preview = true
+        if (target.id == View.NO_ID) target.id = View.generateViewId()
+        targetId = target.id
+        targetView = target
+        this.decoration = decoration
         this.animate = animate
         updateVisuals()
     }
@@ -138,7 +152,7 @@ class AvatarDecorationView @JvmOverloads constructor(
             clearDecorationAnimation()
             return
         }
-        val reducedMotion = runCatching { StoreStream.getAccessibility().isReducedMotionEnabled() }
+        val reducedMotion = !preview && runCatching { StoreStream.getAccessibility().isReducedMotionEnabled() }
             .getOrDefault(false)
         visibility = VISIBLE
         MGImages.setImage(staticLayer(), urls, changeDetector = changeDetector, autoPlayAnimations = false)
@@ -159,34 +173,43 @@ class AvatarDecorationView @JvmOverloads constructor(
     }
 
     private fun updateAnimation(decoration: AvatarDecorationData?) {
-        val url = decoration?.imageUrls(animate = true)?.firstOrNull()
-        if (url == null) {
+        val urls = decoration?.imageUrls(animate = true).orEmpty()
+        if (urls.isEmpty()) {
             clearDecorationAnimation()
             return
         }
-        if (url == animationKey) return
+        val key = urls.joinToString("\n")
+        if (key == animationKey) return
         clearDecorationAnimation()
-        animationKey = url
         if (!isAttachedToWindow) return
+        // Binding before attach must not mark the request as already started.
+        animationKey = key
         animationJob = animationScope.launch {
             var decoded: ApngDrawable? = null
             try {
-                decoded = withContext(Dispatchers.IO) {
-                    val call = CollectibleAssets.client.newCall(Request.Builder().url(url).build())
-                    animationCall = call
-                    val cancellation = coroutineContext[Job]?.invokeOnCompletion { call.cancel() }
-                    try {
-                        call.execute().use { response ->
-                            check(response.isSuccessful)
-                            ApngDrawable.decode(ByteArrayInputStream(checkNotNull(response.body).bytes()))
+                withContext(Dispatchers.IO) {
+                    for (url in urls) {
+                        coroutineContext.ensureActive()
+                        val call = CollectibleAssets.client.newCall(Request.Builder().url(url).build())
+                        animationCall = call
+                        val cancellation = coroutineContext[Job]?.invokeOnCompletion { call.cancel() }
+                        try {
+                            decoded = call.execute().use { response ->
+                                check(response.isSuccessful)
+                                coroutineContext.ensureActive()
+                                ApngDrawable.decode(ByteArrayInputStream(checkNotNull(response.body).bytes()))
+                            }
+                        } catch (error: Exception) {
+                            if (error is CancellationException) throw error
+                        } finally {
+                            cancellation?.dispose()
+                            if (animationCall === call) animationCall = null
                         }
-                    } finally {
-                        cancellation?.dispose()
-                        if (animationCall === call) animationCall = null
+                        if (decoded != null) break
                     }
                 }
                 val drawable = decoded ?: return@launch
-                if (url != animationKey) return@launch
+                if (key != animationKey) return@launch
                 animatedDrawable?.let(::recycle)
                 animatedDrawable = drawable
                 decoded = null

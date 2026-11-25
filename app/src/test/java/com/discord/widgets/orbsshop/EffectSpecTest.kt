@@ -13,7 +13,7 @@ class EffectSpecTest {
             {"src":"loop","duration":4980,"start":7981,"zIndex":100,"loop":true,"loopDelay":3000}""",
         )
         assertEquals(595, effect.canvasHeight)
-        assertEquals(EffectSize(235, 460), effect.fit(320, 460))
+        assertEquals(EffectSize(320, 626), effect.atWidth(320))
         assertTrue(effect.layers.all { it.fillsCanvas })
         assertFalse(effect.layers.first().looping)
         assertTrue(effect.layers.last().looping)
@@ -27,7 +27,7 @@ class EffectSpecTest {
                 "zIndex":12,"randomizedSources":[{"src":"alt-a"},{"src":"alt-b"}]}""",
         )
         assertEquals(450, effect.canvasHeight)
-        assertEquals(EffectSize(304, 450), effect.fit(304, 520))
+        assertEquals(EffectSize(304, 450), effect.atWidth(304))
         val positioned = effect.layers.single()
         assertFalse(positioned.fillsCanvas)
         assertEquals(-3, positioned.x)

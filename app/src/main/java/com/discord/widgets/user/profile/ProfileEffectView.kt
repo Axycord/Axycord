@@ -95,6 +95,7 @@ class ProfileEffectView @JvmOverloads constructor(
             drawables += drawable
             val image = ImageView(context).apply {
                 scaleType = ImageView.ScaleType.MATRIX
+                translationZ = layer.zIndex.toFloat()
                 visibility = INVISIBLE
                 setImageDrawable(drawable)
             }
@@ -154,8 +155,8 @@ class ProfileEffectView @JvmOverloads constructor(
                     val playAt = startedAt + INTRO_DELAY_MS + layer.start
                     val decodeAt = if (layer.start == 0L) startedAt else playAt
                     delay((decodeAt - SystemClock.uptimeMillis()).coerceAtLeast(0))
-                    drawable = withContext(Dispatchers.IO) {
-                        ApngDrawable.decode(ByteArrayInputStream(bytes))
+                    withContext(Dispatchers.IO) {
+                        drawable = ApngDrawable.decode(ByteArrayInputStream(bytes))
                     }
                     delay((playAt - SystemClock.uptimeMillis()).coerceAtLeast(0))
                     if (currentGeneration != generation) {
@@ -189,10 +190,12 @@ class ProfileEffectView @JvmOverloads constructor(
      * full bounds would scale them all to the same rectangle and lose the composition.
      */
     private fun positionLayer(image: ImageView, layer: UserProfile.ProfileEffectLayer) {
-        val scale = width.takeIf { it > 0 }?.toFloat()?.div(DESKTOP_PROFILE_WIDTH) ?: return
+        val drawable = image.drawable ?: return
+        val transform = profileEffectTransform(width, height, drawable.intrinsicWidth, drawable.intrinsicHeight,
+            layer.width, layer.height, layer.position?.x ?: 0, layer.position?.y ?: 0) ?: return
         image.imageMatrix = Matrix().apply {
-            setScale(scale, scale)
-            postTranslate((layer.position?.x ?: 0) * scale, (layer.position?.y ?: 0) * scale)
+            setScale(transform.scaleX, transform.scaleY)
+            postTranslate(transform.x, transform.y)
         }
         image.invalidate()
     }
@@ -209,8 +212,9 @@ class ProfileEffectView @JvmOverloads constructor(
         layer: UserProfile.ProfileEffectLayer,
         introDelay: Long,
     ) {
-        val duration = layer.duration.takeIf { it > 0 } ?: drawable.durationMillis.toLong()
-        handler.postDelayed({
+        val duration = (layer.duration.takeIf { it > 0 } ?: drawable.durationMillis.toLong()).coerceAtLeast(16L)
+        fun play() {
+            if (drawable !in drawables) return
             drawable.stop()
             drawable.seekTo(0)
             drawable.loopCount = 1
@@ -219,13 +223,19 @@ class ProfileEffectView @JvmOverloads constructor(
             handler.postDelayed({
                 drawable.stop()
                 image.visibility = INVISIBLE
-                drawables.remove(drawable)
-                removeView(image)
-                image.setImageDrawable(null)
-                drawable.clearAnimationCallbacks()
-                drawable.recycle()
+                if (layer.loop && drawable in drawables) {
+                    handler.postDelayed({ play() }, layer.loopDelay.coerceAtLeast(0L))
+                } else {
+                    drawables.remove(drawable)
+                    layerPositions.removeAll { it.first === image }
+                    removeView(image)
+                    image.setImageDrawable(null)
+                    drawable.clearAnimationCallbacks()
+                    drawable.recycle()
+                }
             }, duration)
-        }, introDelay + layer.start)
+        }
+        handler.postDelayed({ play() }, (introDelay + layer.start).coerceAtLeast(0L))
     }
 
     private fun UserProfile.ProfileEffectItem.resolvedLayers(): List<UserProfile.ProfileEffectLayer> {
@@ -251,7 +261,6 @@ class ProfileEffectView @JvmOverloads constructor(
 
     private companion object {
         const val INTRO_DELAY_MS = 500L
-        const val DESKTOP_PROFILE_WIDTH = 304f
         const val CORNER_RADIUS_DP = 8
     }
 

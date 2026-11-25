@@ -24,9 +24,7 @@ import com.discord.api.collectibles.CollectibleProduct
 import com.discord.models.user.MeUser
 import com.discord.stores.StoreStream
 import com.discord.utilities.icon.IconUtils
-import com.discord.views.NameplateView
 import com.discord.views.VitoImageView
-import com.discord.widgets.user.profile.ProfileFrameView
 import com.google.gson.FieldNamingPolicy
 import com.google.gson.GsonBuilder
 import java.net.URI
@@ -46,6 +44,22 @@ internal class ShopDetail(
     private val heading = ui.label(family.name, 24, style.text, bold = true)
     private val summary = ui.label("", 14, style.muted)
     private val stage = FrameLayout(ui)
+    private var activePreview: AnimatedShopPreview? = null
+    private var animationEnabled = true
+    private val pause = ui.button("Pause", style) {
+        animationEnabled = !animationEnabled
+        activePreview?.setAnimating(animationEnabled)
+        updateAnimationButton()
+    }
+    private val replay = ui.button("Replay", style) {
+        animationEnabled = true
+        activePreview?.replay()
+        updateAnimationButton()
+    }
+    private val animationControls = ui.row().apply {
+        addView(pause, LinearLayout.LayoutParams(0, -2, 1f))
+        addView(replay, LinearLayout.LayoutParams(0, -2, 1f).apply { marginStart = ui.dp(8) })
+    }
     private val feedback = ui.label("", 13, style.muted).apply {
         accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
     }
@@ -58,13 +72,20 @@ internal class ShopDetail(
         val content = ui.column().apply {
             addLine(ui.row().apply {
                 gravity = Gravity.CENTER_VERTICAL
-                addView(ui.label("Preview on your profile", 13, style.muted, true),
+                addView(ui.label(when (family.kind) {
+                    CosmeticKind.AVATAR -> "Avatar preview"
+                    CosmeticKind.NAMEPLATE -> "Nameplate preview"
+                    else -> "Profile preview"
+                }, 13, style.muted, true),
                     LinearLayout.LayoutParams(0, -2, 1f))
             }, 8)
-            val previewHeight = if (family.kind == CosmeticKind.EFFECT) {
-                (ui.resources.configuration.screenHeightDp - 248).coerceIn(240, 570)
-            } else 300
+            val previewHeight = when (family.kind) {
+                CosmeticKind.AVATAR -> 208
+                CosmeticKind.NAMEPLATE -> 112
+                CosmeticKind.EFFECT, CosmeticKind.FRAME -> LinearLayout.LayoutParams.WRAP_CONTENT
+            }
             addLine(stage, 10, previewHeight)
+            addLine(animationControls, 8)
             addLine(summary, 12)
             if (family.variants.size > 1) {
                 addLine(ui.label("Colour", 15, style.text, true), 16)
@@ -111,8 +132,12 @@ internal class ShopDetail(
             setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             val width = ui.resources.displayMetrics.widthPixels - ui.dp(20)
             val height = ui.resources.displayMetrics.heightPixels - ui.dp(84)
-            val maxHeight = if (family.kind == CosmeticKind.EFFECT) 750 else 610
-            setLayout(minOf(width, ui.dp(510)), minOf(height, ui.dp(maxHeight)))
+            val maxHeight = when (family.kind) {
+                CosmeticKind.EFFECT, CosmeticKind.FRAME -> 750
+                CosmeticKind.AVATAR -> 540
+                CosmeticKind.NAMEPLATE -> 440
+            }
+            setLayout(minOf(width, ui.dp(640)), minOf(height, ui.dp(maxHeight)))
         }
     }
 
@@ -181,20 +206,21 @@ internal class ShopDetail(
             choice.setTextColor(if (active) style.accent else style.text)
         }
         stage.removeAllViews()
-        val preview = if (family.kind == CosmeticKind.EFFECT) {
-            FullEffectProfile(ui, style, me, selected)
-        } else {
-            profilePreview(ui, style, me, selected) { requiredHeight ->
-                val height = stage.layoutParams
-                if (height.height != requiredHeight) {
-                    height.height = requiredHeight
-                    stage.layoutParams = height
-                }
-            }
+        val preview = when (family.kind) {
+            CosmeticKind.AVATAR -> ShopAvatarPreview(ui, style, me, selected)
+            CosmeticKind.NAMEPLATE -> ShopNameplatePreview(ui, style, me, selected)
+            CosmeticKind.EFFECT, CosmeticKind.FRAME -> FullEffectProfile(ui, style, me, selected)
         }
-        stage.addView(preview, -1, -1)
+        activePreview = preview as? AnimatedShopPreview
+        animationEnabled = true
+        animationControls.visibility = if (activePreview != null && family.kind != CosmeticKind.FRAME) View.VISIBLE else View.GONE
+        updateAnimationButton()
+        stage.addView(preview, FrameLayout.LayoutParams(-1,
+            if (family.kind == CosmeticKind.EFFECT || family.kind == CosmeticKind.FRAME) FrameLayout.LayoutParams.WRAP_CONTENT else -1))
         update(state)
     }
+
+    private fun updateAnimationButton() { pause.text = if (animationEnabled) "Pause" else "Play" }
 
     private fun confirmRedemption() {
         val offer = selected
@@ -215,99 +241,32 @@ internal fun productArt(ui: Context, style: ShopStyle, offer: Offer): View = Fra
     background = ui.artBackground(style, offer, 0)
     val product = offer.model()
     val art = when (offer.kind) {
-        CosmeticKind.AVATAR -> product?.avatarDecoration()?.imageUrls(animate = false)?.firstOrNull()
+        CosmeticKind.AVATAR -> offer.previewDecoration()?.imageUrls(animate = false)?.firstOrNull()
         CosmeticKind.EFFECT -> product?.profileEffectThumbnail()
-        CosmeticKind.NAMEPLATE -> product?.nameplate()?.staticImageUrl()
+        CosmeticKind.NAMEPLATE -> offer.previewNameplate()?.staticImageUrl()
         CosmeticKind.FRAME -> product?.profileFrame()?.topStaples()?.firstOrNull()?.assetUrl(offer.sku)
     } ?: offer.product.obj("preview_assets")?.string("fg_static")
-    place(ui.artwork(art), if (offer.kind == CosmeticKind.AVATAR) 96 else -1, -1, Gravity.CENTER)
+    val artwork = if (offer.kind == CosmeticKind.AVATAR) {
+        cosmeticAvatar(ui, style, StoreStream.getUsers().getMe(), art, 80)
+    } else ui.artwork(art)
+    place(artwork, -1, -1, Gravity.CENTER)
 }
 
-private fun profilePreview(
-    ui: Context,
-    style: ShopStyle,
-    me: MeUser,
-    offer: Offer,
-    resize: (Int) -> Unit,
-): View = FrameLayout(ui).apply {
-    background = ui.artBackground(style, offer, 18)
-    clipToOutline = true
-    val product = offer.model()
-    val decoration = if (offer.kind == CosmeticKind.AVATAR) product?.avatarDecoration() else me.avatarDecoration
-    val frame = product?.profileFrame()
-    val back = ProfileFrameView(ui).apply { half = ProfileFrameView.Half.BACK }
-    val front = ProfileFrameView(ui).apply { half = ProfileFrameView.Half.FRONT }
-    val avatar = cosmeticAvatar(ui, style, me, decoration?.imageUrls(animate = false)?.firstOrNull(), 66)
-    val profile = FrameLayout(ui).apply {
-        background = ui.shape(style.ink, 14, style.line)
-        clipToOutline = true
-        val banner = ui.artwork(me.banner?.let { IconUtils.getForUserBanner(me.id, it, 480, false) }).apply {
-            background = ColorDrawable(blend(style.panel, offer.tint(style.accent), 0.5f))
-            scaleType = android.widget.ImageView.ScaleType.CENTER_CROP
-        }
-        place(banner, -1, 76, Gravity.TOP)
-        place(avatar, 88, 88, Gravity.TOP or Gravity.START, left = 11, top = 37)
-        val profileName = me.globalName?.takeIf(String::isNotBlank) ?: me.username
-        val profileText = ui.column().apply {
-            addLine(ui.label(profileName, 20, style.text, bold = true))
-            addLine(ui.label("@${me.username}", 13, style.muted), 2)
-        }
-        place(profileText, -1, -2, Gravity.TOP or Gravity.START, left = 22, top = 124, right = 12)
-        if (offer.kind == CosmeticKind.AVATAR && !me.bio.isNullOrBlank()) {
-            place(ui.label(me.bio.orEmpty(), 13, style.muted).apply {
-                maxLines = 2
-                ellipsize = android.text.TextUtils.TruncateAt.END
-            }, -1, -2, Gravity.TOP, left = 22, top = 195, right = 16)
-        }
-        if (offer.kind == CosmeticKind.NAMEPLATE) {
-            val plate = FrameLayout(ui).apply {
-                background = ui.shape(style.panel, 8)
-                place(NameplateView(ui).apply {
-                    bind(product?.nameplate(), NameplateView.Placement.MEMBER_LIST, selected = true)
-                }, -1, -1, Gravity.CENTER)
-                place(ui.label(profileName, 14, style.text, bold = true), -2, -2, Gravity.CENTER_VERTICAL or Gravity.START, left = 10)
-            }
-            place(plate, -1, 42, Gravity.TOP, left = 18, top = 195, right = 18)
-        }
+internal fun Offer.model() = runCatching {
+    // Gson bypasses Kotlin constructor defaults on these DTOs. Catalog items omit purchase-only
+    // fields and often the item SKU/layers; normalize a copy without changing the cached offer.
+    val data = product.deepCopy()
+    if (data.string("sku_id")?.toLongOrNull()?.takeIf { it > 0 } == null) data.addProperty("sku_id", sku)
+    if (data.int("type") == null) data.addProperty("type", kind.wireType)
+    if (data.string("name") == null) data.addProperty("name", name)
+    if (data.string("summary") == null) data.addProperty("summary", summary)
+    if (data.array("items") == null) data.add("items", com.google.gson.JsonArray())
+    data.array("items").objects().forEach { item ->
+        if (item.int("type") == null) item.addProperty("type", -1)
+        if (item.string("sku_id")?.toLongOrNull()?.takeIf { it > 0 } == null) item.addProperty("sku_id", sku)
+        if (item.array("layers") == null) item.add("layers", com.google.gson.JsonArray())
     }
-    place(back, -1, -1, Gravity.FILL)
-    place(profile, -1, 244, Gravity.TOP, left = 20, top = 30, right = 20)
-    place(front, -1, -1, Gravity.FILL)
-    if (frame != null) {
-        addOnLayoutChangeListener { _, left, _, right, _, oldLeft, _, oldRight, _ ->
-            val available = right - left
-            if (available <= 0 || available == oldRight - oldLeft || frame.innerWidth <= 0) {
-                return@addOnLayoutChangeListener
-            }
-            val horizontalOverflow = frame.overflowHorizontal.coerceAtLeast(0)
-            val scaledMargin = horizontalOverflow.toFloat() / (frame.innerWidth + horizontalOverflow * 2)
-            val margin = maxOf(ui.dp(20), (available * scaledMargin).toInt() + ui.dp(4))
-            val scale = (available - 2 * margin).coerceAtLeast(0).toFloat() / frame.innerWidth
-            val top = maxOf(ui.dp(30), (frame.overflowTop * scale).toInt() + ui.dp(8))
-            val bottom = maxOf(ui.dp(18), (frame.overflowBottom * scale).toInt() + ui.dp(8))
-            post {
-                if (isAttachedToWindow) {
-                    profile.layoutParams = (profile.layoutParams as FrameLayout.LayoutParams).apply {
-                        leftMargin = margin
-                        rightMargin = margin
-                        topMargin = top
-                    }
-                    resize(top + ui.dp(244) + bottom)
-                }
-            }
-        }
-        profile.addOnLayoutChangeListener { _, left, top, right, _, _, _, _, _ ->
-            back.anchorTo(left, top, right - left)
-            front.anchorTo(left, top, right - left)
-        }
-        back.bind(frame)
-        front.bind(frame)
-    }
-
-}
-
-private fun Offer.model() = runCatching {
-    collectibleJson.fromJson(product, CollectibleProduct::class.java)
+    collectibleJson.fromJson(data, CollectibleProduct::class.java)
 }.getOrNull()
 
 internal fun Context.artwork(url: String?) = VitoImageView(this).apply {
@@ -343,15 +302,16 @@ internal fun avatarShowcase(ui: Context, style: ShopStyle, me: MeUser, offer: Of
         val tint = offer.tint(style.accent)
         place(View(ui).apply { background = ui.shape(blend(style.ink, tint, 0.10f), 60, blend(style.line, tint, 0.35f)) },
             112, 112, Gravity.CENTER)
-        val art = offer.model()?.avatarDecoration()?.imageUrls(animate = false)?.firstOrNull()
+        val art = offer.previewDecoration()?.imageUrls(animate = false)?.firstOrNull()
         place(cosmeticAvatar(ui, style, me, art, 80), -1, -1, Gravity.FILL)
     }
 
-internal fun cosmeticAvatar(ui: Context, style: ShopStyle, me: MeUser, art: String?, size: Int): View =
+internal fun cosmeticAvatar(ui: Context, style: ShopStyle, me: MeUser, art: String?, size: Int,
+    avatarBackground: Int = style.panel): View =
     FrameLayout(ui).apply {
         val avatar = ui.artwork(null).apply {
             show(listOfNotNull(IconUtils.getForUser(me, size = 128)), autoPlay = false)
-            background = ui.shape(style.panel, size)
+            background = ui.shape(avatarBackground, size)
             clipToOutline = true
             scaleType = android.widget.ImageView.ScaleType.CENTER_CROP
         }

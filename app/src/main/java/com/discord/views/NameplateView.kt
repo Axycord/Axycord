@@ -54,6 +54,7 @@ class NameplateView @JvmOverloads constructor(
     private var nameplate: Nameplate? = null
     private var placement = Placement.MEMBER_LIST
     private var hovered = false
+    private var preview = false
     private val animationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private var animationJob: Job? = null
     @Volatile
@@ -92,6 +93,7 @@ class NameplateView @JvmOverloads constructor(
     }
 
     fun bind(nameplate: Nameplate?, placement: Placement, selected: Boolean) {
+        preview = false
         clearChannelAnimation()
         this.nameplate = nameplate
             ?.takeIf { FeatureFlags.nameplatesEnabled() }
@@ -99,6 +101,18 @@ class NameplateView @JvmOverloads constructor(
         this.placement = placement
         hovered = false
         isSelected = selected
+        installParentLayoutListener()
+        updateVisuals()
+    }
+
+    /** Uses the APNG renderer for the clicked shop item, including unequipped collectibles. */
+    fun bindPreview(nameplate: Nameplate?, animate: Boolean) {
+        clearChannelAnimation()
+        preview = true
+        this.nameplate = nameplate?.takeIf { it.isActive() && it.staticImageUrl() != null }
+        placement = Placement.CHANNEL
+        hovered = false
+        isSelected = animate
         installParentLayoutListener()
         updateVisuals()
     }
@@ -154,7 +168,7 @@ class NameplateView @JvmOverloads constructor(
         }
 
         visibility = VISIBLE
-        val reducedMotion = runCatching { StoreStream.getAccessibility().isReducedMotionEnabled() }
+        val reducedMotion = !preview && runCatching { StoreStream.getAccessibility().isReducedMotionEnabled() }
             .getOrDefault(false)
         val animateMemberList = placement == Placement.MEMBER_LIST && !reducedMotion && (hovered || isSelected)
         MGImages.setImage(
@@ -233,14 +247,14 @@ class NameplateView @JvmOverloads constructor(
         animationJob = animationScope.launch {
             var decoded: ApngDrawable? = null
             try {
-                decoded = withContext(Dispatchers.IO) {
+                withContext(Dispatchers.IO) {
                     val call = CollectibleAssets.client.newCall(Request.Builder().url(request.key).build())
                     animationCall = call
                     val cancellation = coroutineContext[Job]?.invokeOnCompletion { call.cancel() }
                     try {
                         call.execute().use { response ->
                             check(response.isSuccessful)
-                            ApngDrawable.decode(ByteArrayInputStream(checkNotNull(response.body).bytes()))
+                            decoded = ApngDrawable.decode(ByteArrayInputStream(checkNotNull(response.body).bytes()))
                         }
                     } finally {
                         cancellation?.dispose()

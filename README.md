@@ -56,7 +56,10 @@ independently of APK plugin loading. Orbs Shop previews collectibles and asks
 before spending Orbs. Quests supports browsing, enrollment, completed reward
 claims and actual mobile video playback; platform-specific tasks remain tracked
 by Discord on their supported platforms. These features require a Discord account.
-Their controls use the client theme; cosmetic previews are static.
+Their controls use the client theme. Shop thumbnails remain static; clicking a
+decoration, nameplate or profile effect opens its animated preview with Pause and
+Replay controls. Avatar/nameplate previews show their own surface, while profile
+effects use a full-width, vertically scrollable profile card.
 
 ## Build
 

@@ -28,8 +28,8 @@ internal data class EffectSpec(val still: String?, val layers: List<EffectLayer>
             return maxOf(standard, tallest)
         }
 
-    fun fit(availableWidth: Int, availableHeight: Int): EffectSize {
-        val width = minOf(availableWidth, availableHeight * CANVAS_WIDTH / canvasHeight).coerceAtLeast(1)
+    fun atWidth(availableWidth: Int): EffectSize {
+        val width = availableWidth.coerceAtLeast(1)
         return EffectSize(width, (width.toDouble() * canvasHeight / CANVAS_WIDTH).roundToInt().coerceAtLeast(1))
     }
 

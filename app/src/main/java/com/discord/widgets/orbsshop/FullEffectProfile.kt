@@ -14,6 +14,10 @@ import com.discord.models.user.MeUser
 import com.discord.stores.StoreStream
 import com.discord.utilities.SnowflakeUtils
 import com.discord.utilities.icon.IconUtils
+import com.discord.widgets.user.profile.ProfileEffectView
+import com.discord.widgets.user.profile.ProfileThemeColors
+import com.discord.widgets.user.profile.ProfileFrameView
+import kotlin.math.roundToInt
 import java.text.DateFormat
 import java.util.Date
 import rx.Subscription
@@ -23,9 +27,14 @@ internal class FullEffectProfile(
     private val style: ShopStyle,
     private val me: MeUser,
     private val offer: Offer,
-) : FrameLayout(ui) {
+) : AnimatedShopPreview(ui) {
     private val spec = EffectSpec.fromProduct(offer.product)
-    private val effectArtwork = ui.artwork(spec.still)
+    private val effect = offer.previewEffect()
+    private val frame = if (offer.kind == CosmeticKind.FRAME) offer.model()?.profileFrame() else null
+    private val frameBack = ProfileFrameView(ui).apply { half = ProfileFrameView.Half.BACK; bind(frame) }
+    private val frameFront = ProfileFrameView(ui).apply { half = ProfileFrameView.Half.FRONT; bind(frame) }
+    private val stillArtwork = ui.artwork(spec.still)
+    private val effectArtwork = ProfileEffectView(ui)
     private val body = ui.column()
     private val card = FrameLayout(ui).apply {
         background = ui.shape(style.ink, 4, style.line)
@@ -35,13 +44,17 @@ internal class FullEffectProfile(
             overScrollMode = View.OVER_SCROLL_IF_CONTENT_SCROLLS
             addView(body, -1, -2)
         }, -1, -1, Gravity.FILL)
+        place(stillArtwork, -1, -1, Gravity.FILL)
         place(effectArtwork, -1, -1, Gravity.FILL)
     }
     private var profileUpdates: Subscription? = null
 
     init {
         background = ui.artBackground(style, offer, 4)
-        place(card, -1, -1, Gravity.CENTER)
+        clipChildren = false
+        place(frameBack, -1, -1, Gravity.FILL)
+        place(card, -1, -1, Gravity.TOP or Gravity.CENTER_HORIZONTAL)
+        place(frameFront, -1, -1, Gravity.FILL)
         render(null)
     }
 
@@ -61,12 +74,31 @@ internal class FullEffectProfile(
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val width = MeasureSpec.getSize(widthMeasureSpec) - ui.dp(16)
-        val height = MeasureSpec.getSize(heightMeasureSpec) - ui.dp(16)
-        val size = spec.fit(width, height)
+        val width = MeasureSpec.getSize(widthMeasureSpec).coerceAtLeast(1)
+        // Keep the full width. The enclosing scroll view accommodates tall effect canvases.
+        val innerWidth = frame?.innerWidth?.takeIf { it > 0 } ?: 1200
+        val horizontal = frame?.overflowHorizontal?.coerceAtLeast(0) ?: 0
+        val frameScale = width / (innerWidth.toFloat() + 2f * horizontal)
+        val top = ((frame?.overflowTop?.coerceAtLeast(0) ?: 0) * frameScale).roundToInt()
+        val bottom = ((frame?.overflowBottom?.coerceAtLeast(0) ?: 0) * frameScale).roundToInt()
+        val size = spec.atWidth((innerWidth * frameScale).roundToInt().coerceIn(1, width))
         card.layoutParams.width = size.width
         card.layoutParams.height = size.height
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+        (card.layoutParams as LayoutParams).topMargin = top
+        super.onMeasure(MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
+            MeasureSpec.makeMeasureSpec(size.height + top + bottom, MeasureSpec.EXACTLY))
+    }
+
+    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+        super.onLayout(changed, left, top, right, bottom)
+        frameBack.anchorTo(card.left, card.top, card.width)
+        frameFront.anchorTo(card.left, card.top, card.width)
+    }
+
+    override fun onPlaybackChanged(playing: Boolean) {
+        stillArtwork.visibility = if (playing) View.GONE else View.VISIBLE
+        if (playing) effectArtwork.bind(effect, reducedMotion = false)
+        else effectArtwork.clear()
     }
 
     private fun render(profile: UserProfile?) {
@@ -75,27 +107,33 @@ internal class FullEffectProfile(
         val themeColours = metadata?.themeColors.orEmpty()
         val top = themeColours.getOrNull(0)?.let { it or Color.BLACK } ?: offer.tint(style.accent)
         val bottom = themeColours.getOrNull(1)?.let { it or Color.BLACK } ?: top
+        val colors = if (themeColours.size >= 2) ProfileThemeColors.from(top, bottom,
+            StoreStream.getUserSettingsSystem().isDarkTheme(),
+            StoreStream.getAccessibility().isSyncProfileThemeWithUserThemeEnabled()) else null
+        val text = colors?.textDefault ?: style.text
+        val muted = colors?.textMuted ?: style.muted
         card.background = GradientDrawable(
             GradientDrawable.Orientation.TOP_BOTTOM,
-            intArrayOf(blend(style.ink, top, 0.28f), blend(style.ink, bottom, 0.12f)),
+            intArrayOf(colors?.gradientTop ?: style.ink, colors?.gradientBottom ?: style.ink),
         ).apply {
-            cornerRadius = ui.dp(16).toFloat()
-            setStroke(ui.dp(1), style.line)
+            cornerRadius = ui.dp(8).toFloat()
+            setStroke(ui.dp(1), colors?.borderOverlay ?: style.line)
         }
         val banner = ui.artwork(IconUtils.getForUserBanner(me.id, metadata?.banner ?: me.banner, 512, false)).apply {
-            background = ui.shape(blend(style.panel, metadata?.accentColor?.let { it or Color.BLACK } ?: top, 0.47f), 0)
+            background = ui.shape(metadata?.accentColor?.let { it or Color.BLACK } ?: colors?.headerSurface ?: style.panel, 0)
             scaleType = ImageView.ScaleType.CENTER_CROP
         }
         val artwork = me.avatarDecoration?.imageUrls(animate = false)?.firstOrNull()
         body.addLine(FrameLayout(ui).apply {
             place(banner, -1, 80, Gravity.TOP)
-            place(cosmeticAvatar(ui, style, me, artwork, 62), 80, 80, Gravity.TOP or Gravity.START, left = 8, top = 44)
+            place(cosmeticAvatar(ui, style, me, artwork, 62, colors?.bodySurface ?: style.panel),
+                80, 80, Gravity.TOP or Gravity.START, left = 8, top = 44)
         }, height = 126)
         body.addLine(ui.column().apply {
             pad(14, 10)
-            addLine(ui.label(me.globalName?.takeIf(String::isNotBlank) ?: me.username, 20, style.text, true))
+            addLine(ui.label(me.globalName?.takeIf(String::isNotBlank) ?: me.username, 20, text, true))
             val pronouns = metadata?.pronouns?.takeIf(String::isNotBlank)
-            addLine(ui.label(listOfNotNull("@${me.username}", pronouns).joinToString(" · "), 13, style.muted), 4)
+            addLine(ui.label(listOfNotNull("@${me.username}", pronouns).joinToString(" · "), 13, muted), 4)
             val badges = profile?.badges.orEmpty()
             if (badges.isNotEmpty()) {
                 addLine(ui.row().apply {
@@ -111,19 +149,19 @@ internal class FullEffectProfile(
                 }, 8)
             }
             val bio = metadata?.bio ?: me.bio
-            if (!bio.isNullOrBlank()) addLine(section("About me", bio), 12)
+            if (!bio.isNullOrBlank()) addLine(section("About me", bio, colors), 12)
             val joined = DateFormat.getDateInstance(DateFormat.MEDIUM).format(Date(SnowflakeUtils.toTimestamp(me.id)))
-            addLine(section("Discord member since", joined), 12)
+            addLine(section("Discord member since", joined, colors), 12)
             val connections = profile?.connectedAccounts.orEmpty().filter { it.visibility == 1 }
                 .map { it.name }.filter(String::isNotBlank)
-            if (connections.isNotEmpty()) addLine(section("Connections", connections.joinToString("\n")), 12)
+            if (connections.isNotEmpty()) addLine(section("Connections", connections.joinToString("\n"), colors), 12)
         })
     }
 
-    private fun section(title: String, text: String) = ui.column().apply {
-        background = ui.shape(style.panel, 9)
+    private fun section(title: String, text: String, colors: ProfileThemeColors?) = ui.column().apply {
+        background = ui.shape(colors?.sectionOverlay ?: style.panel, 4)
         pad(10, 10)
-        addLine(ui.label(title, 12, style.text, true))
-        addLine(ui.label(text, 13, style.muted), 5)
+        addLine(ui.label(title, 12, colors?.textDefault ?: style.text, true))
+        addLine(ui.label(text, 13, colors?.textMuted ?: style.muted), 5)
     }
 }

@@ -19,8 +19,9 @@ Requests use Axycord's default REST transport, with session-bound authorization,
 cancellation and feature/account checks. Video playback uses the existing
 ExoPlayer core/UI modules and the matching 2.19.1 HLS module.
 Controls and fonts follow the native client theme. Balances appear in page
-content, and cosmetic previews use static images; the plugin's custom APNG
-animation/replay renderer is excluded.
+content. Clicked previews reuse native avatar decoration, nameplate and profile
+effect animation renderers, with playback scoped to the preview lifecycle.
+Catalog thumbnails stay static; the plugin's separate APNG renderer is excluded.
 
 The combined client remains licensed under AGPL-3.0-only. The imported portions
 also retain their MIT notices.

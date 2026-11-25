@@ -105,9 +105,17 @@ are accessible from Feature Flags and Billing Settings below User Settings.
 Disabled feature rows are hidden immediately. Server Boosts remains an explicit
 Coming soon destination. The settings toolbar contains Search only; Switch Account
 sits below My Account, Debug ends Accessibility, and red Logout ends App Information.
-Quest/Shop use native button styles and theme fonts, content balance labels and
-static cosmetic previews; the plugin's custom APNG playback/replay implementation
-has been removed.
+Quest/Shop use native button styles, theme fonts and content balance labels.
+Catalog thumbnails remain static. Clicking an avatar decoration, nameplate or
+profile effect activates the native APNG renderer, with Pause/Replay controls;
+previews do not equip items or depend on the separate equipped-cosmetic display
+flags. This is an explicit animation opt-in confined to the shop preview, including
+when reduced motion is enabled elsewhere. Focus loss, detach, variant changes and
+closing the preview stop/cancel playback. Avatar and nameplate previews show only
+their own surfaces; effects/frames use a full-width profile whose natural height
+scrolls rather than shrinking the card to fit. Native effect layers now preserve
+full-canvas bitmap proportions, positioned layer bounds and loop delays. The
+plugin's separate animation renderer remains excluded.
 
 Restorable native screens and session-bound calls gate both features on their
 flags, Discord backend and original account credentials. Closing a screen,
@@ -128,8 +136,15 @@ Default-client metadata, flag registry, onboarding-store and invite-race tests
 also passed. Full debug Kotlin/Java compilation and compatibility lint for both
 the app and Plugin SDK passed. Missing recovered resources/assets/native libraries
 were restored locally from the maintainer's November 24 checkout for the authorized
-private debug build. Public source still omits those recovered inputs. No device
-or live redemption/quest verification was performed; runtime checks remain open.
+private debug build. Public source still omits those recovered inputs. The selected
+shop-preview regression set passes 22 JVM tests covering catalog defaults, variant
+assets, timing metadata, full-width effect geometry and nameplate rows. App
+compatibility lint passed. The new native effect-loop/cleanup instrumentation
+fixture compiles separately against the app classes; it has not run on a device.
+The full instrumentation source set remains blocked by existing constructor/API
+mismatches in EmbeddedActivityWebViewSmokeTest and NativeEngineLifecycleTest.
+No device or live redemption/quest verification was performed; runtime checks
+remain open, including selected-preview animation and rendering on test hardware.
 
 ### Invite onboarding
 
