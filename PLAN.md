@@ -101,15 +101,16 @@ version and signer. The browser distinguishes installed variants by APK size and
 offers a same-version replacement for the other variant; it never offers a version
 downgrade. Downloads allow up to 200 MiB and stream through a bounded buffer while
 checking size and SHA-256. Partial or mismatched files are discarded. This supports
-both Full and Compressed Emoji Replace listings; published v1.0 retains its old
-50 MiB cap and requires a client update to show Full.
+both Full and Compressed Emoji Replace listings. Release 1.0.1 includes this
+support; v1.0 retains its old 50 MiB cap and requires a client update to show Full.
 The catalog contains eight listings across seven source modules: the four new
 ports, APlatformIndicators, Emoji Replace (Compressed and Full), and Permissions
 Viewer. Existing release bytes/signers are preserved. Catalog CI verifies all
 eight APKs and builds/lints/tests the source modules before publishing; the live
 CDN index is verified. The four new ports fit published v1.0's size limit.
 Six focused client JVM tests and app compatibility lint pass for variant selection
-and bounded downloads; no new client release or device test has been performed.
+and bounded downloads. This source ships in 1.0.1; on-device variant installation
+verification remains open.
 
 Message Logger history and all ReviewDB text descendants explicitly resolve host
 Discord normal/bold/semibold fonts, falling back to bundled Whitney faces rather
@@ -291,26 +292,6 @@ coverage and passing builds do not establish complete behavioral parity.
 - Store, widget and DTO counts used different audit scopes and dates. No fresh
   whole-project behavioral coverage percentage is established here.
 
-### Notification hotfix candidate 1.0.1
-
-The approved Discord-compatible client configuration is restored from the local
-Microcord checkout, with only its Android package selector changed to
-`mmaarij.axycord`. Firebase project/app/sender identifiers remain unchanged;
-provenance and the runtime verification checklist are in
-`third_party/firebase-client/README.md`. Normal app builds now require the Google
-Services plugin: actual release resource-generation checks reject both missing
-configuration and a mismatched package. Debug and release Firebase resources are
-generated successfully.
-
-A narrow Firebase Installations probe using Axycord's actual package and release
-certificate was accepted and received an installation authentication token. The
-temporary installation was deleted successfully; no credentials were logged or
-saved. This is not verification of an FCM registration token or message delivery.
-All 28 selected notification JVM tests and app/SDK Android compatibility lint
-pass. The signed 1.0.1 candidate is intended for testing on the maintainer's
-friend's phone; no device is connected locally. Public
-hotfix publication remains pending real token/device-registration and DM/mention
-delivery checks, including background, locked-screen and cold-process cases.
 - A previous full verification boundary recorded 1,678 JVM tests and 59 connected
   tests, plus debug/release builds and lint. Those historical results are not a
   claim that the current worktree passes every check.
@@ -331,11 +312,37 @@ delivery checks, including background, locked-screen and cold-process cases.
   visually checked, and archived-avatar downloads show the existing loading spinner.
   Debug build/in-place install passed; the user confirmed the corrected flow works.
 
+### Notification hotfix 1.0.1
+
+The approved Discord-compatible client configuration is restored from the local
+Microcord checkout, with only its Android package selector changed to
+`mmaarij.axycord`. Firebase project/app/sender identifiers remain unchanged;
+provenance and the runtime verification checklist are in
+`third_party/firebase-client/README.md`. Normal app builds require the Google
+Services plugin: release resource-generation checks reject missing configuration
+and a mismatched package. All 28 selected notification JVM tests and app/SDK
+Android compatibility lint pass.
+
+A narrow Firebase Installations probe using Axycord's actual package and release
+certificate was accepted and received an installation authentication token; the
+temporary installation was deleted without logging or saving credentials. The
+maintainer subsequently confirmed notifications arriving on a friend's phone and
+approved public release on November 26, 2026. Exact cold-process, suppression,
+token-refresh and notification-action coverage remains unverified; Phase 9 stays
+in progress.
+
+[Public release v1.0.1](https://github.com/Axycord/Axycord/releases/tag/v1.0.1)
+publishes the tested candidate from `0185f82a3298cf38e9d981d2433d84c6a1225789`,
+version code `217852506`, with the same signing identity as v1.0. All five APKs
+were verified for Firebase resources, notification components, package/version,
+embedded source revision and v1/v2 signatures. The release includes its updater
+manifest and checksums and is marked latest stable.
+
 ## Compatibility Decisions
 
 | Area | Retained decision |
 | --- | --- |
-| Axycord branding | Maintained by `mmaarij`. Client text, source/resource names and theme exports use Axycord. Application ID is `mmaarij.axycord`, version name is `1.0`, and updates come from `Axycord/Axycord` GitHub Releases. Plugin API, Gradle IDs and codegen use `mmaarij.axycord`; plugins require a rebuild against the renamed SDK. Cloud backup and theme imports retain legacy format compatibility. Discord namespaces and JNI names preserve their binary contracts. |
+| Axycord branding | Maintained by `mmaarij`. Client text, source/resource names and theme exports use Axycord. Application ID is `mmaarij.axycord`, version name is `1.0.1`, and updates come from `Axycord/Axycord` GitHub Releases. Plugin API, Gradle IDs and codegen use `mmaarij.axycord`; plugins require a rebuild against the renamed SDK. Cloud backup and theme imports retain legacy format compatibility. Discord namespaces and JNI names preserve their binary contracts. |
 | Modern features | Backport confirmed modern usernames, profile cosmetics, polls, forwarding, bot components, Apps/Activities and other explicitly requested features without replacing the native UI architecture |
 | Display names | Use the shared guild nickname/global name/username resolution; do not invent precedence separately per screen |
 | Gateway | Use zstd only, streaming Gson and CLIENT_STATE_V2; the Fastjson2 experiment and zlib fallback were removed |
@@ -382,7 +389,7 @@ beside the implementation; investigate their evidence before changing them.
   optional per-architecture APKs and baseline profiles.
 - Downloads are restricted to the configured repository and release. Downloaded
   bytes, APK package `mmaarij.axycord`, version and signing identity are verified
-  before installation. Version name is currently `1.0`.
+  before installation. Version name is currently `1.0.1`.
 - Release descriptions provide notes. GitHub's compare API supplies commit history
   when available, with release notes retained if comparison is unavailable.
 - Automatic checks run on foreground entry, at most once every six hours for the

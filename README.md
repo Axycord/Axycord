@@ -10,7 +10,7 @@ custom themes and APK plugins.
 | --- | --- |
 | Client | Axycord |
 | Maintainer | Maarij |
-| Version | 1.0 |
+| Version | 1.0.1 |
 | Application ID | `mmaarij.axycord` |
 | Android | 6.0 / API 23 or newer |
 | Updates | Published stable releases in `Axycord/Axycord` |
