@@ -4,4 +4,5 @@ import com.discord.app.AppViewModel
 
 class WidgetUserMentionsViewModel : AppViewModel<Unit>() {
     internal var model: WidgetUserMentions.Model? = null
+    internal var filters: Int = MentionFilters.ALL
 }

@@ -227,6 +227,23 @@ An explicitly started, unfinished flow can resume. Fresh joins, including rejoin
 after leaving with stale local completion, still receive required onboarding.
 Join-request verification retains priority over onboarding.
 
+### Recent Mentions filters (unreleased)
+
+The bottom Mentions tab has no long-press search action. Its toolbar keeps
+Bookmarks and adds the same themed filter icon used by global Search. A native
+sheet provides independent Mentions you, Everyone and Roles checkboxes, initially
+all selected; selections survive view/configuration restoration. Individual types
+match the signed-in user's ID, the special-mention flag or that user's actual guild
+role IDs. Selected types combine without duplicating messages. Selecting all three
+preserves the endpoint's complete feed, including uncached historical role data.
+
+Paging retains the unfiltered message cursor and fills short/empty filtered pages.
+Repeated cursors stop further loading. Request generations reject queued responses
+after a filter change or view destruction. Focused regression fixtures cover the
+filter categories, pagination boundaries and existing message-navigation order.
+All nine focused JVM tests, app/test compilation, resource linking and app Android
+compatibility lint pass. No APK was assembled and device verification remains open.
+
 ## Feature Status
 
 These are delivery statuses, not percentage-complete estimates. Structural

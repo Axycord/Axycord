@@ -67,10 +67,8 @@ import mmaarij.axycord.plugins.api.PluginRegistration
  * positions. That is also why [OnTabSelectedListener] exists — a hidden-then-shown fragment gets no
  * lifecycle callback of its own.
  *
- * Search is deliberately not a fragment destination: tapping the DM header icon or long-pressing the
- * mentions tab — opens [WidgetGlobalSearchDialog] over whichever tab is showing, which is what the
- * reference does. `R.id.widget_tabs_host_search` exists in the recovered layout but the reference
- * never populates it.
+ * Search is not a fragment destination: the DM header icon opens [WidgetGlobalSearchDialog].
+ * `R.id.widget_tabs_host_search` exists in the recovered layout but is never populated.
  */
 class WidgetTabsHost : AppFragment(R.layout.widget_tabs_host) {
 
@@ -179,8 +177,6 @@ class WidgetTabsHost : AppFragment(R.layout.widget_tabs_host) {
             viewState.numHomeNotifications,
             viewState.numFriendsNotifications,
             ::onSettingsLongPress,
-            // Long-pressing mentions opens the quick switcher, same as tapping search.
-            ::onSearchClick,
         )
         if (docked) return
         updateNavHostMargins(viewState)
@@ -252,8 +248,6 @@ class WidgetTabsHost : AppFragment(R.layout.widget_tabs_host) {
         TabsHostViewModel.Event.TrackFriendsListShown -> AnalyticsTracker.friendsListViewed()
         TabsHostViewModel.Event.DismissSearchDialog -> WidgetGlobalSearchDialog.dismiss(parentFragmentManager)
     }
-
-    private fun onSearchClick() = WidgetGlobalSearchDialog.show(parentFragmentManager)
 
     private fun onSettingsLongPress() = WidgetUserStatusSheet.show(childFragmentManager)
 

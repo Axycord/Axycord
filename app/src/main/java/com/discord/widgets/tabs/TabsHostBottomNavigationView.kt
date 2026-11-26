@@ -96,7 +96,6 @@ class TabsHostBottomNavigationView @JvmOverloads constructor(
         homeNotificationsCount: Int,
         friendsNotificationsCount: Int,
         onSettingsLongPress: () -> Unit,
-        onMentionsLongPress: () -> Unit,
     ) {
         this.selectedTab = selectedTab
         this.visibleTabs = visibleTabs.toSet() - NavigationTab.SEARCH
@@ -121,9 +120,6 @@ class TabsHostBottomNavigationView @JvmOverloads constructor(
         )
         navigationTabToViewMap[NavigationTab.SETTINGS]!!.setOnLongClickListener(
             if (buttonsEnabled) View.OnLongClickListener { onSettingsLongPress(); true } else null,
-        )
-        navigationTabToViewMap[NavigationTab.MENTIONS]!!.setOnLongClickListener(
-            if (buttonsEnabled) View.OnLongClickListener { onMentionsLongPress(); true } else null,
         )
         val reordered = bindPluginTabs(pluginBottomTabContext(selectedTab.name, myUserId, buttonsEnabled))
         val previousUserId = userAvatarPresenceViewController.userId

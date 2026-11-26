@@ -1,7 +1,8 @@
 package com.discord.widgets.user
 
-import android.view.View
+import android.os.Bundle
 import android.view.MenuItem
+import android.view.View
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -48,8 +49,19 @@ class WidgetUserMentions : AppFragment(R.layout.widget_user_mentions) {
     private var request: Subscription? = null
     private var loading = false
     private var allLoaded = false
+    private var requestGeneration = 0L
     private val dismissViewModel: WidgetGlobalSearchDismissModel by appActivityViewModels {
         WidgetGlobalSearchDismissModel()
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        savedInstanceState?.let { viewModel.filters = it.getInt(WidgetUserMentionsFilter.FILTERS, MentionFilters.ALL) and MentionFilters.ALL }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putInt(WidgetUserMentionsFilter.FILTERS, viewModel.filters)
+        super.onSaveInstanceState(outState)
     }
 
     override fun onViewBound(view: View) {
@@ -60,17 +72,28 @@ class WidgetUserMentions : AppFragment(R.layout.widget_user_mentions) {
             setTitle(R.string.recent_mentions)
             visibility = if (isEmbedded) View.GONE else View.VISIBLE
             if (!isEmbedded) {
-                // Append only this action: the recovered filter menu is not currently wired here.
                 menu.add(R.string.bookmark_actions_title).apply {
                     icon = AppCompatResources.getDrawable(context, R.drawable.ic_bookmark_24dp)?.mutate()?.also {
                         DrawableCompat.setTint(it, ThemedColor.resolve(context, R.attr.colorInteractiveNormal))
                     }
-                    setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM)
+                    setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
                     setOnMenuItemClickListener {
                         WidgetMessageBookmarks.launch(requireContext())
                         true
                     }
                 }
+                inflateMenu(R.menu.menu_user_mentions)
+                menu.findItem(R.id.menu_user_mentions_filter).setOnMenuItemClickListener {
+                    WidgetUserMentionsFilter.show(childFragmentManager, viewModel.filters)
+                    true
+                }
+            }
+        }
+        childFragmentManager.setFragmentResultListener(WidgetUserMentionsFilter.REQUEST_KEY, viewLifecycleOwner) { _, result ->
+            val filters = result.getInt(WidgetUserMentionsFilter.FILTERS, MentionFilters.ALL) and MentionFilters.ALL
+            if (filters != viewModel.filters) {
+                viewModel.filters = filters
+                reloadFromTop(force = true)
             }
         }
         val recycler = binding.userMentionsList
@@ -117,6 +140,7 @@ class WidgetUserMentions : AppFragment(R.layout.widget_user_mentions) {
     }
 
     override fun onDestroyView() {
+        requestGeneration++
         request?.unsubscribe()
         request = null
         // The cancelled request will never report back, so its flag would stay set for good.
@@ -127,8 +151,9 @@ class WidgetUserMentions : AppFragment(R.layout.widget_user_mentions) {
     }
 
     /** Starts over from the newest page, unless the first fetch is still on its way. */
-    private fun reloadFromTop() {
-        if (loading && messages.isEmpty()) return
+    private fun reloadFromTop(force: Boolean = false) {
+        if (!force && loading && messages.isEmpty()) return
+        requestGeneration++
         request?.unsubscribe()
         messages.clear()
         allLoaded = false
@@ -138,29 +163,51 @@ class WidgetUserMentions : AppFragment(R.layout.widget_user_mentions) {
 
     private fun load() {
         if (loading || allLoaded) return
+        val requestView = view ?: return
+        if (viewModel.filters == 0) {
+            allLoaded = true
+            render()
+            return
+        }
+        val generation = ++requestGeneration
+        val before = messages.minOfOrNull(Message::id)
         loading = true
         render()
-        request = StoreStream.getMentions(messages.minOfOrNull(Message::id))
+        request = StoreStream.getMentions(before)
             .subscribeOn(Schedulers.io())
             .subscribe(
                 { page ->
-                    view?.post {
+                    requestView.post {
+                        if (generation != requestGeneration || view !== requestView) return@post
                         val converted = page.map(::Message)
                         messages.addAll(converted.filter { incoming -> messages.none { it.id == incoming.id } })
                         messages.sortByDescending(Message::id)
-                        allLoaded = page.size < PAGE_SIZE
+                        allLoaded = MentionFilters.isLastPage(before, page.map { it.id }, PAGE_SIZE)
+                        loading = false
+                        val visible = render()
+                        // Filtering can leave a whole page empty or too short to scroll. Keep the
+                        // raw-message cursor moving until a visible page is filled or exhausted.
+                        if (!allLoaded && visible < PAGE_SIZE) load()
+                    }
+                },
+                { requestView.post {
+                    if (generation == requestGeneration && view === requestView) {
                         loading = false
                         render()
                     }
-                },
-                { view?.post { loading = false; render() } },
+                } },
             )
     }
 
-    private fun render() {
+    private fun render(): Int {
         val rows = ArrayList<ChatListEntry>()
+        val userId = StoreStream.getUsers().getMe().id
+        val members = StoreStream.getGuilds().getMembers()
+        var visible = 0
         messages.forEach { message ->
             val channel = StoreStream.getChannels().getChannel(message.channelId) ?: return@forEach
+            val roles = members[channel.guildId]?.get(userId)?.getRoles().orEmpty()
+            if (!MentionFilters.matches(viewModel.filters, message, userId, roles)) return@forEach
             val guild = StoreStream.getGuilds().getGuild(channel.guildId)
             val state = ChatListRows.State(
                 channel = channel,
@@ -173,6 +220,7 @@ class WidgetUserMentions : AppFragment(R.layout.widget_user_mentions) {
                 renderEmbeds = StoreStream.getUserSettings().getIsRenderEmbedsEnabled(),
             )
             rows += ChatListRows.contextMessageRows(state, message)
+            visible++
         }
         if (loading) rows += LoadingEntry() else if (allLoaded) rows += MentionFooterEntry()
         val model = Model(
@@ -184,6 +232,7 @@ class WidgetUserMentions : AppFragment(R.layout.widget_user_mentions) {
         )
         viewModel.model = model
         adapter?.data = model
+        return visible
     }
 
     private fun openMessage(message: Message, isEmbedded: Boolean) = navigateToMention(

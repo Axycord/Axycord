@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="axycord_mentions_filter_you">Mentions you</string>
+    <string name="axycord_mentions_filter_everyone">Everyone</string>
+    <string name="axycord_mentions_filter_roles">Roles</string>
+</resources>
