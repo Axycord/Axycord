@@ -82,8 +82,10 @@ Android SDK Platform 37, Build Tools 36.0.0 and Bash. Set `ANDROID_HOME` or
 `sdk.dir` in your local `local.properties`.
 
 This source checkout omits recovered resources, native libraries and the signing
-key. Those inputs must be restored before a complete APK can be built. Optional
-`app/google-services.json` enables push notifications and must match the app ID.
+key. Those inputs must be restored before a complete APK can be built. The required
+`app/google-services.json` contains the approved public FCM client configuration
+and selects `mmaarij.axycord`. Missing configuration or a mismatched package fails
+the build. See [Firebase configuration provenance and delivery checks](third_party/firebase-client/README.md).
 Restore missing inputs without replacing the tracked Axycord resources.
 
 Run builds through the repository's coordinating script.

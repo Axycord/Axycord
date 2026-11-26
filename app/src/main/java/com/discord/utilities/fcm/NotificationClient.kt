@@ -17,11 +17,9 @@ import com.discord.utilities.persister.Persister
  * pushes a completed [SettingsV2] here through [updateSettings]; the push entry point then reads
  * that snapshot synchronously, because it runs in a process that may have no store graph yet.
  *
- * Everything here is deliberately provider-agnostic. The reference's `FCMMessagingService` is a
- * `FirebaseMessagingService` subclass, and the Firebase SDK is not a dependency of this project —
- * registering project-owned Firebase configuration for `mmaarij.axycord` is Phase 13
- * work, and the reference APK's Firebase values must never be reused. A future messaging service
- * only has to call [onNewToken] and [handlePushNotification]; no other class needs to change.
+ * Firebase registration runs in the main process; [FCMMessagingService] receives push messages in
+ * the FCM process. Both use the client configuration packaged by the Google Services plugin.
+ * See `third_party/firebase-client/README.md` for its provenance and verification boundary.
  */
 object NotificationClient {
     /** Push payload type the reference deliberately drops instead of displaying. */
@@ -104,7 +102,8 @@ object NotificationClient {
      *
      * `FirebaseMessagingService.onNewToken` only fires when the id is *created or rotated*, so a
      * client that already has one would otherwise never learn it and never register the device.
-     * Absent or unconfigured Firebase is not an error — the client simply stays unregistered.
+     * Retrieval failures leave registration pending; the Firebase SDK owns its token retry/refresh
+     * lifecycle. Release builds require the client configuration instead of silently omitting it.
      */
     private fun requestRegistrationId() {
         runCatching {
@@ -181,14 +180,7 @@ object NotificationClient {
         return display(target, data, current)
     }
 
-    /**
-     * In-app popup sink, installed by the UI layer.
-     *
-     * The reference routes a foreground notification to `NoticePopupChannel` rather than to the
-     * system tray. That surface does not exist in this project yet, so the seam is left explicit:
-     * while it is `null` a foreground notification is dropped, exactly as the reference drops it
-     * from the tray, instead of being silently promoted to a system notification.
-     */
+    /** Foreground popup sink installed by NoticePopupChannel in the main process. */
     @Volatile
     var inAppNotificationHandler: ((Context, NotificationData) -> Boolean)? = null
 

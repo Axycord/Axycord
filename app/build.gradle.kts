@@ -6,20 +6,13 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.androidx.baselineprofile)
     alias(libs.plugins.ksp)
-    // Applied below only when a Firebase config is present, so a checkout without one builds.
-    alias(libs.plugins.google.services) apply false
+    alias(libs.plugins.google.services)
 }
 
-val firebaseConfig = file("google-services.json")
-if (firebaseConfig.exists()) {
-    apply(plugin = libs.plugins.google.services.get().pluginId)
-    tasks.configureEach {
-        if (name == "processNonMinifiedReleaseGoogleServices" || name == "processBenchmarkReleaseGoogleServices") {
-            enabled = false
-        }
+tasks.configureEach {
+    if (name == "processNonMinifiedReleaseGoogleServices" || name == "processBenchmarkReleaseGoogleServices") {
+        enabled = false
     }
-} else {
-    logger.lifecycle("google-services.json missing: push notifications will be inert in this build")
 }
 
 val buildId = providers.environmentVariable("AXYCORD_BUILD_ID").orElse("local")
@@ -58,7 +51,7 @@ android {
         minSdk = 23
         targetSdk = 36
         versionCode = updateVersionCode
-        versionName = "1.0"
+        versionName = "1.0.1"
         resValue("string", "axycord_build_label", "Dev ${buildId.get()} ${commitHash.take(8)}")
         buildConfigField("String", "UPDATE_COMMIT_SHA", JsonOutput.toJson(commitHash))
         buildConfigField("long", "UPDATE_COMMIT_TIMESTAMP", "${commitTimestamp}L")

@@ -280,8 +280,8 @@ coverage and passing builds do not establish complete behavioral parity.
   full-suite failures need reconciliation; a successful release build does not
   establish a green full regression boundary. Instrumentation compilation remains
   blocked by stale `ProfileThemeLayoutTest` note bindings and theme signatures;
-  no device tests are run. Firebase configuration is absent, so push notifications
-  are unavailable in this build. Release builds display `Release 1.0` rather than
+  no device tests are run. Firebase configuration was absent from the published
+  1.0 APK, so its push transport is unavailable. Release builds display `Release 1.0` rather than
   the development label.
 
 - Historical structural checkpoints recorded 1,228 retained layout variants,
@@ -290,6 +290,27 @@ coverage and passing builds do not establish complete behavioral parity.
   generalized MFA route intentionally replaces the exact legacy TOTP template.
 - Store, widget and DTO counts used different audit scopes and dates. No fresh
   whole-project behavioral coverage percentage is established here.
+
+### Notification hotfix candidate 1.0.1
+
+The approved Discord-compatible client configuration is restored from the local
+Microcord checkout, with only its Android package selector changed to
+`mmaarij.axycord`. Firebase project/app/sender identifiers remain unchanged;
+provenance and the runtime verification checklist are in
+`third_party/firebase-client/README.md`. Normal app builds now require the Google
+Services plugin: actual release resource-generation checks reject both missing
+configuration and a mismatched package. Debug and release Firebase resources are
+generated successfully.
+
+A narrow Firebase Installations probe using Axycord's actual package and release
+certificate was accepted and received an installation authentication token. The
+temporary installation was deleted successfully; no credentials were logged or
+saved. This is not verification of an FCM registration token or message delivery.
+All 28 selected notification JVM tests and app/SDK Android compatibility lint
+pass. The signed 1.0.1 candidate is intended for testing on the maintainer's
+friend's phone; no device is connected locally. Public
+hotfix publication remains pending real token/device-registration and DM/mention
+delivery checks, including background, locked-screen and cold-process cases.
 - A previous full verification boundary recorded 1,678 JVM tests and 59 connected
   tests, plus debug/release builds and lint. Those historical results are not a
   claim that the current worktree passes every check.
