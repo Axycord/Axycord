@@ -15,6 +15,7 @@ tasks.configureEach {
     }
 }
 
+val clientVersion = "2.0"
 val buildId = providers.environmentVariable("AXYCORD_BUILD_ID").orElse("local")
 val headCommit = providers.exec {
     workingDir(rootDir)
@@ -51,7 +52,7 @@ android {
         minSdk = 23
         targetSdk = 36
         versionCode = updateVersionCode
-        versionName = "1.0.1"
+        versionName = clientVersion
         resValue("string", "axycord_build_label", "Dev ${buildId.get()} ${commitHash.take(8)}")
         buildConfigField("String", "UPDATE_COMMIT_SHA", JsonOutput.toJson(commitHash))
         buildConfigField("long", "UPDATE_COMMIT_TIMESTAMP", "${commitTimestamp}L")
@@ -85,7 +86,7 @@ android {
             signingConfig = signingConfigs.getByName("axycord")
         }
         release {
-            resValue("string", "axycord_build_label", "Release ${buildId.get()} ${commitHash.take(8)}")
+            resValue("string", "axycord_build_label", "Release $clientVersion ${commitHash.take(8)}")
             lint {
                 checkReleaseBuilds = false
             }

@@ -81,7 +81,7 @@ that compatibility. This documentation cleanup does not change the SDK settings.
   The obsolete 126.21 bridge and extractor have been removed; their provenance
   remains in Git history.
 
-### Voice participant controls (unreleased)
+### Voice participant controls (2.0 candidate)
 
 The user sheet's volume/mute actions use the owning `StoreMediaSettings` by
 default. Explicit peer mute updates are idempotent; rendering switches and slider
@@ -105,7 +105,8 @@ also run independently of other suites. Dedicated-device verification remains
 open: `app/src/main/java/com/discord/widgets/user/usersheet/WidgetUserSheet.kt`
 and `app/src/main/java/com/discord/rtcconnection/VoiceTransport.kt` need a live call
 check for volume/mute, reconnect restoration and permitted/rejected moves,
-against the existing UI/native flow. No APK was assembled or release published.
+against the existing UI/native flow. This slice is included in the authorized
+2.0 release candidate; publication follows signed artifact verification.
 
 ### Plugins
 
@@ -253,7 +254,7 @@ An explicitly started, unfinished flow can resume. Fresh joins, including rejoin
 after leaving with stale local completion, still receive required onboarding.
 Join-request verification retains priority over onboarding.
 
-### Recent Mentions filters (unreleased)
+### Recent Mentions filters (2.0 candidate)
 
 The bottom Mentions tab has no long-press search action. Its toolbar keeps
 Bookmarks and adds the same themed filter icon used by global Search. A native
@@ -268,7 +269,8 @@ Repeated cursors stop further loading. Request generations reject queued respons
 after a filter change or view destruction. Focused regression fixtures cover the
 filter categories, pagination boundaries and existing message-navigation order.
 All nine focused JVM tests, app/test compilation, resource linking and app Android
-compatibility lint pass. No APK was assembled and device verification remains open.
+compatibility lint pass. This slice is included in the 2.0 release candidate;
+device verification remains open.
 
 ## Feature Status
 
@@ -385,7 +387,7 @@ manifest and checksums and is marked latest stable.
 
 | Area | Retained decision |
 | --- | --- |
-| Axycord branding | Maintained by `mmaarij`. Client text, source/resource names and theme exports use Axycord. Application ID is `mmaarij.axycord`, version name is `1.0.1`, and updates come from `Axycord/Axycord` GitHub Releases. Plugin API, Gradle IDs and codegen use `mmaarij.axycord`; plugins require a rebuild against the renamed SDK. Cloud backup and theme imports retain legacy format compatibility. Discord namespaces and JNI names preserve their binary contracts. |
+| Axycord branding | Maintained by `mmaarij`. Client text, source/resource names and theme exports use Axycord. Application ID is `mmaarij.axycord`, version name is `2.0`, and updates come from `Axycord/Axycord` GitHub Releases. Plugin API, Gradle IDs and codegen use `mmaarij.axycord`; plugins require a rebuild against the renamed SDK. Cloud backup and theme imports retain legacy format compatibility. Discord namespaces and JNI names preserve their binary contracts. |
 | Modern features | Backport confirmed modern usernames, profile cosmetics, polls, forwarding, bot components, Apps/Activities and other explicitly requested features without replacing the native UI architecture |
 | Display names | Use the shared guild nickname/global name/username resolution; do not invent precedence separately per screen |
 | Gateway | Use zstd only, streaming Gson and CLIENT_STATE_V2; the Fastjson2 experiment and zlib fallback were removed |
@@ -432,7 +434,7 @@ beside the implementation; investigate their evidence before changing them.
   optional per-architecture APKs and baseline profiles.
 - Downloads are restricted to the configured repository and release. Downloaded
   bytes, APK package `mmaarij.axycord`, version and signing identity are verified
-  before installation. Version name is currently `1.0.1`.
+  before installation. Version name is currently `2.0`.
 - Release descriptions provide notes. GitHub's compare API supplies commit history
   when available, with release notes retained if comparison is unavailable.
 - Automatic checks run on foreground entry, at most once every six hours for the
