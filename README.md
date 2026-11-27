@@ -10,7 +10,7 @@ custom themes and APK plugins.
 | --- | --- |
 | Client | Axycord |
 | Maintainer | Maarij |
-| Version | 1.0.1 |
+| Version | [2.0](https://github.com/Axycord/Axycord/releases/tag/v2.0) |
 | Application ID | `mmaarij.axycord` |
 | Android | 6.0 / API 23 or newer |
 | Updates | Published stable releases in `Axycord/Axycord` |
@@ -27,16 +27,43 @@ verification. See [PLAN.md](PLAN.md) for the current status.
 
 ## Download and updates
 
-Download a published APK from [Releases](https://github.com/Axycord/Axycord/releases).
-Most phones use `app-arm64-v8a-release.apk`. The universal
-`app-universal-release.apk` supports every bundled architecture. Releases can also
-include `armeabi-v7a`, `x86_64` and `x86` builds.
+The latest stable release is [Axycord 2.0](https://github.com/Axycord/Axycord/releases/tag/v2.0).
+Choose an APK for your device, or use the universal build if you are unsure.
+
+| Device | Download |
+| --- | --- |
+| Any supported architecture | [Universal APK](https://github.com/Axycord/Axycord/releases/download/v2.0/app-universal-release.apk) |
+| Most current Android phones | [ARM64 APK](https://github.com/Axycord/Axycord/releases/download/v2.0/app-arm64-v8a-release.apk) |
+| 32-bit ARM devices | [ARMv7 APK](https://github.com/Axycord/Axycord/releases/download/v2.0/app-armeabi-v7a-release.apk) |
+| x86-64 devices and emulators | [x86-64 APK](https://github.com/Axycord/Axycord/releases/download/v2.0/app-x86_64-release.apk) |
+| 32-bit x86 devices and emulators | [x86 APK](https://github.com/Axycord/Axycord/releases/download/v2.0/app-x86-release.apk) |
+
+Install over your existing Axycord installation, then restart the app. Version 2.0
+keeps the application ID and signing certificate used by v1.0 and v1.0.1, allowing
+in-place updates that retain app data. Release checksums are available in
+[SHA256SUMS.txt](https://github.com/Axycord/Axycord/releases/download/v2.0/SHA256SUMS.txt).
 
 The app checks GitHub's latest stable release when it enters the foreground,
 at most once every six hours per installed source build. The Updates screen also
 offers manual checks, release notes, commit history, downloads and installation.
 Users start downloads and approve installation. The updater verifies the APK's
-size, SHA-256, package, version and signing identity.
+size, SHA-256, package, version and signing identity. You can also browse
+[all releases](https://github.com/Axycord/Axycord/releases).
+
+## What's new in 2.0
+
+- **Voice controls:** repairs per-user volume and local mute, adds the slider's
+  0–200 range, and restores the chosen volume consistently when peers reconnect.
+  Screen updates no longer interrupt dragging the volume slider or undo mute.
+- **Move To:** opens the native voice/stage channel picker and sends the selected
+  move, with permission checks and success/error feedback.
+- **Recent Mentions:** adds **Mentions you**, **Everyone** and **Roles** filters
+  beside Bookmarks. Filter choices survive screen recreation, filtered lists keep
+  loading across pages, and holding the bottom Mentions tab no longer opens Search.
+
+Automated checks and signed release-artifact verification pass. Live-device
+voice volume/mute/move, reconnect and UI verification remain open; see
+[PLAN.md](PLAN.md#release-20) for the verification scope.
 
 ## Features
 
@@ -114,7 +141,7 @@ with the development alias/password expected by `app/build.gradle.kts`.
 
 ## Publish a release
 
-Publish a stable release in `Axycord/Axycord` with a tag such as `v1.0`. Attach
+Publish a stable release in `Axycord/Axycord` with a tag such as `v2.0`. Attach
 the universal APK and `update-manifest.json` from the same build. The updater also
 accepts `app-release.apk` as the universal filename.
 
@@ -130,7 +157,10 @@ nondecreasing version code. Drafts and prereleases are excluded.
 
 The Axycord plugin API uses the `mmaarij.axycord.plugins.api` namespace.
 The packaging plugin ID is `mmaarij.axycord.plugin`, with the `axycordPlugin` DSL.
-Plugins built against the previous SDK need to be rebuilt against this API.
+Axycord 2.0 uses plugin API level **3**. Plugins built against the old Microcord
+SDK need to be rebuilt against the Axycord API; use the
+[Axycord Plugin Template](https://github.com/Axycord/Axycord-Plugin-Template)
+and [plugin API documentation](docs/plugin-api.md) when creating a plugin.
 
 | Directory | Purpose |
 | --- | --- |
