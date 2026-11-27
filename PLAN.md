@@ -81,7 +81,7 @@ that compatibility. This documentation cleanup does not change the SDK settings.
   The obsolete 126.21 bridge and extractor have been removed; their provenance
   remains in Git history.
 
-### Voice participant controls (2.0 candidate)
+### Voice participant controls (2.0)
 
 The user sheet's volume/mute actions use the owning `StoreMediaSettings` by
 default. Explicit peer mute updates are idempotent; rendering switches and slider
@@ -105,8 +105,8 @@ also run independently of other suites. Dedicated-device verification remains
 open: `app/src/main/java/com/discord/widgets/user/usersheet/WidgetUserSheet.kt`
 and `app/src/main/java/com/discord/rtcconnection/VoiceTransport.kt` need a live call
 check for volume/mute, reconnect restoration and permitted/rejected moves,
-against the existing UI/native flow. This slice is included in the authorized
-2.0 release candidate; publication follows signed artifact verification.
+against the existing UI/native flow. This slice is published in 2.0; release
+artifact verification is recorded below.
 
 ### Plugins
 
@@ -254,7 +254,7 @@ An explicitly started, unfinished flow can resume. Fresh joins, including rejoin
 after leaving with stale local completion, still receive required onboarding.
 Join-request verification retains priority over onboarding.
 
-### Recent Mentions filters (2.0 candidate)
+### Recent Mentions filters (2.0)
 
 The bottom Mentions tab has no long-press search action. Its toolbar keeps
 Bookmarks and adds the same themed filter icon used by global Search. A native
@@ -269,7 +269,7 @@ Repeated cursors stop further loading. Request generations reject queued respons
 after a filter change or view destruction. Focused regression fixtures cover the
 filter categories, pagination boundaries and existing message-navigation order.
 All nine focused JVM tests, app/test compilation, resource linking and app Android
-compatibility lint pass. This slice is included in the 2.0 release candidate;
+compatibility lint pass. This slice is published in 2.0;
 device verification remains open.
 
 ## Feature Status
@@ -382,6 +382,25 @@ version code `217852506`, with the same signing identity as v1.0. All five APKs
 were verified for Firebase resources, notification components, package/version,
 embedded source revision and v1/v2 signatures. The release includes its updater
 manifest and checksums and is marked latest stable.
+
+### Release 2.0
+
+[Public release v2.0](https://github.com/Axycord/Axycord/releases/tag/v2.0)
+publishes source `4f006deca802164ff598afe54761e8b8cea3294d`, version code
+`217963788`, version name `2.0`, and the visible `Release 2.0` label. It includes
+the VC participant-control fixes and Recent Mentions filters. The release keeps
+the v1.0/v1.0.1 signing identity and package `mmaarij.axycord` for in-place updates.
+
+All five APKs passed v1/v2 signature, package/version/source, release-label,
+Firebase options/components, ZIP alignment and per-ABI native-byte verification.
+The updater manifest binds the universal APK's size `169433734` and SHA-256
+`306434f7d22ac88098e0b1a14aa9b4fbe17a06008a23337b3f24aac24c169300`.
+Release preparation passes app/SDK release Android compatibility lint, 25 selected
+updater/Mentions JVM tests and four SDK ABI tests, in addition to the 53 VC/source
+tests recorded above. The tag, all seven server asset digests, public manifest
+and checksum downloads are verified, and GitHub's public latest endpoint serves
+v2.0. Live-device volume/mute/move, reconnect and UI verification remain open;
+Phase 11 remains in progress.
 
 ## Compatibility Decisions
 
