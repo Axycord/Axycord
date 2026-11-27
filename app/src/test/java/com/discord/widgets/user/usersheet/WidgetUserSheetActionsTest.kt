@@ -15,6 +15,17 @@ import com.discord.stores.StoreUserNotes
 import com.discord.stores.StoreUserProfile
 import com.discord.stores.updates.ObservationDeck
 import com.discord.widgets.stage.StageRoles
+import android.content.SharedPreferences
+import com.discord.R
+import com.discord.stores.StoreMediaSettings
+import com.discord.stores.VoiceConfigurationCache
+import com.discord.restapi.RestAPIInterface
+import com.discord.restapi.RestAPIParams
+import com.discord.utilities.rest.RestAPI
+import com.discord.widgets.channels.WidgetChannelSelector
+import com.google.gson.FieldNamingPolicy
+import com.google.gson.GsonBuilder
+import java.lang.reflect.Proxy
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -27,13 +38,16 @@ import rx.android.plugins.RxAndroidSchedulersHook
 import rx.plugins.RxJavaHooks
 import rx.schedulers.Schedulers
 import rx.subjects.PublishSubject
+import rx.subjects.BehaviorSubject
 
 class WidgetUserSheetActionsTest {
 
     @Before
     fun installImmediateSchedulers() {
         RxJavaHooks.setOnIOScheduler { Schedulers.immediate() }
+        RxJavaHooks.setOnComputationScheduler { Schedulers.immediate() }
         RxAndroidPlugins.getInstance().reset()
+        RestAPI.reset()
         RxAndroidPlugins.getInstance().registerSchedulersHook(
             object : RxAndroidSchedulersHook() {
                 override fun getMainThreadScheduler() = Schedulers.immediate()
@@ -45,6 +59,7 @@ class WidgetUserSheetActionsTest {
     fun resetSchedulers() {
         RxJavaHooks.reset()
         RxAndroidPlugins.getInstance().reset()
+        RestAPI.reset()
     }
 
     @Test
@@ -215,8 +230,149 @@ class WidgetUserSheetActionsTest {
         ensureHomeActivity = { calls += "activity" },
     )
 
+    @Test
+    fun `peer controls update the shared configuration and restore in the rendered state`() {
+        val settings = mediaSettings()
+        val states = BehaviorSubject.create<WidgetUserSheetViewModel.StoreState?>(stageStoreState())
+        val subscription = settings.getVoiceConfiguration().subscribe { config ->
+            states.onNext(stageStoreState().copy(
+                muted = config.mutedUsers[USER_ID] == true,
+                outputVolume = config.userOutputVolumes[USER_ID] ?: 100f,
+            ))
+        }
+        val viewModel = stageViewModel(mediaSettings = settings, states = states)
+        viewModel.toggleMute(false)
+        assertTrue(settings.getMutedUsers().isEmpty())
+        viewModel.toggleMute(true)
+        viewModel.toggleMute(true)
+        assertEquals(true, settings.getMutedUsers()[USER_ID])
+        assertTrue(loaded(viewModel).voiceSettingsViewState.isMuted)
+        viewModel.setUserOutputVolume(50f)
+        assertEquals(50f, loaded(viewModel).voiceSettingsViewState.outputVolume!!, 0.0001f)
+        assertTrue(loaded(viewModel).voiceSettingsViewState.isMuted)
+        viewModel.toggleMute(false)
+        viewModel.toggleMute(false)
+        assertFalse(loaded(viewModel).voiceSettingsViewState.isMuted)
+        viewModel.setUserOutputVolume(200f)
+        assertEquals(200f, loaded(viewModel).voiceSettingsViewState.outputVolume!!, 0.0001f)
+        assertFalse(loaded(viewModel).voiceSettingsViewState.isMuted)
+        subscription.unsubscribe()
+    }
+
+    @Test
+    fun `move flow emits the picker action and sends only the selected voice channel`() {
+        val target = stageChannel().copy(id = STAGE_ID + 1, type = Channel.GUILD_VOICE)
+        val moves = mutableListOf<Triple<Long, Long, RestAPIParams.GuildMember>>()
+        installMemberApi { guild, user, body ->
+            moves += Triple(guild, user, body)
+            Observable.empty()
+        }
+        val model = moveViewModel(target)
+        val events = mutableListOf<WidgetUserSheetViewModel.Event>()
+        model.observeEvents().subscribe(events::add)
+        model.guildMoveForUser()
+        assertEquals(WidgetUserSheetViewModel.Event.LaunchMoveUser(GUILD_ID), events.single())
+        model.moveUserToChannel(target.id)
+        assertEquals(GUILD_ID, moves.single().first)
+        assertEquals(USER_ID, moves.single().second)
+        val gson = GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create()
+        assertEquals("{\"channel_id\":${target.id}}", gson.toJson(moves.single().third))
+        assertTrue(events.contains(WidgetUserSheetViewModel.Event.ShowToast(R.string.move_to_success)))
+        assertEquals(WidgetUserSheetViewModel.Event.DismissSheet, events.last())
+    }
+
+    @Test
+    fun `voice move rechecks lost permissions and disconnected members before sending`() {
+        val target = stageChannel().copy(id = STAGE_ID + 1)
+        var requests = 0
+        installMemberApi { _, _, _ -> requests++; Observable.empty() }
+        val permissions = mutableMapOf(STAGE_ID to MOVE_PERMISSIONS, target.id to MOVE_PERMISSIONS)
+        val states = BehaviorSubject.create<WidgetUserSheetViewModel.StoreState?>(moveState())
+        val model = moveViewModel(target, states) { permissions }
+        val events = mutableListOf<WidgetUserSheetViewModel.Event>()
+        model.observeEvents().subscribe(events::add)
+        model.guildMoveForUser()
+        permissions.remove(STAGE_ID)
+        model.moveUserToChannel(target.id)
+        permissions[STAGE_ID] = MOVE_PERMISSIONS
+        permissions[target.id] = Permission.VIEW_CHANNEL or Permission.MOVE_MEMBERS
+        model.moveUserToChannel(target.id)
+        permissions[target.id] = MOVE_PERMISSIONS
+        states.onNext(moveState().copy(currentChannelVoiceStates = emptyMap()))
+        model.moveUserToChannel(target.id)
+        assertEquals(0, requests)
+        assertEquals(3, events.count { it == WidgetUserSheetViewModel.Event.ShowToast(R.string.channel_locked) })
+        assertFalse(events.contains(WidgetUserSheetViewModel.Event.DismissSheet))
+    }
+
+    @Test
+    fun `voice move failures are reported without a success dismissal`() {
+        val target = stageChannel().copy(id = STAGE_ID + 1)
+        installMemberApi { _, _, _ -> Observable.error(IllegalStateException("move rejected")) }
+        val model = moveViewModel(target)
+        val events = mutableListOf<WidgetUserSheetViewModel.Event>()
+        model.observeEvents().subscribe(events::add)
+        model.moveUserToChannel(target.id)
+        assertEquals(listOf(WidgetUserSheetViewModel.Event.ShowToast(R.string.error_occurred_try_again)), events)
+    }
+
+    @Test
+    fun `move picker excludes text hidden current and foreign guild channels`() {
+        val target = stageChannel().copy(id = STAGE_ID + 1)
+        val filter = WidgetChannelSelector.MoveUserFilterFunction(GUILD_ID, STAGE_ID, mapOf(target.id to MOVE_PERMISSIONS))
+        assertTrue(filter.includeChannel(target))
+        assertTrue(filter.includeChannel(target.copy(type = Channel.GUILD_VOICE)))
+        assertFalse(filter.includeChannel(target.copy(type = Channel.GUILD_TEXT)))
+        assertFalse(filter.includeChannel(target.copy(type = Channel.DM)))
+        assertFalse(filter.includeChannel(target.copy(guildId = GUILD_ID + 1)))
+        assertFalse(filter.includeChannel(target.copy(id = STAGE_ID)))
+        assertFalse(filter.includeChannel(target.copy(id = STAGE_ID + 2)))
+        for (missing in listOf(Permission.VIEW_CHANNEL, Permission.CONNECT, Permission.MOVE_MEMBERS)) {
+            assertFalse(WidgetChannelSelector.MoveUserFilterFunction(GUILD_ID, STAGE_ID, mapOf(target.id to (MOVE_PERMISSIONS xor missing))).includeChannel(target))
+        }
+    }
+
+    private fun moveState() = stageStoreState().copy(currentChannelVoiceStates = mapOf(USER_ID to voiceState(USER_ID)))
+
+    private fun moveViewModel(
+        target: Channel,
+        states: Observable<WidgetUserSheetViewModel.StoreState?> = Observable.just(moveState()),
+        permissions: () -> Map<Long, Long> = { mapOf(STAGE_ID to MOVE_PERMISSIONS, target.id to MOVE_PERMISSIONS) },
+    ) = stageViewModel(states = states, moveChannel = { if (it == target.id) target else null }, movePermissions = permissions)
+
+    private fun installMemberApi(request: (Long, Long, RestAPIParams.GuildMember) -> Observable<Void>) {
+        RestAPI.install(Proxy.newProxyInstance(RestAPIInterface::class.java.classLoader, arrayOf(RestAPIInterface::class.java)) { _, method, args ->
+            check(method.name == "changeGuildMember") { "Unexpected API call: ${method.name}" }
+            request(args[0] as Long, args[1] as Long, args[2] as RestAPIParams.GuildMember)
+        } as RestAPIInterface)
+    }
+
+    private fun mediaSettings(): StoreMediaSettings {
+        lateinit var editor: SharedPreferences.Editor
+        editor = Proxy.newProxyInstance(SharedPreferences.Editor::class.java.classLoader, arrayOf(SharedPreferences.Editor::class.java)) { _, method, _ ->
+            when (method.returnType) {
+                SharedPreferences.Editor::class.java -> editor
+                Boolean::class.javaPrimitiveType -> true
+                else -> null
+            }
+        } as SharedPreferences.Editor
+        val prefs = Proxy.newProxyInstance(SharedPreferences::class.java.classLoader, arrayOf(SharedPreferences::class.java)) { _, method, args ->
+            when (method.name) {
+                "edit" -> editor
+                "getAll" -> emptyMap<String, Any>()
+                "contains" -> false
+                else -> args?.getOrNull(1)
+            }
+        } as SharedPreferences
+        return StoreMediaSettings(voiceConfigurationCache = VoiceConfigurationCache(prefs))
+    }
+
     private fun stageViewModel(
-        action: (Channel, Long, Boolean) -> Observable<Void>,
+        mediaSettings: StoreMediaSettings? = null,
+        states: Observable<WidgetUserSheetViewModel.StoreState?> = Observable.just(stageStoreState()),
+        moveChannel: (Long) -> Channel? = { null },
+        movePermissions: () -> Map<Long, Long> = { emptyMap() },
+        action: (Channel, Long, Boolean) -> Observable<Void> = { _, _, _ -> Observable.empty() },
     ): WidgetUserSheetViewModel {
         val dispatcher = Dispatcher(Schedulers.immediate())
         val deck = ObservationDeck()
@@ -228,10 +384,13 @@ class WidgetUserSheetActionsTest {
             guildId = GUILD_ID,
             friendToken = null,
             isVoiceContext = true,
-            storeStateObservable = Observable.just(stageStoreState()),
+            storeStateObservable = states,
+            storeMediaSettings = mediaSettings,
             storeUserNotes = notes,
             storeUserProfile = profiles,
             setStageSuppressed = action,
+            getVoiceMoveChannel = moveChannel,
+            getVoiceMovePermissions = movePermissions,
         )
     }
 
@@ -290,6 +449,7 @@ class WidgetUserSheetActionsTest {
     )
 
     private companion object {
+        const val MOVE_PERMISSIONS = Permission.VIEW_CHANNEL or Permission.CONNECT or Permission.MOVE_MEMBERS
         const val USER_ID = 42L
         const val ME_ID = 7L
         const val GUILD_ID = 10L

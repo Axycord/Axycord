@@ -54,6 +54,7 @@ import com.discord.widgets.stage.usersheet.UserProfileStageActionsView
 import rx.Observable
 import rx.subjects.PublishSubject
 import com.discord.widgets.friends.StrangerFriendRequest
+import com.discord.widgets.channels.WidgetChannelSelector
 
 /**
  * State and behaviour for the user sheet — the bottom sheet that opens on any avatar tap.
@@ -85,7 +86,7 @@ class WidgetUserSheetViewModel(
     ),
     private val streamPreviewClickBehavior: WidgetUserSheet.StreamPreviewClickBehavior =
         WidgetUserSheet.StreamPreviewClickBehavior.TARGET_AND_LAUNCH_SPECTATE,
-    private val storeMediaSettings: StoreMediaSettings? = null,
+    private val storeMediaSettings: StoreMediaSettings? = StoreStream.getMediaSettings(),
     private val storeUserNotes: StoreUserNotes = StoreStream.getUserNotes(),
     private val storeUserProfile: StoreUserProfile = StoreStream.getUserProfiles(),
     private val restAPI: RestAPI = RestAPI,
@@ -94,6 +95,8 @@ class WidgetUserSheetViewModel(
         { channel, targetUserId, suppressed ->
             StageChannelAPI.setUserSuppressedInChannel(channel, targetUserId, suppressed)
         },
+    private val getVoiceMoveChannel: (Long) -> Channel? = { StoreStream.getChannels().getChannel(it) },
+    private val getVoiceMovePermissions: () -> Map<Long, Long> = { StoreStream.getPermissions().getPermissionsByChannel() },
 ) : AppViewModel<WidgetUserSheetViewModel.ViewState>(ViewState.Uninitialized) {
 
     /**
@@ -645,14 +648,42 @@ class WidgetUserSheetViewModel(
         eventSubject.onNext(Event.LaunchEnableCommunication(it, userId))
     }
 
-    fun guildMoveForUser() = withGuild { eventSubject.onNext(Event.LaunchMoveUser(it)) }
+    fun guildMoveForUser() = withGuild {
+        if (voiceMoveChannelFilter(it) != null) eventSubject.onNext(Event.LaunchMoveUser(it))
+        else eventSubject.onNext(Event.ShowToast(R.string.channel_locked))
+    }
 
-    fun moveUserToChannel(channelId: Long) = patchGuildMember { guildId ->
+    fun voiceMoveChannelFilter(guildId: Long): WidgetChannelSelector.MoveUserFilterFunction? {
+        val voiceState = storeState?.currentChannelVoiceStates?.get(userId) ?: return null
+        val sourceChannelId = voiceState.channelId ?: return null
+        if (voiceState.guildId != guildId) return null
+        val permissions = getVoiceMovePermissions()
+        if (!PermissionUtils.can(Permission.MOVE_MEMBERS, permissions[sourceChannelId])) return null
+        return WidgetChannelSelector.MoveUserFilterFunction(guildId, sourceChannelId, permissions)
+    }
+
+    fun moveUserToChannel(channelId: Long) = withGuild { guildId ->
+        val filter = voiceMoveChannelFilter(guildId)
+        val channel = getVoiceMoveChannel(channelId)
+        if (filter == null || channel == null || !filter.includeChannel(channel)) {
+            eventSubject.onNext(Event.ShowToast(R.string.channel_locked))
+            return@withGuild
+        }
         restAPI.api.changeGuildMember(
             guildId,
             userId,
             RestAPIParams.GuildMember(channelId = channelId),
         )
+            .restSubscribeOn()
+            .ui(this)
+            .appSubscribe(
+                errorClass = WidgetUserSheetViewModel::class.java,
+                errorHandler = { eventSubject.onNext(Event.ShowToast(R.string.error_occurred_try_again)) },
+                onCompleted = {
+                    eventSubject.onNext(Event.ShowToast(R.string.move_to_success))
+                    eventSubject.onNext(Event.DismissSheet)
+                },
+            ) { }
     }
 
     fun guildMuteUser() = patchGuildMember { guildId ->
@@ -703,9 +734,7 @@ class WidgetUserSheetViewModel(
     // ---------------------------------------------------------------------------------------
 
     fun toggleMute(isMuted: Boolean) {
-        val settings = storeMediaSettings ?: return
-        if (settings.getMutedUsers()[userId] == isMuted) return
-        settings.toggleUserMuted(userId)
+        storeMediaSettings?.setUserMuted(userId, isMuted)
     }
 
     fun toggleDeafen(isDeafened: Boolean) {

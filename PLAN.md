@@ -81,6 +81,32 @@ that compatibility. This documentation cleanup does not change the SDK settings.
   The obsolete 126.21 bridge and extractor have been removed; their provenance
   remains in Git history.
 
+### Voice participant controls (unreleased)
+
+The user sheet's volume/mute actions use the owning `StoreMediaSettings` by
+default. Explicit peer mute updates are idempotent; rendering switches and slider
+values does not write them back as user input, and store refreshes preserve an
+active slider gesture. The peer slider supports its 0–200 perceptual range.
+RTC peer defaults stay in store percentages (100 = unity); initial peer creation
+and live volume changes convert to native gain consistently, including boosts.
+JNI descriptors and native binaries are unchanged.
+
+Move To opens the existing native channel picker and submits the selected guild
+voice/stage channel through the existing member PATCH endpoint. Source/destination
+permissions and current voice membership are rechecked before sending; current,
+foreign-guild, text and inaccessible channels are excluded. Success dismisses the
+sheet; failures retain it with feedback. This follows the existing store flow and
+the [member move contract](https://docs.discord.com/developers/resources/guild#modify-guild-member).
+
+All 53 selected JVM tests, app/test Kotlin/Java compilation, resource linking and
+app/SDK Android compatibility lint pass. Voice fixtures initialize the existing
+test store graph and explicitly control main/ringing schedulers, so these tests
+also run independently of other suites. Dedicated-device verification remains
+open: `app/src/main/java/com/discord/widgets/user/usersheet/WidgetUserSheet.kt`
+and `app/src/main/java/com/discord/rtcconnection/VoiceTransport.kt` need a live call
+check for volume/mute, reconnect restoration and permitted/rejected moves,
+against the existing UI/native flow. No APK was assembled or release published.
+
 ### Plugins
 
 Bundled and installed-APK plugins use the typed host API, deterministic dependency

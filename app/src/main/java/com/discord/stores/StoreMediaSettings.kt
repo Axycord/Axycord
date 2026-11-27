@@ -211,8 +211,14 @@ class StoreMediaSettings(
 
     @Synchronized
     fun toggleUserMuted(userId: Long) {
+        setUserMuted(userId, !(voiceConfiguration.mutedUsers[userId] ?: false))
+    }
+
+    @Synchronized
+    fun setUserMuted(userId: Long, muted: Boolean) {
+        if ((voiceConfiguration.mutedUsers[userId] ?: false) == muted) return
         val mutedUsers = HashMap(voiceConfiguration.mutedUsers)
-        mutedUsers[userId] = !(mutedUsers[userId] ?: false)
+        mutedUsers[userId] = muted
         voiceConfiguration = voiceConfiguration.copy(mutedUsers = mutedUsers)
     }
 

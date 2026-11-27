@@ -33,7 +33,6 @@ import com.discord.plugins.OwnedProfileContribution
 import com.discord.plugins.OwnedProfileTabContribution
 import com.discord.plugins.PluginUiRegistry
 import com.discord.dialogs.useractions.UserActionsDialog
-import com.discord.app.AppLog
 import com.discord.app.appViewModels
 import com.discord.i18n.i18nFormat
 import com.discord.i18n.i18nPlural
@@ -90,6 +89,7 @@ import mmaarij.axycord.plugins.api.PluginProfileContext
 import mmaarij.axycord.plugins.api.PluginRegistration
 import mmaarij.axycord.plugins.api.pluginProfileContext
 import com.discord.widgets.friends.StrangerFriendRequest
+import com.discord.widgets.channels.WidgetChannelSelector
 
 /**
  * The user sheet: the bottom sheet that opens whenever an avatar or a name is tapped.
@@ -132,6 +132,9 @@ class WidgetUserSheet : AppBottomSheet() {
         get() = argumentsOrDefault.getSerializable(ARG_STREAM_PREVIEW_CLICK_BEHAVIOR)
             as? StreamPreviewClickBehavior
             ?: StreamPreviewClickBehavior.TARGET_AND_LAUNCH_SPECTATE
+
+    private val moveUserRequestKey: String
+        get() = "$REQUEST_KEY_MOVE_USER:${argumentsOrDefault.getLong(ARG_USER_ID)}"
 
     /** Reused across re-renders so the elapsed timer and image loads survive a presence tick. */
     private var richPresenceViewHolder: ViewHolderUserRichPresence? = null
@@ -200,6 +203,9 @@ class WidgetUserSheet : AppBottomSheet() {
         ) { _, _ -> dismiss() }
         WidgetEditUserNote.bindResult(this) { note ->
             viewModel.saveUserNote(requireContext(), note)
+        }
+        WidgetChannelSelector.registerForResult(this, moveUserRequestKey) { channelId, _ ->
+            viewModel.moveUserToChannel(channelId)
         }
         bindActionButtons()
         binding.userSheetProfileHeaderView
@@ -1297,7 +1303,7 @@ class WidgetUserSheet : AppBottomSheet() {
     private fun bindVoiceSettings() = binding.userSheetProfileVoiceSettingsView.apply {
         setOnMuteChecked(viewModel::toggleMute)
         setOnDeafenChecked(viewModel::toggleDeafen)
-        setOnVolumeChange { volume, _ -> viewModel.setUserOutputVolume(volume) }
+        setOnVolumeChange { volume, fromUser -> if (fromUser) viewModel.setUserOutputVolume(volume) }
     }
 
     private fun markAccessibilityHeadings() {
@@ -1352,6 +1358,21 @@ class WidgetUserSheet : AppBottomSheet() {
             is WidgetUserSheetViewModel.Event.LaunchEnableCommunication ->
                 WidgetEnableGuildCommunication.launch(event.userId, event.guildId, parentFragmentManager)
 
+            is WidgetUserSheetViewModel.Event.LaunchMoveUser -> {
+                val filter = viewModel.voiceMoveChannelFilter(event.guildId)
+                val channels = StoreStream.getChannels().getChannelsForGuild(event.guildId).values
+                if (filter == null) {
+                    toast(getString(R.string.channel_locked))
+                } else if (channels.none(filter::includeChannel)) {
+                    toast(getString(R.string.no_channels_found))
+                } else {
+                    WidgetChannelSelector.launch(
+                        this, event.guildId, moveUserRequestKey,
+                        includeNoChannel = false, noChannelStringId = R.string.none, filterFunction = filter,
+                    )
+                }
+            }
+
             is WidgetUserSheetViewModel.Event.UserNotFound -> {
                 toast(getString(R.string.user_profile_failure_to_open_message))
                 dismiss()
@@ -1370,9 +1391,6 @@ class WidgetUserSheet : AppBottomSheet() {
                 )
                 dismiss()
             }
-
-            // WidgetChannelSelector is not reconstructed yet.
-            else -> AppLog.i("WidgetUserSheet: no destination for $event")
         }
     }
 
@@ -1440,6 +1458,7 @@ class WidgetUserSheet : AppBottomSheet() {
         private const val ARG_IS_VOICE_CONTEXT = "ARG_IS_VOICE_CONTEXT"
         private const val ARG_STREAM_PREVIEW_CLICK_BEHAVIOR = "ARG_STREAM_PREVIEW_CLICK_BEHAVIOR"
         private const val ARG_FRIEND_TOKEN = "ARG_FRIEND_TOKEN"
+        private const val REQUEST_KEY_MOVE_USER = "user_sheet_move_user"
         private const val BORDER_OVERLAY_DARK = 0x14FFFFFF
         private const val BORDER_OVERLAY_LIGHT = 0x14000000
 

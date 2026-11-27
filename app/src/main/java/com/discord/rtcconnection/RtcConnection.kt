@@ -1240,7 +1240,7 @@ class RtcConnection(
 
         private const val MAX_PING_SAMPLES = 5
         private const val BAD_PING_MS = 500L
-        private const val DEFAULT_USER_VOLUME = 1f
+        private const val DEFAULT_USER_VOLUME = 100f
         private const val DEFAULT_VIDEO_MAX_BITRATE = 4_000_000
         private const val SPEAKING_FLAG_MICROPHONE = 1
 

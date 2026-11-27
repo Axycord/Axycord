@@ -197,7 +197,7 @@ internal class MediaEngineConnectionLegacy(
                     resolvedVideoSsrc.toInt(),
                     rtxSsrcFor(resolvedVideoSsrc.toInt()),
                     isMuted,
-                    volume,
+                    userVolumeToGain(volume),
                 )
             }
         }
@@ -216,7 +216,7 @@ internal class MediaEngineConnectionLegacy(
     override fun isUserMuted(userId: Long): Boolean = userId in mutedUsers
 
     override fun setUserPlayoutVolume(userId: Long, volume: Float) =
-        withConnection { it.setUserPlayoutVolume(userId, volume / PERCENT) }
+        withConnection { it.setUserPlayoutVolume(userId, userVolumeToGain(volume)) }
 
     override fun setUserVideoDisabled(userId: Long, disabled: Boolean) {
         if (disabled) videoDisabledUsers += userId else videoDisabledUsers -= userId
@@ -450,7 +450,6 @@ internal class MediaEngineConnectionLegacy(
         private const val EXPECTED_PACKET_LOSS_RATE = 0.3f
         private const val VAD_AUTO_THRESHOLD = 3
         private const val VAD_FIXED_THRESHOLD = -1
-        private const val PERCENT = 100f
     }
 }
 
@@ -464,3 +463,6 @@ internal class NoiseCancellationConfig {
     @Volatile
     var enabled: Boolean = false
 }
+
+/** Store/UI values are percentages; the native peer mixer uses gain (1 = 100%). */
+internal fun userVolumeToGain(volume: Float): Float = (volume / 100f).coerceIn(0f, 2f)

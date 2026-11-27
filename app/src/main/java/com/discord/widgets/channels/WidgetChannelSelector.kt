@@ -10,11 +10,13 @@ import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.setFragmentResultListener
 import androidx.recyclerview.widget.RecyclerView
 import com.discord.R
+import com.discord.databinding.WidgetChannelSelectorBinding
 import com.discord.api.channel.Channel
 import com.discord.api.channel.getDisplayName
 import com.discord.api.channel.getSortByNameAndType
 import com.discord.api.channel.isGuildVocalChannel
 import com.discord.api.channel.isStageVoiceChannel
+import com.discord.api.permission.Permission
 import com.discord.app.AppBottomSheet
 import com.discord.stores.StoreChannels
 import com.discord.stores.StoreStream
@@ -27,6 +29,7 @@ import com.discord.utilities.mg_recycler.MGRecyclerViewHolder
 import com.discord.utilities.rx.appSubscribe
 import com.discord.utilities.rx.computationLatest
 import com.discord.utilities.rx.ui
+import com.discord.utilities.permissions.PermissionUtils
 import java.io.Serializable
 import rx.Observable
 import rx.subscriptions.CompositeSubscription
@@ -39,9 +42,9 @@ class WidgetChannelSelector : AppBottomSheet() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val recycler = requireNotNull<RecyclerView>(view.findViewById(R.id.channel_selector_list))
+        val binding = WidgetChannelSelectorBinding.bind(view)
         adapter = MGRecyclerAdapter.configure(
-            Adapter(recycler, this, argumentsOrDefault.getInt(ARG_NO_CHANNEL_STRING_ID)),
+            Adapter(binding.channelSelectorList, this, argumentsOrDefault.getInt(ARG_NO_CHANNEL_STRING_ID)),
         )
     }
 
@@ -116,6 +119,16 @@ class WidgetChannelSelector : AppBottomSheet() {
 
     object VocalChannelFilterFunction : FilterFunction {
         override fun includeChannel(channel: Channel): Boolean = channel.isGuildVocalChannel()
+    }
+
+    data class MoveUserFilterFunction(
+        private val guildId: Long,
+        private val sourceChannelId: Long,
+        private val permissions: Map<Long, Long>,
+    ) : FilterFunction {
+        override fun includeChannel(channel: Channel): Boolean =
+            channel.guildId == guildId && channel.id != sourceChannelId && channel.isGuildVocalChannel() &&
+                PermissionUtils.can(Permission.VIEW_CHANNEL or Permission.CONNECT or Permission.MOVE_MEMBERS, permissions[channel.id])
     }
 
     object InactiveStageChannelFilterFunction : FilterFunction {

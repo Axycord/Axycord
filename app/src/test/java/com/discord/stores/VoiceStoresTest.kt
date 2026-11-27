@@ -10,6 +10,10 @@ import com.discord.stores.updates.ObservationDeck
 import com.google.gson.FieldNamingPolicy
 import com.google.gson.GsonBuilder
 import java.lang.reflect.Proxy
+import java.nio.file.Files
+import java.nio.file.Paths
+import org.junit.BeforeClass
+import org.junit.AfterClass
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -17,6 +21,13 @@ import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import rx.schedulers.TestScheduler
+import rx.plugins.RxJavaHooks
+import rx.Observable
+import rx.Scheduler
+import rx.schedulers.Schedulers
+import rx.android.plugins.RxAndroidPlugins
+import rx.android.plugins.RxAndroidSchedulersHook
+import com.discord.widgets.user.usersheet.WidgetUserSheetViewModel
 
 /**
  * Behaviour of the voice store graph: caches, snapshot isolation and the derived participant fields.
@@ -171,21 +182,29 @@ class VoiceStoresTest {
 
     @Test
     fun ringWaitsForCallCreateInsteadOfConsumingNullPlaceholder() {
-        val rings = mutableListOf<Triple<Long, Long, List<Long>?>>()
-        val store = StoreCalls(
-            ringRequest = { channelId, messageId, recipients ->
-                rings += Triple(channelId, messageId, recipients)
-            },
-            stopRingingRequest = { _, _, _ -> },
-            onStopRingingWithoutCall = {},
-        )
+        val computation = TestScheduler()
+        RxJavaHooks.setOnComputationScheduler { computation }
+        try {
+            val rings = mutableListOf<Triple<Long, Long, List<Long>?>>()
+            val store = StoreCalls(
+                ringRequest = { channelId, messageId, recipients ->
+                    rings += Triple(channelId, messageId, recipients)
+                },
+                stopRingingRequest = { _, _, _ -> },
+                onStopRingingWithoutCall = {},
+            )
 
-        store.handleConnectionOpen()
-        store.ring(20L, listOf(99L))
-        assertTrue(rings.isEmpty())
+            store.handleConnectionOpen()
+            store.ring(20L, listOf(99L))
+            computation.triggerActions()
+            assertTrue(rings.isEmpty())
 
-        store.handleCallCreateOrUpdate(ModelCall(channelId = 20L, messageId = 30L))
-        assertEquals(listOf(Triple(20L, 30L, listOf(99L))), rings)
+            store.handleCallCreateOrUpdate(ModelCall(channelId = 20L, messageId = 30L))
+            computation.triggerActions()
+            assertEquals(listOf(Triple(20L, 30L, listOf(99L))), rings)
+        } finally {
+            RxJavaHooks.reset()
+        }
     }
 
     // endregion
@@ -404,6 +423,43 @@ class VoiceStoresTest {
         assertEquals(mapOf(7L to false), store.getVoiceConfigurationBlocking().mutedUsers)
     }
 
+    @Test
+    fun explicitPeerMuteIsIdempotentAndDoesNotMuteAnUncheckedDefault() {
+        val store = mediaSettings()
+        var emissions = 0
+        val subscription = store.getVoiceConfiguration().subscribe { emissions++ }
+        store.setUserMuted(7, false)
+        assertEquals(1, emissions)
+        assertTrue(store.getMutedUsers().isEmpty())
+        store.setUserMuted(7, true)
+        store.setUserMuted(7, true)
+        assertEquals(2, emissions)
+        assertEquals(true, store.getMutedUsers()[7])
+        store.setUserMuted(7, false)
+        store.setUserMuted(7, false)
+        assertEquals(3, emissions)
+        assertEquals(false, store.getMutedUsers()[7])
+        subscription.unsubscribe()
+    }
+
+    @Test
+    fun profileControlsUseTheOwningSettingsStoreWithoutExplicitInjection() {
+        val settings = StoreStream.getMediaSettings()
+        settings.setUserMuted(ME_ID, false)
+        val model = WidgetUserSheetViewModel(
+            userId = ME_ID, channelId = 0, guildId = null, friendToken = null, isVoiceContext = true,
+            storeStateObservable = Observable.never(),
+        )
+        model.toggleMute(true)
+        assertEquals(true, settings.getMutedUsers()[ME_ID])
+        model.setUserOutputVolume(0f)
+        assertEquals(0f, settings.getVoiceConfigurationBlocking().userOutputVolumes[ME_ID]!!, 0f)
+        model.toggleMute(false)
+        model.setUserOutputVolume(100f)
+        assertEquals(false, settings.getMutedUsers()[ME_ID])
+        assertEquals(100f, settings.getVoiceConfigurationBlocking().userOutputVolumes[ME_ID]!!, 0.0001f)
+    }
+
     // endregion
 
     // region helpers
@@ -514,6 +570,27 @@ class VoiceStoresTest {
     }
 
     private companion object {
+        @JvmStatic
+        @BeforeClass
+        fun initializeNicknameStores() {
+            RxAndroidPlugins.getInstance().reset()
+            RxAndroidPlugins.getInstance().registerSchedulersHook(object : RxAndroidSchedulersHook() {
+                override fun getMainThreadScheduler(): Scheduler = Schedulers.immediate()
+            })
+            // VoiceUser resolves channel/friend nicknames through the graph, even in leaf tests.
+            val fixture = VoiceStoresTest()
+            val root = Files.createDirectories(Paths.get("build", "tmp"))
+            val directory = Files.createTempDirectory(root, "voice-store-controls-")
+            StoreStream.initializeForTesting(
+                directory.toFile(), fixture.memoryPreferences(), fixture.memoryPreferences(),
+                storeTestScheduler("voice-controls-store"),
+            )
+        }
+
+        @JvmStatic
+        @AfterClass
+        fun resetAndroidScheduler() = RxAndroidPlugins.getInstance().reset()
+
         private const val ME_ID = 7L
         private const val SESSION_ID = "session"
 

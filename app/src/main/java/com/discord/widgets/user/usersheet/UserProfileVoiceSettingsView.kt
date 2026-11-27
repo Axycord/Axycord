@@ -5,11 +5,7 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.LinearLayout
-import android.widget.TextView
-import com.discord.R
-import com.discord.views.calls.VolumeSliderView
-import com.google.android.material.switchmaterial.SwitchMaterial
-import kotlin.math.roundToInt
+import com.discord.databinding.UserProfileVoiceSettingsViewBinding
 
 class UserProfileVoiceSettingsView(context: Context, attrs: AttributeSet) : LinearLayout(context, attrs) {
     data class ViewState(
@@ -18,39 +14,37 @@ class UserProfileVoiceSettingsView(context: Context, attrs: AttributeSet) : Line
         val outputVolume: Float?,
     )
 
-    private val deafen: SwitchMaterial
-    private val mute: SwitchMaterial
-    private val volumeLabel: TextView
-    private val volumeSlider: VolumeSliderView
+    private val binding = UserProfileVoiceSettingsViewBinding.inflate(LayoutInflater.from(context), this, true)
+    private var rendering = false
 
     init {
-        LayoutInflater.from(context).inflate(R.layout.user_profile_voice_settings_view, this)
-        deafen = requireNotNull(findViewById(R.id.user_sheet_deafen))
-        mute = requireNotNull(findViewById(R.id.user_sheet_muted))
-        volumeLabel = requireNotNull(findViewById(R.id.user_sheet_volume_label))
-        volumeSlider = requireNotNull(findViewById(R.id.user_sheet_volume_slider))
+        binding.userSheetVolumeSlider.maxVolume = 200
     }
 
     fun setOnMuteChecked(callback: (Boolean) -> Unit) {
-        mute.setOnCheckedChangeListener { _, checked -> callback(checked) }
+        binding.userSheetMuted.setOnCheckedChangeListener { _, checked -> if (!rendering) callback(checked) }
     }
 
     fun setOnDeafenChecked(callback: (Boolean) -> Unit) {
-        deafen.setOnCheckedChangeListener { _, checked -> callback(checked) }
+        binding.userSheetDeafen.setOnCheckedChangeListener { _, checked -> if (!rendering) callback(checked) }
     }
 
     fun setOnVolumeChange(callback: (Float, Boolean) -> Unit) {
-        volumeSlider.setOnVolumeChange(callback)
+        binding.userSheetVolumeSlider.setOnVolumeChange(callback)
     }
 
     fun updateView(state: ViewState) {
-        val volumeVisible = state.outputVolume != null
-        volumeLabel.visibility = if (volumeVisible) View.VISIBLE else View.GONE
-        volumeSlider.visibility = if (volumeVisible) View.VISIBLE else View.GONE
-        mute.isChecked = state.isMuted
-        deafen.visibility = if (state.isDeafened == null) View.GONE else View.VISIBLE
-        deafen.isChecked = state.isDeafened ?: false
-        volumeSlider.findViewById<android.widget.SeekBar>(R.id.volume_slider_seek_bar).progress =
-            state.outputVolume?.roundToInt() ?: 0
+        rendering = true
+        try {
+            val volumeVisible = state.outputVolume != null
+            binding.userSheetVolumeLabel.visibility = if (volumeVisible) View.VISIBLE else View.GONE
+            binding.userSheetVolumeSlider.visibility = if (volumeVisible) View.VISIBLE else View.GONE
+            binding.userSheetMuted.isChecked = state.isMuted
+            binding.userSheetDeafen.visibility = if (state.isDeafened == null) View.GONE else View.VISIBLE
+            binding.userSheetDeafen.isChecked = state.isDeafened ?: false
+            binding.userSheetVolumeSlider.setVolume(state.outputVolume ?: 0f)
+        } finally {
+            rendering = false
+        }
     }
 }

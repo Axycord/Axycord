@@ -195,7 +195,7 @@ class Connection(
                         audioSsrc = audioSsrc,
                         videoSsrcs = if (hasVideo) listOf(videoSsrc) else emptyList(),
                         rtxSsrcs = if (hasVideo) listOf(rtxSsrc) else emptyList(),
-                        volume = volume.coerceIn(0f, 1f),
+                        volume = volume.coerceIn(0f, 2f),
                         mute = isMuted,
                     ),
                 ),
